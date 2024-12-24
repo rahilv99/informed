@@ -8,8 +8,8 @@ import pandas as pd
 
 def send_email(recipient_email, podcast_title, description_file_path, podcast_file_path, podcast_num):
     # Email Configuration
-    sender_email = "rahilv99.pyhelper@gmail.com"
-    sender_password = "DragonFly"  # Use an app-specific password if needed
+    sender_email = 
+    sender_password =  # Use an app-specific password if needed
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
 
