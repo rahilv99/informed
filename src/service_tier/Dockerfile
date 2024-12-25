@@ -1,48 +1,27 @@
-# Base image with Python
-FROM google/cloud-sdk:slim
+FROM public.ecr.aws/lambda/python:3.12
 
-RUN apt-get update && apt-get install -y python3-venv
+# Copy requirements.txt
+#COPY src/service_tier/requirements.txt ${LAMBDA_TASK_ROOT}
+COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
-# Set working directory
-WORKDIR /app
-
-# Install virtualenv
-#RUN pip3 install virtualenv
-
-# Create and activate a virtual environment
-RUN python3 -m venv /venv 
-
-# Use bash explicitly to enable the `source` command
-SHELL ["/bin/bash", "-c"]
-RUN source /venv/bin/activate
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    libavcodec-extra \
-    && rm -rf /var/lib/apt/lists/*
-
-# Make the virtual environment available in subsequent layers
-ENV PATH="/venv/bin:$PATH"
-
-# THIS DOES NOT WORK
-ENV GOOGLE_API_KEY=${GOOGLE_API_KEY} 
-ENV OPENAI_API_KEY=${OPENAI_API_KEY}
-ENV SEMANTIC_SCHOLAR_API_KEY=${SEMANTIC_SCHOLAR_API_KEY}
-# ^ does not work rn
-
-# Install Python dependencies
-COPY requirements.txt . 
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the specified packages
+RUN pip install -r requirements.txt
 RUN python -m spacy download en_core_web_sm
 
-# Copy the application code
-COPY . .
+# Copy code
+# COPY src/service_tier/email ${LAMBDA_TASK_ROOT}
+# COPY src/service_tier/note ${LAMBDA_TASK_ROOT}
+# COPY src/service_tier/research ${LAMBDA_TASK_ROOT}
+# COPY src/service_tier/saved_model ${LAMBDA_TASK_ROOT}
+COPY email ${LAMBDA_TASK_ROOT}/email
+COPY note ${LAMBDA_TASK_ROOT}/note
+COPY research ${LAMBDA_TASK_ROOT}/research
+COPY saved_model ${LAMBDA_TASK_ROOT}/saved_model
 
-# Expose ports (if needed for debugging or monitoring)
-EXPOSE 6379
-# For Flower monitoring (optional)
-EXPOSE 5555 
+# Set the HOME environment variable to somewhere writable for PubMed
+ENV HOME=/tmp
+ENV TRANSFORMERS_CACHE=/tmp
+ENV HF_HOME=/tmp
 
-# Default command to run the Celery worker
-CMD ["/venv/bin/celery", "-A", "celery_app", "worker", "--loglevel=info"]
+# Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
+CMD [ "research.discover.handler" ]

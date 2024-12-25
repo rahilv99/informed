@@ -10,11 +10,11 @@ import os
 import time
 import random
 
-from user_topics import UserTopics
+from research.user_topics import UserTopics
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
-MODEL = SentenceTransformer('all-MiniLM-L6-v2')
+MODEL = SentenceTransformer('./saved_model/all-MiniLM-L6-v2')
 MAX_RETRIES = 10
 BASE_DELAY = 0.5
 MAX_DELAY = 15
@@ -185,7 +185,7 @@ def handler(event, context):
     sem.rank_data()
 
     final_df = ArticleResource.finalize_df([pubmed, arxiv_res, sem])
-    final_df.to_csv('./data/final_df.csv', index=False)
+    # final_df.to_csv('./data/final_df.csv', index=False)
     print(final_df)
 
 if __name__ == "__main__":

@@ -1,0 +1,69 @@
+Resources:
+  DiscoverFunctionServiceRoleF71C924D:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+      - Fn::Join:
+        - ''
+        - - 'arn:'
+          - Ref: AWS::Partition
+          - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: MyTestStack/DiscoverFunction/ServiceRole/Resource
+  DiscoverFunction8A3A3629:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ImageUri: discoverfunction8a3a3629:latest
+      MemorySize: 1024
+      PackageType: Image
+      Role:
+        Fn::GetAtt:
+        - DiscoverFunctionServiceRoleF71C924D
+        - Arn
+      Timeout: 900
+    DependsOn:
+    - DiscoverFunctionServiceRoleF71C924D
+    Metadata:
+      DockerBuildArgs: {}
+      DockerContext: /home/averma/rahil/astra/cdk.out/asset.0990e2e929a843333db63805a9cf16982aa62a26ea8fd297d2c79eb434d35129
+      Dockerfile: Dockerfile
+      SamNormalized: true
+      SamResourceId: DiscoverFunction
+      aws:asset:dockerfile-path: Dockerfile
+      aws:asset:path: ../../cdk.out/asset.0990e2e929a843333db63805a9cf16982aa62a26ea8fd297d2c79eb434d35129
+      aws:asset:property: Code.ImageUri
+      aws:cdk:path: MyTestStack/DiscoverFunction/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/02Oyw6CMBBFv4V9GVNcqEsfMXFbP4CUMpIB2ppO0ZiGfxdQE1d3cu4jU4DcrKHI9JNzU3d5TxWka9SmExMqU69tVWtIJ286DBerGzwPzkTyThxv7nePgrSFpHyPM551FGhCqZkxMvzV9zOZPVB490zRh9dB85RXyH4IBsUSmZ5oyDXL3NcYhfM1Qsurh9yC3IHMWibKw+AiWQT10TfZpUrE1AAAAA==
+    Metadata:
+      aws:cdk:path: MyTestStack/CDKMetadata/Default
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically
+      retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+    - Assert:
+        Fn::Not:
+        - Fn::Contains:
+          - - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+          - Ref: BootstrapVersion
+      AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap'
+        with a recent version of the CDK CLI.

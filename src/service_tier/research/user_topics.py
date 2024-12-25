@@ -1,12 +1,12 @@
 from sentence_transformers import SentenceTransformer, util
 import pickle
 
-model = SentenceTransformer('all-MiniLM-L6-v2')  # Lightweight and effective model
+model = SentenceTransformer('./saved_model/all-MiniLM-L6-v2')  # Lightweight and effective model
 
 DEFATULT_TOP_TAXONOMY_MATCHES = 3  # Number of top matches to consider for each keyword
 
 # TODO This should be done only once at initialization 
-with open('./data/candidate_words.pkl', 'rb') as file:
+with open('./research/data/candidate_words.pkl', 'rb') as file:
     candidate_words = pickle.load(file)
 
 class UserTopics:
