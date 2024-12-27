@@ -9,9 +9,13 @@ import {
   updateUserSubscription,
 } from '@/lib/db/queries';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+export async function getStripeInstance() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2024-06-20',
+  });
+}
+
+const stripe = await getStripeInstance();
 
 export async function createCheckoutSession({
   priceId,
