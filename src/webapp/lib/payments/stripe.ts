@@ -19,7 +19,7 @@ export async function createCheckoutSession({
   const user = await getUser();
 
   if (!user) {
-    redirect(`/sign-up?redirect=checkout&priceId=${priceId}`);
+    redirect(`/sign-up`);
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -65,7 +65,7 @@ export async function createCustomerPortalSession(user: User) {
       active: true,
     });
     if (prices.data.length === 0) {
-      throw new Error("No active prices found for the team's product");
+      throw new Error("No active prices found for the customer's product");
     }
 
     configuration = await stripe.billingPortal.configurations.create({
@@ -104,7 +104,7 @@ export async function createCustomerPortalSession(user: User) {
 
   return stripe.billingPortal.sessions.create({
     customer: user.stripeCustomerId,
-    return_url: `${process.env.BASE_URL}/dashboard`,
+    return_url: `${process.env.BASE_URL}/dashboard/pulse`,
     configuration: configuration.id,
   });
 }
@@ -116,27 +116,27 @@ export async function handleSubscriptionChange(
   const subscriptionId = subscription.id;
   const status = subscription.status;
 
-  const team = await getUserByStripeCustomerId(customerId);
+  const sub = await getUserByStripeCustomerId(customerId);
 
-  if (!team) {
-    console.error('Team not found for Stripe customer:', customerId);
+  if (sub.length === 0) {
+    console.error('Subscription not found for Stripe customer:', customerId);
     return;
   }
 
+  const subject = sub[0];
+
   if (status === 'active' || status === 'trialing') {
     const plan = subscription.items.data[0]?.plan;
-    await updateUserSubscription(team.id, {
+    await updateUserSubscription(subject.id, {
       stripeSubscriptionId: subscriptionId,
       stripeProductId: plan?.product as string,
-      planName: (plan?.product as Stripe.Product).name,
-      subscriptionStatus: status,
+      planName: (plan?.product as Stripe.Product).name
     });
   } else if (status === 'canceled' || status === 'unpaid') {
-    await updateUserSubscription(team.id, {
+    await updateUserSubscription(subject.id, {
       stripeSubscriptionId: null,
       stripeProductId: null,
-      planName: null,
-      subscriptionStatus: status,
+      planName: null
     });
   }
 }
