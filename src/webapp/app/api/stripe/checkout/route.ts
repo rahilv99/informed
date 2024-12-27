@@ -70,8 +70,7 @@ export async function GET(request: NextRequest) {
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
         stripeProductId: productId,
-        planName: (plan.product as Stripe.Product).name,
-        subscriptionStatus: subscription.status,
+        plan: (plan.product as Stripe.Product).name
       })
       .where(eq(users.id, user[0].id));
 
