@@ -86,31 +86,31 @@ export default function ProductsPage() {
                   product.id === activeTab && (
                     <div key={product.id}>
                       <h2 className="text-4xl font-bold mb-4 text-gray-700">
-                        {product.tagline}
+                      {product.tagline}
                       </h2>
                       <p className="text-xl mb-8 max-w-2xl mx-auto">
-                        {product.description}
+                      {product.description}
                       </p>
                       
                       {product.subProducts ? (
-                        
-                        <div className={`grid gap-8 mb-8 ${product.subProducts.length === 1 ? 'w-1/2 mx-auto' : 'grid-cols-1 md:grid-cols-2'}`}>
-                          {product.subProducts.map((subProduct) => (
-                          <div key={subProduct.id} className="bg-black bg-opacity-10 p-6 rounded-lg">
-                            <h3 className="text-2xl font-bold mb-4 text-gray-700">{subProduct.name}</h3>
-                            <p className="text-lg mb-4">{subProduct.description}</p>
-                            {
-                            <Link href={subProduct.demo || '/product'} passHref>
-                              <Button className="bg-gray-800 font-semibold hover:bg-gray-600 text-white rounded-full text-lg px-8 py-8 inline-flex items-center justify-center">
-                              Demo
-                              </Button>
-                            </Link>
-                            }
-                          </div>
-                          ))}
+                      
+                      <div className={`grid gap-8 mb-8 ${product.subProducts.length === 1 ? 'w-full sm:w-1/2 mx-auto' : 'grid-cols-1 md:grid-cols-2'}`}>
+                        {product.subProducts.map((subProduct) => (
+                        <div key={subProduct.id} className="bg-black bg-opacity-10 p-6 rounded-lg">
+                        <h3 className="text-2xl font-bold mb-4 text-gray-700">{subProduct.name}</h3>
+                        <p className="text-lg mb-4">{subProduct.description}</p>
+                        {
+                        <Link href={subProduct.demo || '/product'} passHref>
+                          <Button className="bg-gray-800 font-semibold hover:bg-gray-600 text-white rounded-full text-lg px-8 py-8 inline-flex items-center justify-center">
+                          Demo
+                          </Button>
+                        </Link>
+                        }
                         </div>
+                        ))}
+                      </div>
                       ) : (
-                        <div>
+                      <div>
                       </div>
                       )}
                       
