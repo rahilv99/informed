@@ -7,10 +7,10 @@ services:
     # depends_on:
     #   - db
     env_file:
-      - ../.env
+      - ../../.env
     command: tail -f /dev/null
     volumes:
-      - .:/app
+      - .:/tmp
     networks:
       - astra-net
 

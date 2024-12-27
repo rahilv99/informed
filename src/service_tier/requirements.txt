@@ -12,3 +12,4 @@ google-cloud-texttospeech # previously had --upgrade flag
 openai
 pydub
 google-generativeai # previously had -p -U flag
+boto3

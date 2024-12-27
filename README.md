@@ -24,8 +24,8 @@ eval "$(aws configure export-credentials --profile atul-dev-profile --format env
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 812895225987.dkr.ecr.us-east-1.amazonaws.com
 docker pull 812895225987.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-812895225987-us-east-1:2aa906cc65c8963f9bead1a3e5363cb5949442ff6b7b33423533b15df2
 
-# Working with SAM for local dev
-sam build  -t ./cdk.out/MyTestStack.template.json
+# Attach shell to lambda function locally
+docker run -it --entrypoint /bin/bash -v $(pwd):/tmp service_tier-service_tier:latest
 
 
 ## Get account info
