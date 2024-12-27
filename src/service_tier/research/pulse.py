@@ -10,7 +10,8 @@ import os
 import time
 import random
 
-from research.user_topics import UserTopics
+from research.user_topics_output import UserTopicsOutput
+import common.sqs
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
@@ -19,13 +20,14 @@ MAX_RETRIES = 10
 BASE_DELAY = 0.5
 MAX_DELAY = 15
 
+
 # Base ArticleResource class
 class ArticleResource:
-    def __init__(self, user_topics):
+    def __init__(self, user_topics_output):
         self.articles_df = pd.DataFrame()
         self.today = datetime.date.today()
         self.time_constraint = self.today - datetime.timedelta(days=DEFAULT_ARTICLE_AGE)
-        self.user_topics = user_topics
+        self.user_topics_output = user_topics_output
         self.nlp = spacy.load("en_core_web_sm")
 
     def _extract_entities(self, input_text):
@@ -54,8 +56,8 @@ class ArticleResource:
         self.articles_df['entities'] = self.articles_df[scoring_column].apply(self._extract_entities)
         entities_list = self.articles_df['entities'].tolist()  # Convert Series to list
         embeddings = MODEL.encode(entities_list, convert_to_tensor=True)
-        main_sim = util.cos_sim(self.user_topics.user_input_embeddings, embeddings).flatten().numpy()
-        exp_sim = util.cos_sim(self.user_topics.expanded_embeddings, embeddings).flatten().numpy()
+        main_sim = util.cos_sim(self.user_topics_output.user_input_embeddings, embeddings).flatten().numpy()
+        exp_sim = util.cos_sim(self.user_topics_output.expanded_embeddings, embeddings).flatten().numpy()
         
         self.articles_df['score'] = main_sim * 0.65 + exp_sim * 0.35 - penalty
         self.articles_df.sort_values(by='score', ascending=False, inplace=True)
@@ -78,14 +80,14 @@ class ArticleResource:
 
 # PubMed Integration
 class PubMed(ArticleResource):
-    def __init__(self, user_topics):
-        super().__init__(user_topics)
+    def __init__(self, user_topics_output):
+        super().__init__(user_topics_output)
 
     def get_articles(self):
         try:
             Entrez.email = 'rahil.verma@duke.com'
             id_list = []
-            for k in self.user_topics.all_input:
+            for k in self.user_topics_output.all_input:
                 try:
                     query = f'{k} AND "{self.time_constraint}"[Date] : "{self.today}"[Date]'
                     handle = self.fetch_with_retry(Entrez.esearch, db='pubmed', term=query, sort='relevance', retmax='50', retmode='xml')
@@ -116,14 +118,14 @@ class PubMed(ArticleResource):
 
 # ArXiv Integration
 class Arxiv(ArticleResource):
-    def __init__(self, user_topics):
-        super().__init__(user_topics)
+    def __init__(self, user_topics_output):
+        super().__init__(user_topics_output)
         self.client = arxiv.Client()
 
     def get_articles(self):
         try:
             results = []
-            for k in self.user_topics.all_input:
+            for k in self.user_topics_output.all_input:
                 try:
                     search = arxiv.Search(query=k, max_results=50, sort_by=arxiv.SortCriterion.SubmittedDate)
                     fetched_results = self.fetch_with_retry(self.client.results, search=search)
@@ -146,14 +148,14 @@ class Arxiv(ArticleResource):
 
 # Semantic Scholar Integration
 class Sem(ArticleResource):
-    def __init__(self, user_topics):
-        super().__init__(user_topics)
+    def __init__(self, user_topics_output):
+        super().__init__(user_topics_output)
         self.sch = SemanticScholar(timeout = 7, api_key = os.environ.get('SEMANTIC_SCHOLAR_API_KEY'))
 
     def get_articles(self):
         try:
             results = []
-            for k in self.user_topics.all_input:
+            for k in self.user_topics_output.all_input:
                 try:
                     response = self.fetch_with_retry(self.sch.search_paper, query=k)
                     results += response.items
@@ -170,11 +172,12 @@ class Sem(ArticleResource):
             print(f"Error in Semantic Scholar integration: {e}")
 
 # Main Execution
-def handler(event, context):
-    user_topics = UserTopics()
-    pubmed = PubMed(user_topics)
-    arxiv_res = Arxiv(user_topics)
-    sem = Sem(user_topics)
+def handler(payload):
+    user_id = payload.get("user_id")
+    user_topics_output = UserTopicsOutput(user_id)
+    pubmed = PubMed(user_topics_output)
+    arxiv_res = Arxiv(user_topics_output)
+    sem = Sem(user_topics_output)
 
     pubmed.get_articles()
     arxiv_res.get_articles()
@@ -188,5 +191,16 @@ def handler(event, context):
     # final_df.to_csv('./data/final_df.csv', index=False)
     print(final_df)
 
+    # Send message to SQS
+    try:
+        next_event = {
+            "action": "testaction",
+            "payload": {"user_id": user_id}
+        }
+        common.sqs.send_to_sqs(next_event)
+        print(f"Sent message to SQS for next action {next_event['action']}")
+    except Exception as e:
+        print(f"Exception when sending message to SQS {e}")
+
 if __name__ == "__main__":
-    handler(None, None)
+    handler(None)
