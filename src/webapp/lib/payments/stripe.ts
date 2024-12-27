@@ -1,3 +1,5 @@
+'use server';
+
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
 import { User } from '@/lib/db/schema';
@@ -7,7 +9,7 @@ import {
   updateUserSubscription,
 } from '@/lib/db/queries';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
