@@ -20,32 +20,33 @@ export default async function PricingPage() {
   const proPrice = prices.find((price) => price.productId === proPlan?.id);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid md:grid-cols-3 gap-8 w-full mx-auto">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="grid md:grid-cols-2 gap-8 w-full mx-auto">
         <PricingCard
           name={'Base'}
           price={0}
           interval={'month'}
           features={[
+            'Great option to try out Auxiom',
             'Short pulse podcast',
-            'Multi host conversation',
             'Direct email delivery',
           ]}
           currentPlan = {true} /////// RETRIEVE FROM BACKEND
         />
         <PricingCard
           name={plusPlan?.name || 'Plus'}
-          price={plusPrice?.unitAmount || 300}
+          price={plusPrice?.unitAmount || 400}
           interval={plusPrice?.interval || 'month'}
           trialDays={plusPrice?.trialPeriodDays || 7}
           features={[
             'Everything in Base',
-            'Long pulse podcast',
-            '15 monthly credits for insight + note',
+            '8-10 minute pulse podcast',
+            'Access to proprietary sources',
           ]}
           priceId={plusPrice?.id}
           currentPlan = {false} /////// RETRIEVE FROM BACKEND
         />
+        { /* 
         <PricingCard
           name={proPlan?.name || 'Pro'}
           price={proPrice?.unitAmount || 900}
@@ -59,6 +60,7 @@ export default async function PricingPage() {
           priceId={proPrice?.id}
           currentPlan = {false} /////// RETRIEVE FROM BACKEND
         />
+        */}
       </div>
     </main>
   );
