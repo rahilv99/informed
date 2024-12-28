@@ -279,6 +279,10 @@ export async function setAccountStatus(status: boolean) {
   return { success: true, message: 'Account status updated successfully' };
 }
 
+export async function addToNewsletter(formData: { email: string }) {
+  const { email } = formData;
+  return { success: 'Email added to newsletter successfully.' };
+}
 
 /*  THIS IS HOW YOU UPDATE DB
 const updateAccountSchema = z.object({

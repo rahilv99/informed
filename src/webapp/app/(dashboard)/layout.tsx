@@ -39,10 +39,14 @@ function NavDropdown({ user }: { user: any }) {
               Dashboard
             </Link>
           ) : (
-            <Link href="/sign-up" className="flex items-center">
-              Sign Up
-            </Link>
+            <p>Coming Soon</p>
+            /*
+          <Link href="/sign-up" className="flex items-center">
+            Sign Up
+          </Link>
+          */
           )}
+          
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -83,7 +87,8 @@ function Header() {
                   asChild
                   className="bg-gray-800 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-full transition duration-300"
                 >
-                  <ActionLink href="/sign-up">Sign Up</ActionLink>
+                  {/*<ActionLink href="/sign-up">Sign Up</ActionLink>*/}
+                  <ActionLink href="/">Coming Soon</ActionLink>
                 </Button>
               )}
             </>

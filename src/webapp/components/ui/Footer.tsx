@@ -1,18 +1,45 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { addToNewsletter } from '@/lib/actions';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export function Footer() {
+  const [email, setEmail] = useState('')
+  const { toast } = useToast()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await addToNewsletter({ email })
+      toast({
+        title: "Added to Newsletter",
+        description: "Thank you for staying in touch!",
+      })
+      setEmail('')
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was a problem adding you to the newsletter. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+  
   return (
     <footer className="bg-black bg-opacity-10 text-black py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold">Stay in Touch</h2>
-            <form className="space-y-4">
+            <form onSubmit = {handleSubmit} className="space-y-4">
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full px-4 py-2 rounded-xl bg-black bg-opacity-10 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-black"
               />
               <Button type="submit" className="w-full bg-gray-800 hover:bg-gray-600 text-white transition duration-300 rounded-xl">
