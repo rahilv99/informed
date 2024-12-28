@@ -7,9 +7,9 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function sendContactForm({ subject, body }: { subject: string; body: string }) {
   try {
     await resend.emails.send({
-      from: 'contact@yourdomain.com', // CHANGE BEFORE DEPLOYING
+      from: 'contact@auxiomai.com', // CHANGE BEFORE DEPLOYING
       to: 'rahilv99@gmail.com', // CHANGE BEFORE DEPLOYING
-      subject: `New Contact Form Submission: ${subject}`,
+      subject: `Auxiom Contact Point: ${subject}`,
       text: body,
     })
   } catch (error) {
