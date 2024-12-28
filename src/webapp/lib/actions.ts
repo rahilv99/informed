@@ -281,7 +281,17 @@ export async function setAccountStatus(status: boolean) {
 
 export async function addToNewsletter(formData: { email: string }) {
   const { email } = formData;
-  return { success: 'Email added to newsletter successfully.' };
+  // Add to email table
+  return { success: 'Added to newsletter successfully.' };
+}
+
+export async function getCurrentPlan(): Promise<string> {
+  const user = await getUser();
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  return user.plan;
 }
 
 /*  THIS IS HOW YOU UPDATE DB

@@ -2,6 +2,7 @@ import { checkoutAction } from '@/lib/payments/actions';
 import { Check } from 'lucide-react';
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
 import { SubmitButton } from './submit-button';
+import { getCurrentPlan } from '@/lib/actions';
 
 // Prices are fresh for one hour max
 export const revalidate = 3600;
@@ -11,6 +12,8 @@ export default async function PricingPage() {
     getStripePrices(),
     getStripeProducts(),
   ]);
+
+  const plan = await getCurrentPlan();
 
   
   const plusPlan = products.find((product) => product.name === 'Plus');
@@ -27,11 +30,11 @@ export default async function PricingPage() {
           price={0}
           interval={'month'}
           features={[
-            'Great option to try out Auxiom',
-            'Short pulse podcast',
-            'Direct email delivery',
+        'Great option to try out Auxiom',
+        'Short pulse podcast',
+        'Direct email delivery',
           ]}
-          currentPlan = {true} /////// RETRIEVE FROM BACKEND
+          currentPlan={plan === 'free'}
         />
         <PricingCard
           name={plusPlan?.name || 'Plus'}
@@ -39,12 +42,12 @@ export default async function PricingPage() {
           interval={plusPrice?.interval || 'month'}
           trialDays={plusPrice?.trialPeriodDays || 7}
           features={[
-            'Everything in Base',
-            '8-10 minute pulse podcast',
-            'Access to proprietary sources',
+        'Get the full Auxiom experience',
+        '8-10 minute pulse podcast',
+        'Access to proprietary sources',
           ]}
           priceId={plusPrice?.id}
-          currentPlan = {false} /////// RETRIEVE FROM BACKEND
+          currentPlan={plan === 'plus' || plan === 'Plus'}
         />
         { /* 
         <PricingCard
@@ -53,12 +56,12 @@ export default async function PricingPage() {
           interval={proPrice?.interval || 'month'}
           trialDays={proPrice?.trialPeriodDays || 7}
           features={[
-            'Everything in Plus',
-            '60 monthly credits for insight + note',
-            'Early access to new features',
+        'Everything in Plus',
+        '60 monthly credits for insight + note',
+        'Early access to new features',
           ]}
           priceId={proPrice?.id}
-          currentPlan = {false} /////// RETRIEVE FROM BACKEND
+          currentPlan={plan === 'pro'}
         />
         */}
       </div>
