@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { users } from './schema';
+import { users, emails } from './schema';
 import { eq } from 'drizzle-orm';
 import type { User, NewUser } from './schema';
 import { cookies } from 'next/headers';
@@ -85,4 +85,17 @@ export async function getUsersByPlan(plan: string) {
 // Get all users scheduled for delivery on a specific day
 export async function getUsersByDeliveryDay(day: number) {
   return await db.select().from(users).where(eq(users.deliveryDay, day));
+}
+
+// Add new user to the newsletter
+export async function addEmailToNewsletter(email: string) {
+  const existingEmail = await db.select().from(emails).where(eq(emails.email, email)).limit(1);
+
+  if (existingEmail.length > 0) {
+    if (!existingEmail[0].subscribed) {
+      return await db.update(emails).set({ subscribed: true }).where(eq(emails.email, email)).returning();
+    }
+  }
+
+  return await db.insert(emails).values({ email, subscribed: true }).returning();
 }

@@ -11,7 +11,7 @@ import {
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { getUserByEmail, createUser, getUser, updateUser } from '@/lib/db/queries';
+import { getUserByEmail, createUser, getUser, updateUser, addEmailToNewsletter } from '@/lib/db/queries';
 import {
   validatedAction,
   validatedActionWithUser,
@@ -282,7 +282,13 @@ export async function setAccountStatus(status: boolean) {
 export async function addToNewsletter(formData: { email: string }) {
   const { email } = formData;
   // Add to email table
-  return { success: 'Added to newsletter successfully.' };
+  const res = await addEmailToNewsletter(email);
+
+  if (res.length === 0) {
+    return { error: 'Email already exists in newsletter.' };
+  } else {
+    return { success: 'Added to newsletter successfully.' };
+  }
 }
 
 export async function getCurrentPlan(): Promise<string> {

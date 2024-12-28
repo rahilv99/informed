@@ -22,23 +22,23 @@ const citations = [
 
 export function Citations() {
   return (
-    <Card className="w-full bg-black bg-opacity-10 text-black mt-6 border-none">
-      <CardHeader>
-        <CardTitle className="text-2xl">Learn More: Citations and Sources</CardTitle>
-        <CardDescription className="text-gray-800">
+    <Card className="w-full bg-black bg-opacity-10 text-black mt-4 sm:mt-6 border-none">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl">Learn More: Citations and Sources</CardTitle>
+        <CardDescription className="text-gray-800 text-sm sm:text-base">
           Explore these resources to dive deeper into today's topics.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ul className="space-y-4">
+      <CardContent className="p-4 sm:p-6">
+        <ul className="space-y-3 sm:space-y-4">
           {citations.map((citation, index) => (
             <li key={index} className="flex items-start space-x-2">
-              <ExternalLink className="w-5 h-5 mt-1 flex-shrink-0" />
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mt-1 flex-shrink-0" />
               <div>
-                <a href={citation.url} target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:underline">
+                <a href={citation.url} target="_blank" rel="noopener noreferrer" className="text-sm sm:text-base text-gray-700 hover:underline">
                   {citation.title}
                 </a>
-                <p className="text-sm text-gray-700">{citation.source}</p>
+                <p className="text-xs sm:text-sm text-gray-700">{citation.source}</p>
               </div>
             </li>
           ))}

@@ -12,16 +12,26 @@ export function Footer() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await addToNewsletter({ email })
-      toast({
-        title: "Added to Newsletter",
-        description: "Thank you for staying in touch!",
-      })
+      const res = await addToNewsletter({ email })
+      if (!res) {
+        throw new Error('Error adding email to newsletter')
+      } else if (res.error) {
+        toast({
+          title: "Error",
+          description: "Email already exists in newsletter.",
+          variant: "destructive",
+        })
+      } else if (res.success) {
+        toast({
+          title: "Added to Newsletter",
+          description: "Thank you for staying in touch!",
+        })
+      }
       setEmail('')
     } catch (error) {
       toast({
         title: "Error",
-        description: "There was a problem adding you to the newsletter. Please try again.",
+        description: "Email already exists in newsletter.",
         variant: "destructive",
       })
     }

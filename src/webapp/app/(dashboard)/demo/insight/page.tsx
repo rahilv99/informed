@@ -26,11 +26,11 @@ export default function Home() {
 
   
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 text-black">
-      <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Welcome to Insight</h1>
-      <p className="text-xl text-center mb-12">Get expert analyses of your content.</p>
-        <AIPodcastWalkthrough steps = {steps} product = 'insight'/>
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-24 text-black">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <h1 className="text-2xl sm:text-4xl font-bold text-center mb-4 sm:mb-8">Welcome to Insight</h1>
+        <p className="text-base sm:text-xl text-center mb-6 sm:mb-12">Get expert analyses of your content.</p>
+        <AIPodcastWalkthrough steps={steps} product='insight'/>
       </div>
     </main>
   )

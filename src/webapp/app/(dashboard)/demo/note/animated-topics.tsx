@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const topics = [
   "What is Neural Dust?",
-  "How is the paper 'Attention is All You Need' related to Transformers?",
-  "What is the most recent news on Google Willow chip?",
+  "How is the paper 'Attention is All You Need' related to my research?",
+  "What is the most recent news on Google's Willow chip?",
 ]
 
 export function AnimatedTopics() {

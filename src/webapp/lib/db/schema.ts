@@ -20,6 +20,13 @@ export const users = pgTable('users', {
   // insight will use a second table to store pdfs
 });
 
+// Email table for newsletter
+export const emails = pgTable('emails', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  subscribed: boolean('subscribed').notNull().default(true),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
