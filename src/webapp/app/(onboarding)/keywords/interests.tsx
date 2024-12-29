@@ -4,21 +4,34 @@ import { redirect } from 'next/navigation';
 import { Textarea } from "@/components/ui/textarea"
 import { useState } from 'react';
 import { submitInterests } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 
 export function Interests() {
   // we store roles right now because we may want to display a more complex page to professionals in the future
     const [keywords, setKeywords] = useState<string>(''); // State to store textarea input
+    const { toast } = useToast();
 
     const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setKeywords(event.target.value); // Update state when textarea changes
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       // BACKEND - send the keywords to database
       
         console.log("Keywords:", keywords); 
-        submitInterests(keywords);
+        const ret = await submitInterests(keywords);
+
+        if (ret.error) {
+          toast({
+            title: "Error",
+            description: ret.error,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+
         redirect('/day'); // Perform redirection
     };
     
@@ -33,7 +46,7 @@ export function Interests() {
                     Tell us about your interests
                   </h1>
                   <p className="mt-4 text-base text-gray-700">
-                    Enter a few keywords that describe your research, projects, or work.
+                    Enter a 5-10 keywords that describe your research, projects, or work.
                   </p>
                 </div>
               </div>

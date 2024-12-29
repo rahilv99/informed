@@ -179,9 +179,16 @@ export async function submitInterests(user_input: string) {
   if (!user) {
     throw new Error('User is not authenticated');
   }
+
+  if (!user_input) {
+    return { error: 'Please enter at least 5 keywords' };
+  }
   // parse the keywords comma separated string into an array
   const keys = user_input.split(',').map((word) => word.trim());
 
+  if (keys.length < 5) {
+    return { error: 'Please enter at least 5 keywords' };
+  }
   // Update the user's keywords in the database
   await updateUser(user.id, { keywords: keys });
 

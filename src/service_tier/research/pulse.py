@@ -5,7 +5,6 @@ import spacy
 import datetime
 from Bio import Entrez
 from semanticscholar import SemanticScholar
-import arxiv
 import os
 import time
 import random
@@ -27,7 +26,8 @@ class ArticleResource:
         self.articles_df = pd.DataFrame()
         self.today = datetime.date.today()
         self.time_constraint = self.today - datetime.timedelta(days=DEFAULT_ARTICLE_AGE)
-        self.user_topics_output = user_topics_output
+        self.user_input = user_topics_output.user_input
+        self.user_embeddings = user_topics_output.user_embeddings
         self.nlp = spacy.load("en_core_web_sm")
 
     def _extract_entities(self, input_text):
@@ -44,7 +44,7 @@ class ArticleResource:
         }, inplace=True)
         self.articles_df.drop_duplicates(subset=['title'], inplace=True)
 
-    def rank_data(self, scoring_column='text', threshold=0.3, penalty=0):
+    def rank_data(self, scoring_column='text'):
         if self.articles_df.empty:
             return
 
@@ -53,13 +53,11 @@ class ArticleResource:
         # Fill NaN or None values in the scoring column with empty strings
         self.articles_df[scoring_column] = self.articles_df[scoring_column].fillna("")
 
-        self.articles_df['entities'] = self.articles_df[scoring_column].apply(self._extract_entities)
-        entities_list = self.articles_df['entities'].tolist()  # Convert Series to list
+        entities = self.articles_df[scoring_column].apply(self._extract_entities)
+        entities_list = entities.tolist()  # Convert Series to list
         embeddings = MODEL.encode(entities_list, convert_to_tensor=True)
-        main_sim = util.cos_sim(self.user_topics_output.user_input_embeddings, embeddings).flatten().numpy()
-        exp_sim = util.cos_sim(self.user_topics_output.expanded_embeddings, embeddings).flatten().numpy()
         
-        self.articles_df['score'] = main_sim * 0.65 + exp_sim * 0.35 - penalty
+        self.articles_df['score'] = util.cos_sim(self.user_embeddings, embeddings).flatten().numpy() 
         self.articles_df.sort_values(by='score', ascending=False, inplace=True)
         self.articles_df = self.articles_df.head(5)
 
@@ -86,15 +84,16 @@ class PubMed(ArticleResource):
     def get_articles(self):
         try:
             Entrez.email = 'rahil.verma@duke.com'
-            id_list = []
-            for k in self.user_topics_output.all_input:
-                try:
-                    query = f'{k} AND "{self.time_constraint}"[Date] : "{self.today}"[Date]'
-                    handle = self.fetch_with_retry(Entrez.esearch, db='pubmed', term=query, sort='relevance', retmax='50', retmode='xml')
-                    results = Entrez.read(handle)
-                    id_list.extend(results['IdList'])
-                except Exception as e:
-                    print(f"Error fetching PubMed query for {k}: {e}")
+            topics = self.user_input
+            query = f'{topics[0]} AND "{self.time_constraint}"[Date] : "{self.today}"[Date]'
+            for t in topics[1:]:
+                query += f' OR {t} AND "{self.time_constraint}"[Date] : "{self.today}"[Date]'
+            try:
+                handle = self.fetch_with_retry(Entrez.esearch, db='pubmed', term=query, sort='relevance', retmax='500', retmode='xml')
+                results = Entrez.read(handle)
+                id_list = results['IdList']
+            except Exception as e:
+                print(f"Error fetching PubMed query: {e}")
 
             try:
                 handle = self.fetch_with_retry(Entrez.efetch, db='pubmed', id=','.join(id_list), retmode='xml')
@@ -116,35 +115,6 @@ class PubMed(ArticleResource):
         except Exception as e:
             print(f"Error in PubMed integration: {e}")
 
-# ArXiv Integration
-class Arxiv(ArticleResource):
-    def __init__(self, user_topics_output):
-        super().__init__(user_topics_output)
-        self.client = arxiv.Client()
-
-    def get_articles(self):
-        try:
-            results = []
-            for k in self.user_topics_output.all_input:
-                try:
-                    search = arxiv.Search(query=k, max_results=50, sort_by=arxiv.SortCriterion.SubmittedDate)
-                    fetched_results = self.fetch_with_retry(self.client.results, search=search)
-                    results += list(fetched_results)
-                except Exception as e:
-                    print(f"General error fetching ArXiv query for {k}: {e}")
-
-            if not results:
-                print("No valid results fetched from Arxiv.")
-                return
-
-            rows = [{
-                'title': r.title, 'text': r.summary, 'journal': r.journal_ref,
-                'author': ', '.join(a.name for a in r.authors), 'url': r.entry_id
-            } for r in results]
-            self.articles_df = pd.DataFrame(rows)
-            self.normalize_df()
-        except Exception as e:
-            print(f"Error in ArXiv integration: {e}")
 
 # Semantic Scholar Integration
 class Sem(ArticleResource):
@@ -155,9 +125,9 @@ class Sem(ArticleResource):
     def get_articles(self):
         try:
             results = []
-            for k in self.user_topics_output.all_input:
+            for k in self.user_input:
                 try:
-                    response = self.fetch_with_retry(self.sch.search_paper, query=k)
+                    response = self.fetch_with_retry(self.sch.search_paper, query=k, publication_date_or_year=f'{self.time_constraint.strftime("%Y-%m-%d")}:{self.today.strftime("%Y-%m-%d")}')
                     results += response.items
                 except Exception as e:
                     print(f"Error fetching Semantic Scholar query for {k}: {e}")
@@ -176,18 +146,15 @@ def handler(payload):
     user_id = payload.get("user_id")
     user_topics_output = UserTopicsOutput(user_id)
     pubmed = PubMed(user_topics_output)
-    arxiv_res = Arxiv(user_topics_output)
     sem = Sem(user_topics_output)
 
     pubmed.get_articles()
-    arxiv_res.get_articles()
     sem.get_articles()
 
     pubmed.rank_data()
-    arxiv_res.rank_data()
     sem.rank_data()
 
-    final_df = ArticleResource.finalize_df([pubmed, arxiv_res, sem])
+    final_df = ArticleResource.finalize_df([pubmed, sem])
     # final_df.to_csv('./data/final_df.csv', index=False)
     print(final_df)
 

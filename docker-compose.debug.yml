@@ -17,11 +17,7 @@ services:
       - .env
     command: >
       bash -c "
-      npm install &&
-      if [ $DO_SEEDING = TRUE ]; then
-        npm run db:migrate &&
-        npm run db:seed
-      fi &&
+      npm install
       npm run dev
       "
     networks:
@@ -41,23 +37,6 @@ services:
       - ./service_tier:/app
     networks:
       - astra-net
-
-  db:
-    image: postgres:17-alpine
-    container_name: postgres_db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - astra-net
-
-volumes:
-  postgres_data:
 
 networks:
   astra-net:

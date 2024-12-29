@@ -34,7 +34,7 @@ class DeepDive:
         # Retry mechanism with exponential backoff
         for attempt in range(max_retries + 1):
             try:
-                results = self.sch.search_paper(self.input_title)
+                results = self.sch.search_paper(self.input_title, match_title=True)
                 time.sleep(0.33) # API rate limit
             except Exception as e:
                 print(f"Error searching for paper: {e}")

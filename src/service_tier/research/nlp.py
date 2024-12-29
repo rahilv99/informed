@@ -97,7 +97,7 @@ def summarize(title, text, use = 'summary', type = 'secondary'):
     
   if use == 'summary':
     prompt = f"Create a summary of the overall goal, methods, and results of the article titled '{title}'.\
-        Be sure to get all important information including the limitations and origin of the text. Your response should be at least {chars} characters \
+        Be sure to get all important information including the limitations where applicable. Your response should be at least {chars} characters \
         Keep notes about the details of the article, including a header of the title.: {text}"
   else: # email header case
     prompt = f"Provide a succinct TLDR summary about the academic article titled '{title}'.\
