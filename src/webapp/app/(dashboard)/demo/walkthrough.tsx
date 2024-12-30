@@ -25,31 +25,79 @@ interface AIPodcastWalkthroughProps {
 export default function AIPodcastWalkthrough({ steps, product }: AIPodcastWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
 
-let PodcastPlayer = () => (
-  <Card className="w-full bg-black bg-opacity-10 text-black mt-6 border-none">
-    <CardHeader>
-      <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
-          <AudioLines className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-        </div>
-        <CardTitle className="text-lg sm:text-2xl">Recent Advances in Quantum Computing</CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <CardDescription className="mb-4 sm:mb-6 text-sm sm:text-lg text-gray-800">
-        In this episode, we discuss a recent paper on quantum computing and its potential applications in cryptography. 
-        We explore how these advancements might impact your work in network security and data protection.
-      </CardDescription>
-      <div className="p-2 sm:p-4 flex items-center space-x-4">
-        <audio controls className="w-full">
-          <source src="/demo-podcast.mp3" type="audio/mp3" />
-          Your browser does not support the audio element.
-        </audio>
-      </div>
-    </CardContent>
-  </Card>
-);
+let PodcastPlayer = () => {
+  const sources = product === 'pulse' 
+    ? [
+        { title: "Attention Is All You Need", 
+          summary: " Revolutionizing machine translation, this paper introduces the Transformer, a neural network architecture ditching RNNs and CNNs for a purely attention-based approach. Achieving state-of-the-art results on English-to-German and English-to-French translation with significantly faster training, the Transformer boasts superior parallelization and long-range dependency capture. A must-read for anyone working with sequence transduction or deep learning.", 
+          url: "https://arxiv.org/abs/1706.03762" },
+        { title: "Grokking: Generalization Beyond Overfitting on Small Algorithmic Datasets", 
+          summary: "Neural networks trained on tiny, artificial datasets surprisingly achieve perfect generalization after overfitting—a phenomenon called 'grokking.' This study reveals grokking isn't random, but strongly linked to dataset size; smaller datasets need far more training. While limited by artificial data, it offers crucial insights into deep learning's data efficiency and generalization mysteries.", 
+          url: "https://arxiv.org/abs/2201.02177" },
+        { title: "Neural Networks are Decision Trees", 
+          summary: "Neural networks, regardless of architecture, are mathematically equivalent to decision trees! This paper proves it, offering a potentially game-changing perspective on neural network interpretability and computation. While the resulting decision trees might be large, this finding could revolutionize our understanding and efficiency of deep learning.", 
+          url: "https://arxiv.org/abs/2210.05189" },
+        { title: "On the cross-validation bias due to unsupervised pre-processing", 
+          summary: "Unsupervised data preprocessing (like feature selection & scaling) *can significantly bias cross-validation results, leading to inaccurate model performance estimates and potentially suboptimal model choices. This effect, explored via simulation, depends on dataset characteristics and is particularly problematic with small samples & high dimensionality. Read if you use unsupervised preprocessing and care about reliable model evaluation.", 
+          url: "https://arxiv.org/abs/1901.08974" },
+        { title: "LoRA: Low-Rank Adaptation of Large Language Models", 
+          summary: "LoRA: Fine-tune massive language models without retraining the entire model! Achieve comparable or better performance with up to 10,000x fewer parameters, drastically reduced memory usage (3x less for GPT-3 175B), and faster training—all with zero inference latency increase.", 
+          url: "https://arxiv.org/abs/2106.09685" }
+      ]
+    : [
+        { title: "Document 1", summary: "Summary of first document", url: "https://example.com/doc1" },
+        { title: "Document 2", summary: "Summary of second document", url: "https://example.com/doc2" },
+        { title: "Document 3", summary: "Summary of third document", url: "https://example.com/doc3" }
+      ];
 
+  return (
+    <Card className="w-full bg-black bg-opacity-10 text-black mt-6 border-none">
+      <CardHeader>
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
+            <AudioLines className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+          </div>
+          {product === 'pulse' ? (
+            <CardTitle className="text-lg sm:text-2xl">Decoding AI: From Attention to Adaptation</CardTitle>
+          ) : (
+            <CardTitle className="text-lg sm:text-2xl">PDF Review</CardTitle>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {product === 'pulse' ? (
+          <CardDescription className="mb-4 sm:mb-6 text-sm sm:text-lg text-gray-800">
+            In this special edition of pulse, we discuss the most influential papers of the last decade related to Generative AI.
+          </CardDescription>
+        ) : (
+          <CardDescription className="mb-4 sm:mb-6 text-sm sm:text-lg text-gray-800">
+            Welcome to our podcast! Stay tuned for more exciting content.
+          </CardDescription>
+        )}
+        <div className="p-2 sm:p-4 flex items-center space-x-4">
+          <audio controls className="w-full">
+            <source src={product === 'pulse' ? "/pulse-demo.mp3" : "/demo-insight.mp3"} type="audio/mp3" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">Sources Discussed:</h3>
+          <div className="space-y-4">
+            {sources.map((source, index) => (
+              <div key={index} className="bg-white bg-opacity-20 p-3 rounded-md">
+                <h4 className="font-medium">{source.title}</h4>
+                <p className="text-sm text-gray-700 mt-1">{source.summary}</p>
+                <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline mt-1 inline-block">
+                  Read more
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
   return (
     <div className="container mx-auto py-12">

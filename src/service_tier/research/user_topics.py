@@ -9,6 +9,7 @@ DEFATULT_TOP_TAXONOMY_MATCHES = 3  # Number of top matches to consider for each 
 class UserTopics:
     def __init__(self, user_id, user_input): # Hardcoded for now
         user_input = [x.lower() for x in user_input]
+        self.user_id = user_id
         self.user_input = user_input
         self.user_embeddings = model.encode(" ".join(self.user_input), convert_to_tensor=True) 
 

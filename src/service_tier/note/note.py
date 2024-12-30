@@ -245,7 +245,7 @@ def clean_text_for_conversational_tts(input_text):
     print(output_text)
     return output_text
 
-def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
+def create_conversational_podcast(all_data, plan='paid', type='pulse'):
 
     def _create_line(client, host, line, num, chunk):
         # $5 of credit here

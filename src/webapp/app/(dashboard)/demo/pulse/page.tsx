@@ -30,10 +30,10 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-4 sm:p-8 md:p-24 text-black">
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <h1 className="text-2xl sm:text-4xl font-bold text-center mb-4 sm:mb-8">
-          Welcome to Insight
+          Welcome to Pulse
         </h1>
         <p className="text-base sm:text-xl text-center mb-6 sm:mb-12">
-          Get expert analyses of your content.
+          Get weekly updates of developments of interests to you.
         </p>
         <AIPodcastWalkthrough steps={steps} product="pulse" />
       </div>

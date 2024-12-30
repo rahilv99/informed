@@ -16,7 +16,7 @@ import common.sqs
 DEFAULT_ARTICLE_AGE = 7
 MODEL = SentenceTransformer('./saved_model/all-MiniLM-L6-v2')
 MAX_RETRIES = 10
-BASE_DELAY = 0.5
+BASE_DELAY = 0.33
 MAX_DELAY = 15
 
 
@@ -103,8 +103,6 @@ class PubMed(ArticleResource):
                     data = {
                         'title': article['MedlineCitation']['Article'].get('ArticleTitle', 'N/A'),
                         'text': ' '.join(article['MedlineCitation']['Article'].get('Abstract', {}).get('AbstractText', '')),
-                        'journal': article['MedlineCitation']['Article']['Journal']['Title'],
-                        'author': ', '.join(a.get('LastName', '') for a in article['MedlineCitation']['Article'].get('AuthorList', [])),
                         'url': f"https://www.ncbi.nlm.nih.gov/pubmed/{article['MedlineCitation']['PMID']}"
                     }
                     rows.append(data)
@@ -132,10 +130,7 @@ class Sem(ArticleResource):
                 except Exception as e:
                     print(f"Error fetching Semantic Scholar query for {k}: {e}")
 
-            rows = [{
-                'title': r.title, 'text': r.abstract, 'journal': r.venue,
-                'author': ', '.join(a['name'] for a in r.authors), 'url': r.url
-            } for r in results]
+            rows = [{'title': r.title, 'text': r.abstract, 'url': r.url} for r in results]
             self.articles_df = pd.DataFrame(rows)
             self.normalize_df()
         except Exception as e:

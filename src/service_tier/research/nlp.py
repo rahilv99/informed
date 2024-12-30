@@ -1,7 +1,6 @@
 
 # set up environment variables for API keys in terminal e.g export GOOGLE_API_KEY=your_key, export OPENAI_API_KEY=your_key
 
-from google.cloud import texttospeech # need texttospeech_v1_beta for conversational voices (experimental)
 import pandas as pd
 import re
 import time
@@ -84,45 +83,54 @@ def summarize_with_rate_limit(title, text, use='summary', type='secondary'):
     enforce_rate_limit("summary_model")
     return summarize(title, text, use, type)
 
-def make_script_with_rate_limit(summaries, titles, plan='free', type='catch_up'):
+def make_script_with_rate_limit(summaries, titles, plan='free', type='pulse'):
     enforce_rate_limit("script_model")
     return make_script(summaries, titles, plan, type)
 
 
 def summarize(title, text, use = 'summary', type = 'secondary'):
   if type == 'secondary':
-      chars = 1500
+      tokens = 400
   elif type == 'primary':
-      chars = 3000
+      tokens = 800
+  else:
+      tokens = 100 # email title + summaries
     
   if use == 'summary':
     prompt = f"Create a summary of the overall goal, methods, and results of the article titled '{title}'.\
-        Be sure to get all important information including the limitations where applicable. Your response should be at least {chars} characters \
+        Be sure to get all important information including the limitations where applicable. Your response should be at least {tokens-200} tokens \
         Keep notes about the details of the article, including a header of the title.: {text}"
+  elif use == 'title':
+    prompt = f"Create a title for the podcast based on the title of the academic articles discussed. The title should be attention-grabbing, professional, and informative.\
+                Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This generated title will be in an email newsletter.
+        Titles: {text}"
   else: # email header case
     prompt = f"Provide a succinct TLDR summary about the academic article titled '{title}'.\
         Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
-        avoid any introductions, explanations, or meta-comments. Make the summary attention-grabbing and informative.
+        avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.
         Text: {text}"
     
-  response = summary_model.generate_content(prompt)
+  response = summary_model.generate_content(prompt,
+                                            generation_config = genai.GenerationConfig(
+                                        max_output_tokens=tokens,
+                                        temperature=0.25))
   return response
 
-def make_script(summaries, titles, plan = 'free', type = 'catch_up'):
-    if type == 'catch_up':
+def make_script(summaries, titles, plan = 'free', type = 'pulse'):
+    if type == 'pulse':
         additional_text = ''
-    elif type == 'deep_dive' and not plan == 'free':
+    elif type == 'insight' and not plan == 'free':
             additional_text = f'- The first article is the primary focus of this episode. We will explore the details of this article the most in depth, writing mostly about this. \
                 The second and third article have cited the first article, demonstrating the application of the 1st research. Discuss the 1st article in depth, finding how the other article(s) have applied the 1st. \n'
     
-    if plan == 'pro':
+
+    if plan == 'plus':
         tokens = 5000
-    elif plan == 'plus':
-        tokens = 4000
-        summaries = summaries[:4]
+        summaries = summaries
     else: # free
         tokens = 2000
-        summaries = summaries[:3]
+        summaries = summaries[:2]
+        additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
 
     system_prompt =f"""
     Act as a professional podcast script writer. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** is asking questions, and **HOST 2** explains using the summaries of articles below.
@@ -136,7 +144,7 @@ def make_script(summaries, titles, plan = 'free', type = 'catch_up'):
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.
     - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
     - Use specific details from the text relevant to the goals, methods, and results
-    - Close with 'Thanks for listening to Astra, stay tuned for more episodes.'
+    - Close with 'Thanks for listening to Auxiom, stay tuned for more episodes.'
     {additional_text}
     Example: 
     **HOST 1**: Today we have an article about X...
@@ -167,12 +175,12 @@ def review_script(script, tokens = 5800):
                                         temperature=0.15))
     return response
 
-def generate_script(all_data, plan = 'free', type = 'catch_up'):
+def generate_script(all_data, plan = 'free', type = 'pulse'):
     for index, row in all_data.iterrows():
         title = row['title']
         text = row['text']
 
-        if type == 'deep_dive' and index == 0:
+        if type == 'insight' and index == 0:
             article = 'primary' # extended summary for first article in deep dive (primary article)
         else:
             article = 'secondary'
@@ -186,15 +194,14 @@ def generate_script(all_data, plan = 'free', type = 'catch_up'):
     summaries = all_data['summary'].tolist()
     titles = all_data['title'].tolist()
     script = make_script_with_rate_limit(summaries, titles, plan, type)
-    print(f'Script: {script.text}')
     return script.text
 
 def generate_email_headers(all_data, plan = 'free'):
     if plan == 'free':
-        all_data = all_data.head(3)
+        all_data = all_data.head(2)
     
     podcast_description = pd.DataFrame(columns=['title', 'description', 'url'])
-    for index, row in all_data.iterrows():
+    for _, row in all_data.iterrows():
         title = row['title']
         text = row['summary']
         url = row['url']
@@ -208,8 +215,12 @@ def generate_email_headers(all_data, plan = 'free'):
         ret = re.sub(r'\s+', ' ', ret).strip()
 
         podcast_description = podcast_description.append({'title': title, 'description': ret, 'url': url}, ignore_index=True)
- 
-    return podcast_description
+    
+    titles = podcast_description['title'].tolist()
+    titles = ", ".join(titles)
+    episode_title = summarize_with_rate_limit("", titles, use = 'title')
+
+    return podcast_description, episode_title.text
 
 def clean_text_for_conversational_tts(input_text):
     """
@@ -241,60 +252,9 @@ def clean_text_for_conversational_tts(input_text):
     print(output_text)
     return output_text
 
-def clean_text_for_tts(input_text):
-    """
-    Cleans text for Text-to-Speech by:
-    - Replacing '\n' with spaces.
-    - Removing Markdown-style formatting like '**bold**'.
-    """
-    # start on 'Welcome back...'
-    pattern = r"(Welcome back .+)"
-    statement = re.search(pattern, input_text, re.DOTALL)
-
-    if statement:
-        ret = statement.group(1)
-        # Replace '\n' with a space
-        ret = ret.replace('\n', ' ')
-        # Remove Markdown-style (*)
-        ret = re.sub(r'\*', '', ret)
-        # Ensure no extra spaces
-        ret = re.sub(r'\s+', ' ', ret).strip()
-
-    return ret
-
-def create_podcast(all_data, project_id, output_gcs_uri, plan = 'free', type = 'catch_up'):
-    print('Generating script...')
-    script = generate_script(all_data, plan, type)
-    # Instantiates a long audio client (just in case request exceeds 5000 bytes )
-    client = texttospeech.TextToSpeechLongAudioSynthesizeClient()
-
-    synthesis_input = clean_text_for_tts(script)
-
-    input = texttospeech.SynthesisInput(text=synthesis_input)
-    voice = texttospeech.VoiceSelectionParams(language_code="en-US", name="en-US-Journey-F")
-    
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.LINEAR16)    
-
-    parent = f"projects/{project_id}/locations/us-central1"
-
-    request = texttospeech.SynthesizeLongAudioRequest(
-        parent=parent,
-        input=input,
-        audio_config=audio_config,
-        voice=voice,
-        output_gcs_uri=output_gcs_uri,
-    )
-
-    print('Processing TTS request...')
-    operation = client.synthesize_long_audio(request=request)
-    result = operation.result(timeout=300)
-    print("\nFinished processing, check your GCS bucket to find your audio file! Printing what should be an empty result: ",result)
-
-def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
+def create_conversational_podcast(all_data, plan='free', type='pulse'):
 
     def _create_line(client, host, line, num, chunk):
-        # $5 of credit here
-        # can spend on summarization and script generation
 
         if host == 1:
             # male
@@ -311,7 +271,7 @@ def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
         
         try:
             response = client.audio.speech.create(
-                model="tts-1",  # Model for TTS (use "tts-1" or "tts-1-hd")
+                model="tts-1", # (use "tts-1" or "tts-1-hd")
                 voice=voice,
                 input=line
             )
@@ -323,7 +283,7 @@ def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
             print(f"Audio file saved as {output_file}")
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"An error occurred while generating TTS: {e}")
 
     # Instantiates a client
     script = generate_script(all_data, plan=plan, type=type)
@@ -385,11 +345,11 @@ def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
 
 
 
-all_data = pd.read_csv('./data/recommended_papers.csv')
-#create_podcast(all_data, plan = 'free', type = 'deep_dive', project_id='674843947974', output_gcs_uri='gs://astra_podcast/podcast_v2.2.wav')
+all_data = pd.read_csv('./data/final_df.csv')
 
-create_conversational_podcast(all_data, plan = 'plus', type = 'deep_dive') # turns = 4 for testing
+create_conversational_podcast(all_data, plan = 'plus', type = 'insight') # turns = 4 for testing
 
-email_description = generate_email_headers(all_data, plan = 'plus')
+email_description, episode_title = generate_email_headers(all_data, plan = 'plus')
 # save to df
 email_description.to_csv('./data/email_description.csv', index = False)
+print(f"Episode title: {episode_title}")
