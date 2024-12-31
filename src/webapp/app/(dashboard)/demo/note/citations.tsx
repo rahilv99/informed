@@ -4,19 +4,49 @@ import { ExternalLink } from 'lucide-react'
 
 const citations = [
   {
-    title: "The Future of AI: Trends and Innovations",
-    source: "MIT Technology Review",
-    url: "https://www.technologyreview.com/ai"
+    title: "Meet Willow, Google's Latest Breakthrough in Quantum Chip",
+    source: "Spinquanta",
+    url: "https://www.spinquanta.com/newsDetail/92ad47a1-99c1-4e01-a8ee-0074c42d9384"
   },
   {
-    title: "Climate Change: Global Temperature",
-    source: "NASA",
-    url: "https://climate.nasa.gov/vital-signs/global-temperature/"
+    title: "Meet Willow, our state-of-the-art quantum chip",
+    source: "Google",
+    url: "https://blog.google/technology/research/google-willow-quantum-chip/"
   },
   {
-    title: "SpaceX Starship: The Revolutionary Spacecraft",
-    source: "Space.com",
-    url: "https://www.space.com/spacex-starship.html"
+    title: "Google claims quantum leap with new Willow chip",
+    source: "CIO",
+    url: "https://www.cio.com/article/3622570/google-claims-quantum-leap-with-new-willow-chip.html"
+  },
+  {
+    title: "China Property Watch: Charting A Path To Stabilization",
+    source: "S&P Global",
+    url: "https://www.spglobal.com/ratings/en/research/articles/241018-china-property-watch-charting-a-path-to-stabilization-13280334"
+  },
+  {
+    title: "China Residential Real Estate Market Size & Share Analysis - Growth Trends & Forecasts (2024 - 2029)",
+    source: "Modor Intelligence",
+    url: "https://www.mordorintelligence.com/industry-reports/residential-real-estate-market-in-china"
+  },
+  {
+    title: "China Real Estate Market Pulse: Q4 2024",
+    source: "Morningstar",
+    url: "https://www.morningstar.com/en-hk/lp/china-real-estate-market-analysis"
+  },
+  {
+    title: "Ozempic for weight loss: Does it work, and what do experts recommend?",
+    source: "UC Davis Health",
+    url: "https://health.ucdavis.edu/blog/cultivating-health/ozempic-for-weight-loss-does-it-work-and-what-do-experts-recommend/2023/07"
+  },
+  {
+    title: "How does Ozempic® work? Here is how it makes you feel full",
+    source: "Tuli Health",
+    url: "https://www.tuli.health/post/how-does-ozempic-work"
+  },
+  {
+    title: "Ozempic for Weight Loss: Who Should Try It and Will It Work?",
+    source: "Cleveland Clinic",
+    url: "https://health.clevelandclinic.org/ozempic-for-weight-loss"
   }
 ]
 

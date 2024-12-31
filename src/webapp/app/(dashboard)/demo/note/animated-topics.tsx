@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const topics = [
-  "What is Neural Dust?",
-  "How is the paper 'Attention is All You Need' related to my research?",
-  "What is the most recent news on Google's Willow chip?",
+  'Latest updates on the Google Willow Chip',
+  'What are the latest trends on the Chinese real estate market?',
+  'What makes ozempic so effective?'
 ]
 
 export function AnimatedTopics() {

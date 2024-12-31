@@ -45,9 +45,15 @@ let PodcastPlayer = () => {
           url: "https://arxiv.org/abs/2106.09685" }
       ]
     : [
-        { title: "Document 1", summary: "Summary of first document", url: "https://example.com/doc1" },
-        { title: "Document 2", summary: "Summary of second document", url: "https://example.com/doc2" },
-        { title: "Document 3", summary: "Summary of third document", url: "https://example.com/doc3" }
+        { title: "Attention Is All You Need", 
+          summary: "Revolutionizing neural machine translation, the Transformer architecture ditches recurrence and convolutions for pure attention. This allows massive parallelization, resulting in faster training and superior translation quality (higher BLEU scores) than previous state-of-the-art models. Key to its success is multi-head self-attention, enabling the model to weigh different parts of the input sequence simultaneously. While computationally expensive for extremely long sequences, its speed and accuracy make it a game-changer.", 
+          url: "https://arxiv.org/abs/1706.03762" },
+        { title: "A Review of Multimodal Explainable Artificial Intelligence: Past, Present and Future", 
+          summary: "Unraveling the Black Box: This review comprehensively explores the evolution of explainable AI (XAI), focusing on multimodal systems (text, images, audio, etc.). It categorizes XAI methods across four AI eras, highlighting challenges in interpreting increasingly complex models like LLMs. Key takeaways include a structured taxonomy of MXAI methods, identified challenges, and future research directions. A GitHub repo with supporting resources is available. Essential reading for anyone working with or researching complex AI systems needing transparency and trust.", 
+          url: "https://www.semanticscholar.org/paper/6c6ee9986b06cad886ef8e534336a19a21fc6b2c" },
+        { title: "A Review of Human Emotion Synthesis Based on Generative Technology", 
+          summary: "Generative AI is revolutionizing emotion synthesis! This review explores how Autoencoders, GANs, Diffusion Models, LLMs, & Sequence-to-Sequence models create realistic emotional expressions (facial, speech, text). It highlights impressive progress but also crucial limitations: inconsistent datasets & metrics hinder comparisons, and ethical concerns (deepfakes, bias) demand attention.", 
+          url: "https://www.semanticscholar.org/paper/bd7e210994b7ba821c29a4d60325493646283b20" }
       ];
 
   return (
@@ -60,7 +66,7 @@ let PodcastPlayer = () => {
           {product === 'pulse' ? (
             <CardTitle className="text-lg sm:text-2xl">Decoding AI: From Attention to Adaptation</CardTitle>
           ) : (
-            <CardTitle className="text-lg sm:text-2xl">PDF Review</CardTitle>
+            <CardTitle className="text-lg sm:text-2xl">Attention is All You Need</CardTitle>
           )}
         </div>
       </CardHeader>
@@ -71,12 +77,12 @@ let PodcastPlayer = () => {
           </CardDescription>
         ) : (
           <CardDescription className="mb-4 sm:mb-6 text-sm sm:text-lg text-gray-800">
-            Welcome to our podcast! Stay tuned for more exciting content.
+            Use auxiom to help you understand complex papers, such as this foundational paper for modern generative AI models. Simply provide your documents and we will generate expert analyses and related articles.
           </CardDescription>
         )}
         <div className="p-2 sm:p-4 flex items-center space-x-4">
           <audio controls className="w-full">
-            <source src={product === 'pulse' ? "/pulse-demo.mp3" : "/demo-insight.mp3"} type="audio/mp3" />
+            <source src={product === 'pulse' ? "/pulse-demo.mp3" : "/insight-demo.mp3"} type="audio/mp3" />
             Your browser does not support the audio element.
           </audio>
         </div>
