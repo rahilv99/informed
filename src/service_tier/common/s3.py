@@ -9,6 +9,8 @@ print(f"Astra Bucket name is {bucket_name}")
 def s3LocationMapping(user_id, type):
     if (type == "USER_TOPICS"):
         return f"user/{user_id}/user_topics.pkl"
+    elif (type == "PULSE"):
+        return f"user/{user_id}/pulse.pkl"
     else:
         print(f"Unsupported type {type}")
 

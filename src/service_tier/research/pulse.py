@@ -11,6 +11,7 @@ import random
 
 from research.user_topics_output import UserTopicsOutput
 import common.sqs
+import common.s3
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
@@ -139,6 +140,9 @@ class Sem(ArticleResource):
 # Main Execution
 def handler(payload):
     user_id = payload.get("user_id")
+    user_name = payload.get("user_name")
+    plan = payload.get("plan")
+
     user_topics_output = UserTopicsOutput(user_id)
     pubmed = PubMed(user_topics_output)
     sem = Sem(user_topics_output)
@@ -153,11 +157,17 @@ def handler(payload):
     # final_df.to_csv('./data/final_df.csv', index=False)
     print(final_df)
 
+    common.s3.save_serialized(user_id, "PULSE", {
+            "final_df": final_df,
+    })
+
     # Send message to SQS
     try:
         next_event = {
-            "action": "testaction",
-            "payload": {"user_id": user_id}
+            "action": "e_nlp",
+            "payload": { "user_id": user_id,
+                        "user_name": user_name,
+                        "plan": plan }
         }
         common.sqs.send_to_sqs(next_event)
         print(f"Sent message to SQS for next action {next_event['action']}")
