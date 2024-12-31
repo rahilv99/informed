@@ -11,6 +11,7 @@ export const users = pgTable('users', {
   active: boolean('active').notNull().default(true),
   keywords: jsonb('keywords').notNull(),
   role: varchar('role', { length: 20 }).notNull().default('Other'),
+  occupation: varchar('occupation', { length: 255 }),
   stripeCustomerId: text('stripe_customer_id').unique(),
   stripeSubscriptionId: text('stripe_subscription_id').unique(),
   stripeProductId: text('stripe_product_id'),
@@ -26,6 +27,7 @@ export const emails = pgTable('emails', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   subscribed: boolean('subscribed').notNull().default(true),
 });
+
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

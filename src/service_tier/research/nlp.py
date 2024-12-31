@@ -126,21 +126,21 @@ def make_script(summaries, titles, name, plan = 'free', type = 'pulse'):
     
 
     if plan == 'plus':
-        tokens = 2500
+        tokens = 3000
         summaries = summaries
     else: # free
-        tokens = 1200
+        tokens = 1500
         summaries = summaries[:2]
         additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
     
     if type == 'insight':
-        tokens = 1200
+        tokens = 1500
 
     system_prompt =f"""
     Act as a professional podcast script writer for a podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** is asking questions, and **HOST 2** explains using the summaries of articles below.
     - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
-    - The speakers should minimize referring to each other. If they must, HOST 1 = Mia and HOST 2 = Eli
-    - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Eli.
+    - The speakers should minimize referring to each other. If they must, HOST 1 = Mia and HOST 2 = Leo
+    - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Leo.
     - Create a sequence, exploring the details of each article one by one
     - Extract as much substance (main points, results, methods, goals) from the article as possible
     - The hosts should be critical if the article has limitations
@@ -155,7 +155,7 @@ def make_script(summaries, titles, name, plan = 'free', type = 'pulse'):
     Example: 
     **HOST 1**: Today we have an article about X...
     **HOST 2 **: That's right, Mia. The article discusses Y...
-    **HOST 1**: Eli, how does this article relate to Z?
+    **HOST 1**: Leo, how does this article relate to Z?
 
     Remember: This script must be at least {tokens} tokens long. Do not produce fewer.
 
@@ -236,7 +236,7 @@ def clean_text_for_conversational_tts(input_text):
     output_text = []
     for statement in statements:
         # Remove (Aria): and (Theo): if exist
-        ret = statement.replace('(Eli):', '').replace('(Mia):', '')
+        ret = statement.replace('(Leo):', '').replace('(Mia):', '')
 
         # Replace '\n' with a space
         ret = ret.replace('\n', ' ')

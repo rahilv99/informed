@@ -15,6 +15,13 @@
       "when": 1735407650441,
       "tag": "0001_medical_skaar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1735614166341,
+      "tag": "0002_wise_rage",
+      "breakpoints": true
     }
   ]
 }

@@ -55,7 +55,7 @@ export function Delivery() {
                   </h1>
                   <p className="mt-4 text-base text-gray-700">
                     Our free plan offers one short podcast per week.
-                    Upgrade your plan to get more podcasts and access to more features.
+                    Upgrade your plan to get a longer podcast and access to more features.
                   </p>
                 </div>
               </div>

@@ -7,10 +7,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { CircleIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import React, { useState } from "react";
 import Image from "next/image";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,8 +20,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (page ===1) {
       redirect("/identity");
     } else if (page === 2) {
-      redirect("/keywords");
+      redirect("/name");
     } else if (page === 3) {
+      redirect("/keywords");
+    } else if (page === 4) {
       redirect("/day");
     }
   };
@@ -31,6 +33,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       handlePageChange(1);
     } else if (currentPage === 3) {
       handlePageChange(2);
+    } else if (currentPage === 4) {
+      handlePageChange(3);
     }
   };
 
@@ -39,6 +43,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       handlePageChange(2);
     } else if (currentPage === 2) {
       handlePageChange(3);
+    } else if (currentPage === 3) {
+      handlePageChange(4);
     }
   };
 
@@ -68,16 +74,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/identity" onClick={() => setCurrentPage(1)}>1</PaginationLink>
               </PaginationItem>
               <PaginationItem>
-          <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/keywords" onClick={() => setCurrentPage(2)}>2</PaginationLink>
+          <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/name" onClick={() => setCurrentPage(2)}>2</PaginationLink>
               </PaginationItem>
               <PaginationItem>
-          <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/day" onClick={() => setCurrentPage(3)}>3</PaginationLink>
+          <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/keywords" onClick={() => setCurrentPage(3)}>3</PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+          <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/day" onClick={() => setCurrentPage(4)}>4</PaginationLink>
               </PaginationItem>
               <PaginationItem>
           <PaginationNext className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="#" onClick={handleNextPage}/>
               </PaginationItem>
             </PaginationContent>
           </Pagination>
+          <Toaster />
         </div>
       </section>
     </div>

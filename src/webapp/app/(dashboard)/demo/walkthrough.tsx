@@ -64,7 +64,7 @@ let PodcastPlayer = () => {
             <AudioLines className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
           </div>
           {product === 'pulse' ? (
-            <CardTitle className="text-lg sm:text-2xl">Decoding AI: From Attention to Adaptation</CardTitle>
+            <CardTitle className="text-lg sm:text-2xl">Weekly Update in AI: From Attention to Adaptation</CardTitle>
           ) : (
             <CardTitle className="text-lg sm:text-2xl">Attention is All You Need</CardTitle>
           )}

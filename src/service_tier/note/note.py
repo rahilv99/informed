@@ -136,9 +136,9 @@ def make_script(topics, summaries, sources):
 
     system_prompt =f"""
     Act as a professional podcast script writer for the podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** and **HOST 2** are discussing {len(topics)} topic(s) that the user has requested.
-    - When the speakers are referring to each other HOST 1 = Mia and HOST 2 = Eli
+    - When the speakers are referring to each other HOST 1 = Mia and HOST 2 = Leo
     - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
-    - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Eli.
+    - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Leo.
     - Create a sequence, exploring each topic in detail and equally allocating time. The sequence should be one topic at a time. Do not revisit topics.
     - Make sure to explain the fundamental origin of the topics. Dive deep into details from the sources.
     - These hosts are charismatic and professional, and casual. They are excited about the information.
@@ -201,7 +201,7 @@ def clean_text_for_conversational_tts(input_text):
     output_text = []
     for statement in statements:
         # Remove (Aria): and (Theo): if exist
-        ret = statement.replace('(Eli):', '').replace('(Mia):', '')
+        ret = statement.replace('(Leo):', '').replace('(Mia):', '')
 
         # Replace '\n' with a space
         ret = ret.replace('\n', ' ')

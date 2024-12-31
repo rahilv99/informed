@@ -29,7 +29,7 @@ export  function Roles() {
   const handleSubmit = async () => {
     await updateUserRole(selected);
 
-    redirect('/keywords');
+    redirect('/name');
   };
 
   return (

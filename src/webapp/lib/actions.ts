@@ -220,6 +220,18 @@ export async function submitDay(day: number) {
   return { success: true, message: 'Keywords updated successfully' };
 }
 
+export async function updateUserNameOccupation(formData: { name: string; occupation: string }) {
+  const user = await getUser();
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  // Update the user's name and occupation in the database
+  await updateUser(user.id, { name: formData.name, occupation: formData.occupation });
+
+  return { success: true, message: 'Name updated successfully' };
+}
+
 export async function getKeywords(): Promise<string[]> {
   const user = await getUser();
   if (!user) {
