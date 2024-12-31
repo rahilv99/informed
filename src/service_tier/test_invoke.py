@@ -17,7 +17,7 @@ user_topics_json = {
 pulse_json = {
     "action": "e_pulse",
     "payload": {
-        "user_id": "1234"
+        "user_id": "5678"
     }
 }
 
