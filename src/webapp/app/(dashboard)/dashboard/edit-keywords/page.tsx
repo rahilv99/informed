@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { EditKeywords } from './keywords';
 import { getUser } from '@/lib/db/queries';
+import { getKeywords, getName } from '@/lib/actions';
+
 
 export default async function SettingsPage() {
   const user = await getUser();
@@ -9,5 +11,9 @@ export default async function SettingsPage() {
     redirect('/sign-in');
   }
 
-  return <EditKeywords />;
+  const name = await getName();
+  const interests = await getKeywords();
+
+
+  return <EditKeywords name = {name} interests = {interests}/>;
 }

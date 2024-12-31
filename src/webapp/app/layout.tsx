@@ -5,7 +5,7 @@ import { UserProvider } from '@/lib/auth';
 import { getUser } from '@/lib/db/queries';
 
 export const metadata: Metadata = {
-  title: 'Astra',
+  title: 'Auxiom',
   description: 'More learning. Less time.'
 };
 
@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
+      className={`bg-black dark:bg-gray-950 text-black dark:text-black ${manrope.className}`}
     >
       <body className="min-h-[100dvh] bg-gray-50">
         <UserProvider userPromise={userPromise}>{children}</UserProvider>

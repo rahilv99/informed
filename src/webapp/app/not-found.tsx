@@ -3,21 +3,21 @@ import { CircleIcon } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="flex items-center justify-center min-h-[100dvh] bg-gradient-to-br from-black to-cyan-900">
+    <div className="flex items-center justify-center min-h-[100dvh] bg-amber-100/40">
       <div className="max-w-md space-y-8 p-4 text-center">
         <div className="flex justify-center">
-          <CircleIcon className="size-12 text-cyan-300" />
+          <CircleIcon className="size-12 text-gray-600" />
         </div>
-        <h1 className="text-4xl font-bold text-white tracking-tight">
+        <h1 className="text-4xl font-bold text-black tracking-tight">
           Page Not Found
         </h1>
-        <p className="text-base text-gray-300">
+        <p className="text-base text-gray-700">
           The page you are looking for might have been removed, had its name
           changed, or is temporarily unavailable.
         </p>
         <Link
           href="/"
-          className="max-w-48 mx-auto flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+          className="max-w-48 mx-auto flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-600"
         >
           Back to Home
         </Link>

@@ -39,9 +39,7 @@ SUMMARY_MODEL_RPM_LIMIT = 15
 SCRIPT_MODEL_RPM_LIMIT = 2
 
 
-def perplexity(
-    user_input: str
-) -> dict:
+def perplexity(user_input: str) -> dict:
     url = "https://api.perplexity.ai/chat/completions"
     headers = {
         "Authorization": f"Bearer {os.environ.get('PERPLEXITY_API_KEY')}",
@@ -53,7 +51,7 @@ def perplexity(
                     {
                         "role": "system",
                         "content": (
-                            "You are a research assistant for the user. Provide the user with an in-depth summary of the specified topic, citing scholarly articles and news sources."
+                            "You are a research assistant for the user. Provide the user with an in-depth summary of the this single line from their notes, citing scholarly articles and news sources."
                         ),
                     },
                     {   
@@ -67,17 +65,6 @@ def perplexity(
     response = requests.post(url, json=payload, headers=headers)
     response.raise_for_status()
     return response.json()
-
-user_topics = ['Neural Dust', 'Quantum Computing', 'Artificial Intelligence']
-
-all_data = pd.DataFrame(user_topics, columns=['topic'])
-all_data = all_data.head(3)
-
-for index, row in all_data.iterrows():
-    response = perplexity(row['topic'])
-    all_data.at[index, 'summary'] = response['choices'][0]['message']['content']
-    all_data.at[index, 'citations'] = response['citations']
-
 
 
 ######## NLP Portion ########
@@ -124,18 +111,18 @@ def enforce_rate_limit(model_name):
             script_model_counter += 1
 
 # Wrap API calls to enforce rate limits
-def summarize_with_rate_limit(url):
+def summarize_with_rate_limit(url, use = 'script'):
     enforce_rate_limit("summary_model")
-    return summarize(url)
+    return summarize(url, use)
 
-def make_script_with_rate_limit(topics, summaries):
+def make_script_with_rate_limit(topics, summaries, sources, name):
     enforce_rate_limit("script_model")
-    return make_script(topics, summaries)
+    return make_script(topics, summaries, sources, name)
 
 
 def summarize(url):
-    prompt = f"Provide a succinct TLDR summary of the source. Assume the user is familiar with the topic. \
-        Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
+    prompt = f"Provide a succinct summary of the source. \
+        Highlight the key details that fundamentally explain the contents of the source. Only include the summary itself;\
         avoid any introductions, explanations, or meta-comments. Make the summary attention-grabbing and informative. {url}"
     
     response = summary_model.generate_content(prompt)
@@ -144,30 +131,34 @@ def summarize(url):
 
 
 
-def make_script(topics, summaries):
-    tokens = min(3500, len(topics)*1200)
+def make_script(topics, summaries, sources, name):
+    tokens = min(1500, len(topics)*500)
 
     system_prompt =f"""
-    Act as a professional podcast script writer. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** and **HOST 2** are discussing {len(topics)} topic(s) that the user has requested.
-    - When the speakers are referring to each other HOST 1 = Nova and HOST 2 = Atlas
+    Act as a professional podcast script writer for the podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** and **HOST 2** are discussing {len(topics)} topic(s) that the user has requested.
+    - When the speakers are referring to each other HOST 1 = Mia and HOST 2 = Leo
     - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
-    - Always maintain the names of the hosts and their order. HOST 1 is always Nova, HOST 2 is always Atlas.
-    - Create a sequence, exploring each topic in detail and equally allocating time.
-    - These hosts are charismatic and professional. They are excited about the information.
+    - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Leo.
+    - Create a sequence, exploring each topic in detail and equally allocating time. The sequence should be one topic at a time. Do not revisit topics.
+    - Make sure to explain the fundamental origin of the topics. Dive deep into details from the sources.
+    - These hosts are charismatic and professional, and casual. They are excited about the information.
     - Make the conversation at least {tokens} tokens long.
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.
     - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
     - Close with 'Thanks for listening to Astra, stay tuned for more episodes.'
+    - This is custom made for one listener named {name}, greet them at the beginning of the episode.
     Example: 
-    **HOST 1**: Today we have an article about X...
-    **HOST 2 **: That's right, Nova. The article discusses Y...
-    **HOST 1**: Atlas, how does this article relate to Z?
+    **HOST 1**: Today we have a super exciting show for you. We're talking about the latest in X, Y, and Z.
+    **HOST 2**: That's right. These new developments are really pushing the boundaries of technology.
+    **HOST 1**: Absolutely. Let's dive right in. So, X is being used in ...
+    **HOST 2**: What developments made X possible?
+    ... (continue the conversation)
 
-    Remember: This script must be at least {tokens} tokens long. Do not produce fewer.
+    Remember: This script must be {tokens} tokens long. Do not produce fewer.
 
-Articles: """
+Topics: """
     for i in range(len(topics)):
-        system_prompt += f" Topic {i} - {topics[i]}: {summaries[i]}"        
+        system_prompt += f" Topic {i} - {topics[i]}; summary: {summaries[i]} ; sources: {sources[i]}"        
 
     response = script_model.generate_content(system_prompt, 
                                       generation_config = genai.GenerationConfig(
@@ -177,42 +168,25 @@ Articles: """
     
     return response
 
-def review_script(script, tokens = 3500):
-    prompt = f"Review the script for the podcast episode. Refine any wording that may be difficult for a text-to-speech model. Make sure the content flows well and is engaging.\
+def review_script(script, tokens = 2000):
+    prompt = f"Review the script for the podcast episode, making it sound very human-like. Refine any wording that may be difficult for a text-to-speech model. Make sure the content flows well and is engaging.\
         Retain the structure, including the conversational turns between the hosts. Remove or replace acronyms where necessary. Do not add any unecessary phrases as this will be fed directly to a text-to-speech model.\
         Script: {script}"
     response = script_model.generate_content(prompt, generation_config = genai.GenerationConfig(
                                         max_output_tokens=tokens+800,
-                                        temperature=0.15))
+                                        temperature=0.20))
     return response
 
 
-def generate_script(all_data):
+def generate_script(all_data, name):
     # generate script
     summaries = all_data['summary'].tolist()
     topics = all_data['topic'].tolist()
-    script = make_script_with_rate_limit(topics, summaries)
+    sources = all_data['sources'].tolist()
+
+    script = make_script_with_rate_limit(topics, summaries, sources, name)
     print(f'Script: {script.text}')
     return script.text
-
-def generate_email_headers(all_data):
-    podcast_description = pd.DataFrame(columns=['title', 'description', 'url'])
-    for index, row in all_data.iterrows():
-        citations = row['citations']
-        for url in citations[0:3]:
-            summary = summarize_with_rate_limit(url)
-            summary = summary.text
-            title = row['topic'] ############################### replace with parsing webpage for title
-            # refine text
-            ret = summary.replace('\n', ' ')
-            # remove \
-            ret = ret.replace('\\', '')
-            # Ensure no extra spaces
-            ret = re.sub(r'\s+', ' ', ret).strip()
-
-            podcast_description = podcast_description.append({'title': title, 'description': ret, 'url': url}, ignore_index=True)
- 
-    return podcast_description
 
 
 def clean_text_for_conversational_tts(input_text):
@@ -228,7 +202,7 @@ def clean_text_for_conversational_tts(input_text):
     output_text = []
     for statement in statements:
         # Remove (Aria): and (Theo): if exist
-        ret = statement.replace('(Atlas):', '').replace('(Nova):', '')
+        ret = statement.replace('(Leo):', '').replace('(Mia):', '')
 
         # Replace '\n' with a space
         ret = ret.replace('\n', ' ')
@@ -245,18 +219,18 @@ def clean_text_for_conversational_tts(input_text):
     print(output_text)
     return output_text
 
-def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
+def create_conversational_podcast(all_data, name):
 
     def _create_line(client, host, line, num, chunk):
         # $5 of credit here
         # can spend on summarization and script generation
 
         if host == 1:
-            # male
-            voice = 'onyx'
-        else: # host = 2
             # female
             voice = 'nova'
+        else: # host = 2
+            # male
+            voice = 'onyx'
 
         output_file = f"data/conversation/{host}/line_{num}_{chunk}.mp3"
 
@@ -281,10 +255,9 @@ def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
             print(f"An error occurred: {e}")
 
     # Instantiates a client
-    script = generate_script(all_data)
-    turns = clean_text_for_conversational_tts(script)
 
-    turns = turns[:4] # temp for testing
+    script = generate_script(all_data, name)
+    turns = clean_text_for_conversational_tts(script)
 
     key = os.environ.get("OPENAI_API_KEY")
     client = OpenAI(api_key=key)
@@ -330,18 +303,47 @@ def create_conversational_podcast(all_data, plan='paid', type='catch_up'):
 
     # add intro music
     intro_music = AudioSegment.from_file("data/intro_music.mp3")
-    final_audio = intro_music.append(final_audio, crossfade=2000)
+    final_audio = intro_music.append(final_audio, crossfade=1000)
 
     # Export the final audio
     final_audio.export("data/conversation/final_conversation.mp3", format="mp3")
     print("Conversation audio file saved as data/conversation/final_conversation.mp3")
 
+def get_data(user_topics):
+    all_data = pd.DataFrame(user_topics, columns=['topic'])
+    all_data['summary'] = None
+    all_data['citations'] = None
+    all_data['sources'] = None
 
 
-# all_data should is up to 3 user topics with title, summary, and citation urls
+    for index, row in all_data.iterrows():
+        response = perplexity(row['topic'])
+        all_data.at[index, 'summary'] = response['choices'][0]['message']['content']
+        all_data.at[index, 'citations'] = response['citations']
 
-create_conversational_podcast(all_data) # turns = 4 for testing
+        citations = response['citations']
+        sources = {}
+        for url in citations[0:3]:
+            summary = summarize_with_rate_limit(url, use = 'script')
+            
+            sources[url] = summary.text
+        
+        # create string of sources
+        sources = [f"{k}: {v}" for k, v in sources.items()]
 
-email_description = generate_email_headers(all_data)
+        all_data.at[index, 'sources'] = sources
 
-email_description.to_csv('./data/email_description.csv', index = False)
+    print(all_data.head())
+    return all_data
+
+
+
+
+if __name__ == '__main__':
+
+    user_topics = ['Latest updates on the Google Willow Chip', 'What are the latest trends on the Chinese real estate market?', 'What makes ozempic so effective?']
+    name = 'Rahil'
+
+    all_data = get_data(user_topics)
+
+    create_conversational_podcast(all_data, name)

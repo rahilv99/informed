@@ -1,14 +1,10 @@
-gdeltdoc
-tqdm
 biopython
 semanticscholar
-arxiv
 PyPDF2
 sentence-transformers
 # en_core_web_sm
 spacy
 bs4
-google-cloud-texttospeech # previously had --upgrade flag
 openai
 pydub
 google-generativeai # previously had -p -U flag

@@ -1,27 +1,33 @@
-import {
-  pgTable,
-  serial,
-  varchar,
-  text,
-  timestamp,
-  integer,
-} from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, serial, text, varchar, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
 
-
-// update 0000_soft_the_anarchist.sql
+// Define the user table schema
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  name: varchar('name', { length: 100 }),
   email: varchar('email', { length: 255 }).notNull().unique(),
   passwordHash: text('password_hash').notNull(),
-  role: varchar('role', { length: 20 }).notNull().default('other'),
+  name: varchar('name', { length: 255 }),
+  deliveryDay: integer('deliveryDay').notNull().default(1),
+  delivered: boolean('delivered').notNull().default(false),
+  active: boolean('active').notNull().default(true),
+  keywords: jsonb('keywords').notNull(),
+  role: varchar('role', { length: 20 }).notNull().default('Other'),
+  occupation: varchar('occupation', { length: 255 }),
   stripeCustomerId: text('stripe_customer_id').unique(),
   stripeSubscriptionId: text('stripe_subscription_id').unique(),
   stripeProductId: text('stripe_product_id'),
-  planName: varchar('plan_name', { length: 50 }),
-  subscriptionStatus: varchar('subscription_status', { length: 20 })
+  plan: varchar('plan', { length: 50 }).notNull().default('free'),
+  notes: jsonb('note').notNull().default([]),
+  activeNotes: jsonb('active_notes').notNull().default([]),
+  // insight will use a second table to store pdfs
 });
+
+// Email table for newsletter
+export const emails = pgTable('emails', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  subscribed: boolean('subscribed').notNull().default(true),
+});
+
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

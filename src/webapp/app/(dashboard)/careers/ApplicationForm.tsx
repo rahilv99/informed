@@ -23,7 +23,7 @@ export function ApplicationForm() {
       await sendApplication(name, email, position, message)
       toast({
         title: "Application sent",
-        description: "Thank you for your interest in joining Astra!",
+        description: "Thank you for your interest in joining Auxiom!",
       })
       setName('')
       setEmail('')
@@ -43,7 +43,7 @@ export function ApplicationForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-cyan-100 mb-2">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-800 mb-2">
           Name
         </label>
         <Input
@@ -51,11 +51,11 @@ export function ApplicationForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full bg-cyan-300 bg-opacity-10 border-cyan-100 text-white"
+          className="w-full bg-gray-700 bg-opacity-10 border-gray-900 text-black"
         />
       </div>
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-cyan-100 mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-800 mb-2">
           Email
         </label>
         <Input
@@ -64,11 +64,11 @@ export function ApplicationForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full bg-cyan-300 bg-opacity-10 border-cyan-100 text-white"
+          className="w-full bg-gray-700 bg-opacity-10 border-gray-900 text-black"
         />
       </div>
       <div>
-        <label htmlFor="position" className="block text-sm font-medium text-cyan-100 mb-2">
+        <label htmlFor="position" className="block text-sm font-medium text-gray-800 mb-2">
           Position
         </label>
         <Input
@@ -76,11 +76,11 @@ export function ApplicationForm() {
           value={position}
           onChange={(e) => setPosition(e.target.value)}
           required
-          className="w-full bg-cyan-300 bg-opacity-10 border-cyan-100 text-white"
+          className="w-full bg-gray-700 bg-opacity-10 border-gray-900 text-black"
         />
       </div>
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-cyan-100 mb-2">
+        <label htmlFor="message" className="block text-sm font-medium text-gray-800 mb-2">
           Cover Letter
         </label>
         <Textarea
@@ -88,13 +88,13 @@ export function ApplicationForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required
-          className="w-full bg-cyan-300 bg-opacity-10 border-cyan-100 text-white min-h-[150px]"
+          className="w-full bg-gray-700 bg-opacity-10 border-gray-900 text-black min-h-[150px]"
         />
       </div>
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-cyan-200 hover:bg-cyan-600 text-black rounded-xl"
+        className="w-full bg-gray-800 hover:bg-gray-600 text-white rounded-xl"
       >
         {isSubmitting ? 'Sending...' : 'Apply'}
       </Button>
