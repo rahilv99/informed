@@ -14,8 +14,8 @@ import {
 
 const navItems = [
   { name: "Pulse", href: "/dashboard/pulse", icon: Activity },
-  { name: "Insight", href: "/dashboard/insight", icon: TextSearch },
   { name: "Note", href: "/dashboard/note", icon: Scroll },
+  { name: "Insight", href: "/dashboard/insight", icon: TextSearch },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 

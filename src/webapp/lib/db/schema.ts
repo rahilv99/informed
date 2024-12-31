@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, jsonb, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, jsonb, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
 
 // Define the user table schema
 export const users = pgTable('users', {
@@ -7,7 +7,7 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   name: varchar('name', { length: 255 }),
   deliveryDay: integer('deliveryDay').notNull().default(1),
-  delivered: boolean('delivered').notNull().default(false),
+  delivered: timestamp('delivered').notNull().default(new Date(0)),
   active: boolean('active').notNull().default(true),
   keywords: jsonb('keywords').notNull(),
   role: varchar('role', { length: 20 }).notNull().default('Other'),

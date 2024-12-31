@@ -22,6 +22,34 @@
       "when": 1735614166341,
       "tag": "0002_wise_rage",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1735664933329,
+      "tag": "0003_curly_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1735665885577,
+      "tag": "0004_early_sheva_callister",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1735665901797,
+      "tag": "0005_yellow_timeslip",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1735666076675,
+      "tag": "0006_living_human_torch",
+      "breakpoints": true
     }
   ]
 }

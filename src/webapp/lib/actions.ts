@@ -274,8 +274,12 @@ export async function getDeliveryStatus(): Promise<boolean> {
   if (!user) {
     throw new Error('User is not authenticated');
   }
+  const now = new Date();
+  const lastSunday = new Date();
+  lastSunday.setDate(now.getDate() - (now.getDay() + 1));
 
-  return user.delivered;
+  // if they have had a podcast delivered since sunday (sunday included) return true
+  return user.delivered >= lastSunday;
 }
 
 export async function getAccountStatus(): Promise<boolean> {
