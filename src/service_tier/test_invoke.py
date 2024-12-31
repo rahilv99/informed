@@ -20,7 +20,8 @@ pulse_json = {
         "user_id": "5678",
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
-        "plan": "plus"          # "plus" | "free"
+        "plan": "plus",          # "plus" | "free"
+        "episode": "1"
     }
 }
 
@@ -30,9 +31,22 @@ nlp_json = {
         "user_id": "5678",
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
-        "plan": "plus"          # "plus" | "free"
+        "plan": "plus",          # "plus" | "free"
+        "episode": "1",
+        "type": "pulse"          # "pulse" | "insight"
     }
 }
+
+email_json = {
+    "action": "e_email",
+    "payload": {
+        "user_id": "5678",
+        "user_email": "rahilv99@gmail.com",
+        "episode": "1",
+        "type": "pulse"          # "pulse" | "insight" | "note"
+    }
+}
+
 
 
 test_sqs = {'Records': [{'messageId': '42ed9301-9f03-43a8-88bd-ee1d69ddf566', 

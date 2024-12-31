@@ -18,6 +18,7 @@ export const users = pgTable('users', {
   plan: varchar('plan', { length: 50 }).notNull().default('free'),
   notes: jsonb('note').notNull().default([]),
   activeNotes: jsonb('active_notes').notNull().default([]),
+  episode: integer('episode').notNull().default(0),
   // insight will use a second table to store pdfs
 });
 

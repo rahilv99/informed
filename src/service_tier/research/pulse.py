@@ -143,6 +143,7 @@ def handler(payload):
     user_name = payload.get("user_name")
     user_email = payload.get("user_email")
     plan = payload.get("plan")
+    episode = payload.get("episode")
 
     user_topics_output = UserTopicsOutput(user_id)
     pubmed = PubMed(user_topics_output)
@@ -170,7 +171,9 @@ def handler(payload):
             "user_id": user_id,
             "user_name": user_name,
             "user_email": user_email,
-            "plan": plan 
+            "plan": plan,
+            "episode": episode,
+            "type": "pulse"
             }
         }
         common.sqs.send_to_sqs(next_event)

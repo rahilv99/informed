@@ -50,6 +50,13 @@
       "when": 1735666076675,
       "tag": "0006_living_human_torch",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1735666656100,
+      "tag": "0007_broad_invaders",
+      "breakpoints": true
     }
   ]
 }

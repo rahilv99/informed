@@ -14,6 +14,11 @@ from openai import OpenAI
 import time
 from threading import Lock
 
+from pulse_output import PulseOutput
+import common.sqs
+import common.s3
+
+
 
 
 GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
@@ -317,19 +322,21 @@ def create_conversational_podcast(all_data, name, plan='free', type='pulse'):
             # Clean up individual chunk files
             for file in chunk_files:
                 os.remove(file)
-
         else:
             _create_line(client, host, sentence, index, 0)
 
         time.sleep(60 / 500)  # rate limit = 500 requests per minute
 
+    return len(turns)
+
+def write_to_s3(num_turns, user_id):
     # merge audio files
     # Create a new AudioSegment object
     final_audio = AudioSegment.from_mp3('data/conversation/1/line_0_0.mp3')
-    for i in range(1, len(turns)):
+    for i in range(1, num_turns):
         audio = AudioSegment.from_mp3(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
-        # clean up
-        os.remove(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
+        # clean up -- TURN ON IF TESTING LOCAL
+        #os.remove(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
 
         final_audio = final_audio.append(audio)
 
@@ -337,18 +344,54 @@ def create_conversational_podcast(all_data, name, plan='free', type='pulse'):
     intro_music = AudioSegment.from_file("data/intro_music.mp3")
     final_audio = intro_music.append(final_audio, crossfade=1000)
 
+    final_audio.export("data/conversation/podcast.mp3", format="mp3")
+    print("Conversation audio file saved as data/conversation/podcast.mp3")
+
     # Export the final audio
-    final_audio.export("data/conversation/final_conversation.mp3", format="mp3")
-    print("Conversation audio file saved as data/conversation/final_conversation.mp3")
+    common.s3.save(user_id, "EMAIL", "data/conversation/podcast.mp3")
 
 
 
+# Main Execution
+def handler(payload):
+    user_id = payload.get("user_id")
+    user_name = payload.get("user_name")
+    user_email = payload.get("user_email")
+    plan = payload.get("plan")
+    episode = payload.get("episode")
+    type = payload.get("type")
+
+    pulse = PulseOutput(user_id)
+    all_data = pulse.all_data
+
+    num_turns = create_conversational_podcast(all_data, user_name, plan = plan, type = type)
+
+    write_to_s3(num_turns, user_id)
+
+    email_description, episode_title = generate_email_headers(all_data, plan = plan, type = type)
+
+    # Save the email description to S3
+    common.s3.save_serialized(user_id, "EMAIL", {
+        "email_description": email_description,
+        "episode_title": episode_title
+    })
+
+
+    # Send message to SQS
+    try:
+        next_event = {
+            "action": "e_email",
+            "payload": { 
+            "user_id": user_id,
+            "user_email": user_email,
+            "eposide": episode,
+            "type": type
+            }
+        }
+        common.sqs.send_to_sqs(next_event)
+        print(f"Sent message to SQS for next action {next_event['action']}")
+    except Exception as e:
+        print(f"Exception when sending message to SQS {e}")
 
 if __name__ == "__main__":
-    all_data = pd.read_csv('./data/recommended_papers.csv')
-    name = 'Rahil'
-
-    create_conversational_podcast(all_data, name, plan = 'plus', type = 'pulse')
-
-    email_description, episode_title = generate_email_headers(all_data, plan = 'plus', type = 'insight')
-    email_description.to_csv('./data/email_description.csv', index = False)
+    handler(None)
