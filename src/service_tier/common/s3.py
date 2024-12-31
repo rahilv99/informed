@@ -6,16 +6,15 @@ bucket_name = os.getenv("ASTRA_BUCKET_NAME")
 print(f"Astra Bucket name is {bucket_name}")
 
 # Centralized area to define where various stuff is in S3 bucket
-def s3LocationMapping(user_id, type, d_type='pkl'):
+def s3LocationMapping(user_id, type):
     if (type == "USER_TOPICS"):
         return f"user/{user_id}/user_topics.pkl"
     elif (type == "PULSE"):
         return f"user/{user_id}/pulse.pkl"
     elif (type == "EMAIL"):
-        if d_type == 'mp3':
-            return f"user/{user_id}/podcast.mp3"
-        else:
-            return f"user/{user_id}/email.pkl"
+        return f"user/{user_id}/email.pkl"
+    elif (type == "PODCAST"):
+        return f"user/{user_id}/podcast.mp3"
     else:
         print(f"Unsupported type {type}")
 
@@ -50,12 +49,41 @@ def restore_serialized(user_id, type):
     return data
 
 def save(user_id, type, f_path):
-    object_key = s3LocationMapping(user_id, type, d_type='mp3')
+    object_key = s3LocationMapping(user_id, type)
     # Upload to S3
     try:
         s3 = boto3.client('s3')
-        with open(f_path, 'rb') as f:
-            s3.upload_fileobj(f, bucket_name, object_key)
+        s3.upload_fileobj(f_path, bucket_name, object_key)
         print('Saved data')
     except Exception as e:
         print(f"Error saving to bucket {e}")
+
+def restore(user_id, type, f_path):
+    object_key = s3LocationMapping(user_id, type)
+    # Download data from S3
+    s3 = boto3.client('s3')
+
+    try:
+        s3.download_fileobj(bucket_name, object_key, f_path)
+        print('Retrieved data')
+    except Exception as e:
+        print(f"Error reading from bucket {e}")
+        return {}
+    
+
+def restore_from_system(type, f_path):
+
+    def _s3LocationMapping(type):
+        if type == "INTRO":
+            return f"system/intro_music.mp3"
+    
+    # Download data from S3
+    s3 = boto3.client('s3')
+
+    try:
+        object_key = _s3LocationMapping(type)
+        s3.download_fileobj(bucket_name,object_key, f_path)
+        print('Retrieved data')
+    except Exception as e:
+        print(f"Error reading from bucket {e}")
+        return {}
