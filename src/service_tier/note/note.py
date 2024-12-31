@@ -115,9 +115,9 @@ def summarize_with_rate_limit(url, use = 'script'):
     enforce_rate_limit("summary_model")
     return summarize(url, use)
 
-def make_script_with_rate_limit(topics, summaries, sources):
+def make_script_with_rate_limit(topics, summaries, sources, name):
     enforce_rate_limit("script_model")
-    return make_script(topics, summaries, sources)
+    return make_script(topics, summaries, sources, name)
 
 
 def summarize(url):
@@ -131,7 +131,7 @@ def summarize(url):
 
 
 
-def make_script(topics, summaries, sources):
+def make_script(topics, summaries, sources, name):
     tokens = min(1500, len(topics)*500)
 
     system_prompt =f"""
@@ -146,6 +146,7 @@ def make_script(topics, summaries, sources):
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.
     - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
     - Close with 'Thanks for listening to Astra, stay tuned for more episodes.'
+    - This is custom made for one listener named {name}, greet them at the beginning of the episode.
     Example: 
     **HOST 1**: Today we have a super exciting show for you. We're talking about the latest in X, Y, and Z.
     **HOST 2**: That's right. These new developments are really pushing the boundaries of technology.
@@ -177,13 +178,13 @@ def review_script(script, tokens = 2000):
     return response
 
 
-def generate_script(all_data):
+def generate_script(all_data, name):
     # generate script
     summaries = all_data['summary'].tolist()
     topics = all_data['topic'].tolist()
     sources = all_data['sources'].tolist()
 
-    script = make_script_with_rate_limit(topics, summaries, sources)
+    script = make_script_with_rate_limit(topics, summaries, sources, name)
     print(f'Script: {script.text}')
     return script.text
 
@@ -218,7 +219,7 @@ def clean_text_for_conversational_tts(input_text):
     print(output_text)
     return output_text
 
-def create_conversational_podcast(all_data):
+def create_conversational_podcast(all_data, name):
 
     def _create_line(client, host, line, num, chunk):
         # $5 of credit here
@@ -255,7 +256,7 @@ def create_conversational_podcast(all_data):
 
     # Instantiates a client
 
-    script = generate_script(all_data)
+    script = generate_script(all_data, name)
     turns = clean_text_for_conversational_tts(script)
 
     key = os.environ.get("OPENAI_API_KEY")
@@ -341,7 +342,8 @@ def get_data(user_topics):
 if __name__ == '__main__':
 
     user_topics = ['Latest updates on the Google Willow Chip', 'What are the latest trends on the Chinese real estate market?', 'What makes ozempic so effective?']
+    name = 'Rahil'
 
     all_data = get_data(user_topics)
 
-    create_conversational_podcast(all_data)
+    create_conversational_podcast(all_data, name)

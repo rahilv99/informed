@@ -37,9 +37,6 @@ let PodcastPlayer = () => {
         { title: "Neural Networks are Decision Trees", 
           summary: "Neural networks, regardless of architecture, are mathematically equivalent to decision trees! This paper proves it, offering a potentially game-changing perspective on neural network interpretability and computation. While the resulting decision trees might be large, this finding could revolutionize our understanding and efficiency of deep learning.", 
           url: "https://arxiv.org/abs/2210.05189" },
-        { title: "On the cross-validation bias due to unsupervised pre-processing", 
-          summary: "Unsupervised data preprocessing (like feature selection & scaling) *can significantly bias cross-validation results, leading to inaccurate model performance estimates and potentially suboptimal model choices. This effect, explored via simulation, depends on dataset characteristics and is particularly problematic with small samples & high dimensionality. Read if you use unsupervised preprocessing and care about reliable model evaluation.", 
-          url: "https://arxiv.org/abs/1901.08974" },
         { title: "LoRA: Low-Rank Adaptation of Large Language Models", 
           summary: "LoRA: Fine-tune massive language models without retraining the entire model! Achieve comparable or better performance with up to 10,000x fewer parameters, drastically reduced memory usage (3x less for GPT-3 175B), and faster training—all with zero inference latency increase.", 
           url: "https://arxiv.org/abs/2106.09685" }

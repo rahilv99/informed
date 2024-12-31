@@ -150,6 +150,7 @@ def make_script(summaries, titles, name, plan = 'free', type = 'pulse'):
     - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
     - Use specific details from the text relevant to the goals, methods, and results
     - Close with 'Thanks for listening, stay tuned for more episodes.'
+    - This is custom made for one listener named {name}, greet them at the beginning of the episode.
     
     {additional_text}
     Example: 
@@ -347,12 +348,7 @@ if __name__ == "__main__":
     all_data = pd.read_csv('./data/recommended_papers.csv')
     name = 'Rahil'
 
-    create_conversational_podcast(all_data, name, plan = 'plus', type = 'insight')
+    create_conversational_podcast(all_data, name, plan = 'plus', type = 'pulse')
 
     email_description, episode_title = generate_email_headers(all_data, plan = 'plus', type = 'insight')
     email_description.to_csv('./data/email_description.csv', index = False)
-
-
-    print(f"Episode title: {episode_title}")
-    for index, row in email_description.iterrows():
-        print(f"Title: {row['title']}\nDescription: {row['description']}\nURL: {row['url']}\n")
