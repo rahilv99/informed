@@ -19,6 +19,7 @@ pulse_json = {
     "payload": {
         "user_id": "5678",
         "user_name": "Rahil Verma",
+        "user_email": "rahilv99@gmail.com",
         "plan": "plus"          # "plus" | "free"
     }
 }
@@ -28,6 +29,7 @@ nlp_json = {
     "payload": {
         "user_id": "5678",
         "user_name": "Rahil Verma",
+        "user_email": "rahilv99@gmail.com",
         "plan": "plus"          # "plus" | "free"
     }
 }

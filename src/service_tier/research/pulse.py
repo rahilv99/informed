@@ -141,6 +141,7 @@ class Sem(ArticleResource):
 def handler(payload):
     user_id = payload.get("user_id")
     user_name = payload.get("user_name")
+    user_email = payload.get("user_email")
     plan = payload.get("plan")
 
     user_topics_output = UserTopicsOutput(user_id)
@@ -165,9 +166,12 @@ def handler(payload):
     try:
         next_event = {
             "action": "e_nlp",
-            "payload": { "user_id": user_id,
-                        "user_name": user_name,
-                        "plan": plan }
+            "payload": { 
+            "user_id": user_id,
+            "user_name": user_name,
+            "user_email": user_email,
+            "plan": plan 
+            }
         }
         common.sqs.send_to_sqs(next_event)
         print(f"Sent message to SQS for next action {next_event['action']}")
