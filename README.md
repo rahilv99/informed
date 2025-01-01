@@ -26,6 +26,7 @@ docker pull 812895225987.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container
 
 # Attach shell to lambda function locally
 docker run -it --entrypoint /bin/bash -v $(pwd):/tmp service_tier-service_tier:latest
+docker run -it --rm --entrypoint /bin/bash -v $(pwd):/tmp $(docker build -q .)
 
 
 ## Get account info
