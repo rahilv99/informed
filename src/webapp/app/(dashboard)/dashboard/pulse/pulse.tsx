@@ -137,10 +137,14 @@ export default function PulsePage({ keywords, day, deliveryStatus, accountStatus
                     {days.map((day, index) => (
                       <CarouselItem
                         key={index}
-                        className="pl-1 basis-1/2 sm:basis-1/3 md:basis-1/2"
+                        className="pl-1 basis-1/2"
                       >
                         <div className="p-1">
-                          <div className="bg-slate-600/30 rounded-xl backdrop-filter backdrop-blur-lg">
+                        <div className={`rounded-3xl backdrop-filter backdrop-blur-lg transition-all duration-300 ${
+                              index === current 
+                                ? 'bg-black bg-opacity-30 scale-100' 
+                                : 'bg-black bg-opacity-10 scale-90'
+                            }`}>
                             <div className="flex aspect-square items-center justify-center p-2 sm:p-4">
                               <span className="text-base sm:text-lg md:text-2xl font-semibold text-black">
                                 {day}
