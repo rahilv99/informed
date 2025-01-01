@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { updateUserRole } from '@/lib/actions';
 import { redirect } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export  function Roles() {
   //const [state, formAction, pending] = useActionState<ActionState, FormData>(
@@ -13,6 +15,7 @@ export  function Roles() {
 
   const designations = ["Student", "Researcher", "Clinician", "Educator", "Professional", "Other"];
   const [selected, setSelected] = useState<string[]>([]);
+  const router = useRouter();
 
   interface ToggleSelectionProps {
     designation: string;
@@ -27,7 +30,20 @@ export  function Roles() {
   };
 
   const handleSubmit = async () => {
-    await updateUserRole(selected);
+    try {
+      await updateUserRole(selected);
+      toast({
+        title: "Information updated",
+        description: "Your name and occupation have been saved.",
+      })
+      router.push('/name');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was a problem saving your information.",
+        variant: "destructive",
+      })
+    }
 
     redirect('/name');
   };

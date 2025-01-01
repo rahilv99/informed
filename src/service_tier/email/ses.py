@@ -3,6 +3,7 @@ from botocore.exceptions import ClientError
 import os          
 
 from email_output import EmailOutput
+import common.s3
 
 def send_email(RECIPIENT, SUBJECT, email_description, episode):
 
@@ -18,6 +19,8 @@ def send_email(RECIPIENT, SUBJECT, email_description, episode):
     </body>
     </html>
                 """  
+    
+    attachment = 'tmp/podcast.mp3'
 
     client = boto3.client('ses',
                         region_name="us-east-1",
@@ -62,6 +65,8 @@ def handler(payload):
     headers = EmailOutput(user_id)
     email_description = headers.email_description
     episode_title = headers.episode_title
+
+    common.s3.restore(user_id, "PODCAST", "tmp/podcast.mp3")
 
     send_email(user_email, episode_title, email_description, episode)
 

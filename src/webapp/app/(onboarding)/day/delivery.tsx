@@ -70,16 +70,21 @@ export function Delivery() {
                 className="max-w-sm"
                 opts={{
                   loop: true,
+                  align: 'center',
                 }}
                 setApi={setApi}
               >
-                <CarouselContent className="-ml-1">
+                <CarouselContent>
                   {days.map((day, index) => (
                     <CarouselItem key={index} className="pl-1 basis-1/2">
                       <div className="p-1">
-                        <div className = 'bg-black bg-opacity-10 rounded-xl backdrop-filter backdrop-blur-lg'>
-                          <div className="flex aspect-square items-center justify-center p-6 ">
-                            <span className="text-2xl font-semibold text-black">
+                        <div className={`rounded-3xl backdrop-filter backdrop-blur-lg transition-all duration-300 ${
+                          index === current 
+                            ? 'bg-black bg-opacity-30 scale-100' 
+                            : 'bg-black bg-opacity-10 scale-90'
+                        }`}>
+                          <div className="flex aspect-square items-center justify-center p-6">
+                            <span className='text-2xl font-semibold transition-all duration-300 text-black'>
                               {day}
                             </span>
                           </div>
@@ -88,8 +93,8 @@ export function Delivery() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="bg-black bg-opacity-10 rounded-3xl backdrop-filter backdrop-blur-lg text-black border-none hover:bg-gray-500 transition duration-300"/>
-                <CarouselNext className="bg-black bg-opacity-10 rounded-3xl backdrop-filter backdrop-blur-lg text-black border-none hover:bg-gray-500 transition duration-300"/>
+                <CarouselPrevious className="bg-black text-black bg-opacity-20 rounded-full backdrop-filter backdrop-blur-lg border-none hover:bg-gray-700 transition duration-300"/>
+                <CarouselNext className="bg-black text-black bg-opacity-20 rounded-full backdrop-filter backdrop-blur-lg border-none hover:bg-gray-700 transition duration-300"/>
               </Carousel>
             </div>
             <div className="flex justify-end py-5">
@@ -101,3 +106,4 @@ export function Delivery() {
         </main>
   );
 }
+
