@@ -53,5 +53,5 @@ def handler(event, context):
         print(f"Lambda Exception {e}")
         return {
             "statusCode": 500,
-            "body": f"Error executing action '{action}': {str(e)}"
+            "body": f"Error executing action '{event}': {str(e)}"
         }
