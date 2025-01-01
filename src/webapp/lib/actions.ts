@@ -14,8 +14,78 @@ import { cookies } from 'next/headers';
 import { getUserByEmail, createUser, getUser, updateUser, addEmailToNewsletter } from '@/lib/db/queries';
 import {
   validatedAction,
-  validatedActionWithUser,
 } from '@/lib/auth/middleware';
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+
+dotenv.config();
+
+async function sendVerificationEmail(email: string, userId: number) {
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '1d' });
+  // TODO: ADD CREDENTIAL TO SES CLIENT
+  const ses = new SESClient({ 
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY!,
+      secretAccessKey: process.env.AWS_SECRET_KEY!
+    }
+   }); 
+
+  const params = {
+    Source: "verification@auxiom.com", 
+    Destination: {
+      ToAddresses: [email],
+    },
+    Message: {
+      Subject: {
+        Data: "Verify your email address",
+      },
+      Body: {
+        Html: {
+          Data: `
+            <h1>Verify your email address</h1>
+            <p>Click the link below to verify your email address:</p>
+            <a href="${process.env.BASE_URL}/verify-email?token=${token}">Verify Email</a>
+          `,
+        },
+      },
+    },
+  };
+
+  try {
+    await ses.send(new SendEmailCommand(params));
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send verification email");
+  }
+}
+
+export async function verifyEmail( token: string ) {
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+      // verify this logic 
+      const userId = parseInt(decoded.userId, 10);
+      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+      if (user.length === 0) {
+        return { error: "User not found" };
+      }
+
+      await setSession(user[0]);
+      await db.update(users).set({ verified: true }).where(eq(users.id, userId));
+
+      if (user[0].active === false) {
+        redirect('/roles');
+      } else {
+        redirect('/dashboard/pulse');
+      }
+    } catch (error) {
+      return { error: "Invalid or expired verification token" };
+    }
+  }
 
 
 const signInSchema = z.object({
@@ -41,6 +111,13 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   if (!isPasswordValid) {
     return { error: 'Invalid email or password. Please try again.' };
+  }
+
+  // Check if the user's email is verified
+  if (!foundUser.verified) {
+    // Resend verification email
+    await sendVerificationEmail(email, foundUser.id);
+    return { error: 'Please verify your email. A new verification email has been sent.' };
   }
 
   await Promise.all([
@@ -74,7 +151,7 @@ export const signUp = validatedAction(signUpSchema, async (data) => {
     passwordHash,
     name: '',
     deliveryDay: 0,
-    keywords: [], // Initialize empty
+    keywords: [],
     role: 'Other',
     stripeCustomerId: null,
     stripeSubscriptionId: null,
@@ -84,12 +161,11 @@ export const signUp = validatedAction(signUpSchema, async (data) => {
 
   const createdUser = await createUser(newUser);
 
+  // Send verification email
+  await sendVerificationEmail(email, createdUser[0].id);
 
-  await Promise.all([
-    setSession(createdUser[0]),
-  ]);
-
-  redirect('/identity');
+  // Don't set session or redirect here
+  return { success: true, message: "Please check your email to verify your account." };
 });
 
 
@@ -322,25 +398,3 @@ export async function getCurrentPlan(): Promise<string> {
 
   return user.plan;
 }
-
-/*  THIS IS HOW YOU UPDATE DB
-const updateAccountSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  email: z.string().email('Invalid email address'),
-});
-
-export const updateAccount = validatedActionWithUser(
-  updateAccountSchema,
-  async (data, _, user) => {
-    const { name, email } = data;
-    const userWithTeam = await getUserWithTeam(user.id);
-
-    await Promise.all([
-      db.update(users).set({ name, email }).where(eq(users.id, user.id)),
-      logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_ACCOUNT),
-    ]);
-
-    return { success: 'Account updated successfully.' };
-  }
-);
-*/

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import { type CarouselApi } from "@/components/ui/carousel";
 import React from "react";
-import { submitDay } from "@/lib/actions";
+import { submitDay, setAccountStatus } from "@/lib/actions";
 
 export function Delivery() {
   const days = [
@@ -40,6 +40,7 @@ export function Delivery() {
 
   const handleSubmit = async () => {
     await submitDay(current);
+    await setAccountStatus(true);
     
     redirect("/pricing");
   };
