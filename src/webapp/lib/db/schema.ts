@@ -8,7 +8,7 @@ export const users = pgTable('users', {
   name: varchar('name', { length: 255 }),
   deliveryDay: integer('deliveryDay').notNull().default(1),
   delivered: timestamp('delivered').notNull().default(new Date(0)),
-  active: boolean('active').notNull().default(true),
+  active: boolean('active').notNull().default(false),
   keywords: jsonb('keywords').notNull(),
   role: varchar('role', { length: 20 }).notNull().default('Other'),
   occupation: varchar('occupation', { length: 255 }),
@@ -19,6 +19,7 @@ export const users = pgTable('users', {
   notes: jsonb('note').notNull().default([]),
   activeNotes: jsonb('active_notes').notNull().default([]),
   episode: integer('episode').notNull().default(0),
+  verified: boolean('verified').notNull().default(false),
   // insight will use a second table to store pdfs
 });
 

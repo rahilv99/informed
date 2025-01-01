@@ -16,7 +16,10 @@ export default async function Page() {
       redirect('/sign-in');
     }
 
-  
+    if (!isActive && currentKeywords.length === 0) {
+      redirect('/identity');
+    }
+
     return (
       <div>
         <PulsePage keywords = {currentKeywords} day = {currentDay} deliveryStatus = {delivered} accountStatus = {isActive}/>
