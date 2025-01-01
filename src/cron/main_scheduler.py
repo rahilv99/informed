@@ -17,7 +17,7 @@ def _handler(event, context):
 
     # Get all active users whose delivery day is today
     today_weekday = datetime.now().weekday() + 1  # Python weekday 0=Mon, 1=Tues and so on
-    user_records = db_getusers()
+    user_records = db_getusers(today_weekday)
     print(f"Got {len(user_records)} records from DB")
     for user in user_records:
         id, name, email, plan, last_delivered_ts, episode = user
@@ -52,7 +52,7 @@ def db_getusers(today_weekday):
         query = """
             SELECT id, name, email, plan, delivered as last_delivered_ts, episode
             FROM users
-            WHERE active = %s AND "deliveryDay" = %s
+            WHERE active = %s AND delivery_day = %s
             """
         # Execute the query with parameter substitution
         cursor.execute(query, (True, today_weekday))
