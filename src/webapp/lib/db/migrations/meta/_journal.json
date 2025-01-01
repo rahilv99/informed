@@ -64,6 +64,27 @@
       "when": 1735693784270,
       "tag": "0008_careful_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1735762812375,
+      "tag": "0009_majestic_zaladane",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1735762853485,
+      "tag": "0010_flaky_quasimodo",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1735763046922,
+      "tag": "0011_left_sentinel",
+      "breakpoints": true
     }
   ]
 }

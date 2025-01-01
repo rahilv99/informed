@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "episode" SET DEFAULT 1;

@@ -6,7 +6,7 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: varchar('name', { length: 255 }),
-  deliveryDay: integer('deliveryDay').notNull().default(1),
+  deliveryDay: integer('delivery_day').notNull().default(1),
   delivered: timestamp('delivered').notNull().default(new Date(0)),
   active: boolean('active').notNull().default(false),
   keywords: jsonb('keywords').notNull(),
@@ -18,7 +18,7 @@ export const users = pgTable('users', {
   plan: varchar('plan', { length: 50 }).notNull().default('free'),
   notes: jsonb('note').notNull().default([]),
   activeNotes: jsonb('active_notes').notNull().default([]),
-  episode: integer('episode').notNull().default(0),
+  episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
   // insight will use a second table to store pdfs
 });
