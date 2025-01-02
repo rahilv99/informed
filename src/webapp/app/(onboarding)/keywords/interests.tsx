@@ -1,14 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { submitInterests } from "@/lib/actions";
 import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { useOnboarding } from "../context/OnboardingContext";
 
 export function Interests() {
   // we store roles right now because we may want to display a more complex page to professionals in the future
   const [keywords, setKeywords] = useState<string>(""); // State to store textarea input
+  const router = useRouter();
+  const { setCurrentPage } = useOnboarding();
 
   const handleTextareaChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
@@ -31,8 +34,9 @@ export function Interests() {
         title: "Success",
         description: "Your interests have been saved.",
       });
+      setCurrentPage(4)
+      router.push("/day")
       
-      redirect("/day"); // Perform redirection
     }
   };
 

@@ -18,23 +18,23 @@ import {
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-
+import { kebab } from 'postgres';
 
 dotenv.config();
 
 async function sendVerificationEmail(email: string, userId: number) {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '1d' });
   // TODO: ADD CREDENTIAL TO SES CLIENT
-  const ses = new SESClient({ 
+  const ses = new SESClient({
     region: "us-east-1",
     credentials: {
       accessKeyId: process.env.AWS_ACCESS_KEY!,
       secretAccessKey: process.env.AWS_SECRET_KEY!
     }
-   }); 
+  });
 
   const params = {
-    Source: "verification@auxiom.com", 
+    Source: "verification@auxiomai.com",
     Destination: {
       ToAddresses: [email],
     },
@@ -62,30 +62,35 @@ async function sendVerificationEmail(email: string, userId: number) {
   }
 }
 
-export async function verifyEmail( token: string ) {
+export async function verifyEmail(token: string) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const userId = parseInt(decoded.userId, 10);
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-      // verify this logic 
-      const userId = parseInt(decoded.userId, 10);
-      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-
-      if (user.length === 0) {
-        return { error: "User not found" };
-      }
-
-      await setSession(user[0]);
-      await db.update(users).set({ verified: true }).where(eq(users.id, userId));
-
-      if (user[0].active === false) {
-        redirect('/roles');
-      } else {
-        redirect('/dashboard/pulse');
-      }
-    } catch (error) {
-      return { error: "Invalid or expired verification token" };
+    if (isNaN(userId)) {
+      redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
     }
-  }
+
+    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+    if (user.length === 0) {
+      redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
+    }
+
+    // Update the user's email_verified status
+    try {
+      await updateUser(userId, { verified: true });
+    } catch (error) {
+      redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
+    }
+
+    await setSession(user[0]);
+
+    if (user[0].active === false) {
+      redirect('/identity');
+    } else {
+      redirect('/dashboard/pulse');
+    }
+}
 
 
 const signInSchema = z.object({
@@ -123,8 +128,11 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   await Promise.all([
     setSession(foundUser)
   ]);
-
+  if (!foundUser.active) {
+    redirect('/identity')
+  } else {
   redirect('/dashboard/pulse');
+  }
 });
 
 
@@ -199,7 +207,7 @@ export async function updatePassword(formData: { currentPassword: string; newPas
   }
 
   const newPasswordHash = await hashPassword(formData.newPassword);
-  await updateUser(user.id, {passwordHash: newPasswordHash });
+  await updateUser(user.id, { passwordHash: newPasswordHash });
 
   return { success: 'Password updated successfully.' };
 }
@@ -244,7 +252,7 @@ export async function updateUserRole(designations: string[]) {
   const roleString = designations.join(',');
 
   // Update the user's position
-  await updateUser(user.id, {role: roleString});
+  await updateUser(user.id, { role: roleString });
 
   return { success: true, message: 'Roles updated successfully' };
 }
@@ -293,7 +301,7 @@ export async function submitDay(day: number) {
   // Update the user's keywords in the database
   await updateUser(user.id, { deliveryDay: day });
 
-  return { success: true, message: 'Keywords updated successfully' };
+  return { success: true, message: 'Day updated successfully' };
 }
 
 export async function updateUserNameOccupation(formData: { name: string; occupation: string }) {
@@ -317,7 +325,7 @@ export async function getKeywords(): Promise<string[]> {
   const keywords = user.keywords;
 
   if (Array.isArray(keywords)) {
-    return keywords; 
+    return keywords;
   } else {
     throw new Error('Error parsing jsonb');
   }
@@ -371,6 +379,12 @@ export async function setAccountStatus(status: boolean) {
   const user = await getUser();
   if (!user) {
     throw new Error('User is not authenticated');
+  }
+  // verify keywords not null
+  const keywords = user.keywords;
+  if (Array.isArray(keywords) && keywords.length < 5 || user.name === '' || user.occupation === '' ) {
+    console.log('Onboarding not complete')
+    return { error: 'Onboarding not complete' };
   }
 
   await updateUser(user.id, { active: status });

@@ -16,6 +16,11 @@ export default async function Page() {
       redirect('/sign-in');
     }
 
+    if (!user.verified) {
+      
+      redirect('/sign-in');
+    }
+
     if (!isActive && currentKeywords.length === 0) {
       redirect('/identity');
     }

@@ -11,42 +11,43 @@ import { redirect } from "next/navigation";
 import React, { useState } from "react";
 import Image from "next/image";
 import { Toaster } from "@/components/ui/toaster";
+import { OnboardingProvider, useOnboarding } from './context/OnboardingContext'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [currentPage, setCurrentPage] = useState(1);
+  return (
+    <OnboardingProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </OnboardingProvider>
+  )
+}
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { currentPage, setCurrentPage } = useOnboarding()
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    if (page ===1) {
-      redirect("/identity");
+    setCurrentPage(page)
+    if (page === 1) {
+      redirect("/identity")
     } else if (page === 2) {
-      redirect("/name");
+      redirect("/name")
     } else if (page === 3) {
-      redirect("/keywords");
+      redirect("/keywords")
     } else if (page === 4) {
-      redirect("/day");
+      redirect("/day")
     }
-  };
+  }
 
   const handlePreviousPage = () => {
-    if (currentPage === 2) {
-      handlePageChange(1);
-    } else if (currentPage === 3) {
-      handlePageChange(2);
-    } else if (currentPage === 4) {
-      handlePageChange(3);
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1)
     }
-  };
+  }
 
   const handleNextPage = () => {
-    if (currentPage === 1) {
-      handlePageChange(2);
-    } else if (currentPage === 2) {
-      handlePageChange(3);
-    } else if (currentPage === 3) {
-      handlePageChange(4);
+    if (currentPage < 4) {
+      handlePageChange(currentPage + 1)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-amber-100/40">
@@ -94,3 +95,4 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

@@ -9,7 +9,8 @@ user_topics_json = {
             "Generative AI",
             "Data Engineering",
             "Large Language Models",
-            "Speech Synthesis"
+            "Adversarial Neural Networks",
+            "Agentic Frameworks"
         ]
     }
 }

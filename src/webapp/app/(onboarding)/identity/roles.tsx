@@ -3,9 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { updateUserRole } from '@/lib/actions';
-import { redirect } from 'next/navigation';
-import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
+import { useOnboarding } from '../context/OnboardingContext'
+
 
 export  function Roles() {
   //const [state, formAction, pending] = useActionState<ActionState, FormData>(
@@ -15,6 +16,7 @@ export  function Roles() {
 
   const designations = ["Student", "Researcher", "Clinician", "Educator", "Professional", "Other"];
   const [selected, setSelected] = useState<string[]>([]);
+  const { setCurrentPage } = useOnboarding()
   const router = useRouter();
 
   interface ToggleSelectionProps {
@@ -34,8 +36,10 @@ export  function Roles() {
       await updateUserRole(selected);
       toast({
         title: "Information updated",
-        description: "Your name and occupation have been saved.",
+        description: "Your identification has been saved.",
       })
+      // handle navigation for layout.tsx
+      setCurrentPage(2)
       router.push('/name');
     } catch (error) {
       toast({
@@ -44,8 +48,6 @@ export  function Roles() {
         variant: "destructive",
       })
     }
-
-    redirect('/name');
   };
 
   return (

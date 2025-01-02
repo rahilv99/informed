@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { updateUserNameOccupation } from '@/lib/actions';
 import { toast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation';
+import { useOnboarding } from '../context/OnboardingContext'
 
 const nameOccupationSchema = z.object({
   name: z.string().min(2, {
@@ -31,7 +32,6 @@ const nameOccupationSchema = z.object({
 type NameOccupationValues = z.infer<typeof nameOccupationSchema>
 
 export function NameOccupation() {
-  const router = useRouter();
   const form = useForm<NameOccupationValues>({
     resolver: zodResolver(nameOccupationSchema),
     defaultValues: {
@@ -39,6 +39,8 @@ export function NameOccupation() {
       occupation: "",
     },
   })
+  const { setCurrentPage } = useOnboarding()
+  const router = useRouter();
 
   async function onSubmit(data: NameOccupationValues) {
     try {
@@ -47,6 +49,8 @@ export function NameOccupation() {
         title: "Information updated",
         description: "Your name and occupation have been saved.",
       })
+      // handle navigation for layout.tsx
+      setCurrentPage(3)
       router.push('/keywords');
     } catch (error) {
       toast({

@@ -9,3 +9,4 @@ openai
 pydub
 google-generativeai # previously had -p -U flag
 boto3
+pandas

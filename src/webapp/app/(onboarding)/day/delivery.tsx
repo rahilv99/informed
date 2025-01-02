@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Carousel,
   CarouselContent,
@@ -11,6 +11,8 @@ import {
 import { type CarouselApi } from "@/components/ui/carousel";
 import React from "react";
 import { submitDay, setAccountStatus } from "@/lib/actions";
+import { toast } from '@/hooks/use-toast';
+
 
 export function Delivery() {
   const days = [
@@ -25,6 +27,7 @@ export function Delivery() {
 
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
+  const router = useRouter();
 
   React.useEffect(() => {
     if (!api) {
@@ -40,9 +43,20 @@ export function Delivery() {
 
   const handleSubmit = async () => {
     await submitDay(current);
-    await setAccountStatus(true);
-    
-    redirect("/pricing");
+    const ret = await setAccountStatus(true);
+    if (ret.error) {
+      toast({
+        title: "Onboarding Incomplete",
+        description: "Please complete all onboarding steps.",
+        variant: "destructive"
+      });
+      return;
+    }
+    toast({
+      title: "Onboarding Complete",
+      description: "Thank you for creating your Auxiom account."
+    });
+    router.push('/pricing');
   };
 
   return (

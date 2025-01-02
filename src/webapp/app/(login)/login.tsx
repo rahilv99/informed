@@ -17,6 +17,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const inviteId = searchParams.get('inviteId');
+  const message = searchParams.get('message');
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     mode === 'signin' ? signIn : signUp,
     { error: '' }
@@ -41,9 +42,9 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        {state?.success && (
-          <Alert className="mb-6">
-            <AlertDescription>{state.message}</AlertDescription>
+      {(state?.success || message) && (
+          <Alert className="mb-6 bg-gray-800 text-white font-bold">
+            <AlertDescription>{state?.message || message}</AlertDescription>
           </Alert>
         )}
         <form className="space-y-6" action={formAction}>
