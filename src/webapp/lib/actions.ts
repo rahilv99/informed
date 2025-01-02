@@ -18,7 +18,6 @@ import {
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { kebab } from 'postgres';
 
 dotenv.config();
 
@@ -28,8 +27,8 @@ async function sendVerificationEmail(email: string, userId: number) {
   const ses = new SESClient({
     region: "us-east-1",
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY!,
-      secretAccessKey: process.env.AWS_SECRET_KEY!
+      accessKeyId: process.env.ACCESS_KEY!,
+      secretAccessKey: process.env.SECRET_KEY!
     }
   });
 
