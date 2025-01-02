@@ -1,2 +1,4 @@
 **/docker-compose*
 **/Dockerfile*
+__pycache__
+*.pyc

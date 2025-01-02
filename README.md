@@ -21,8 +21,8 @@ aws sso login --profile atul-dev-profile
 eval "$(aws configure export-credentials --profile atul-dev-profile --format env)"
 
 # ECR Login
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 812895225987.dkr.ecr.us-east-1.amazonaws.com
-docker pull 812895225987.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-812895225987-us-east-1:2aa906cc65c8963f9bead1a3e5363cb5949442ff6b7b33423533b15df2
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418457861.dkr.ecr.us-east-1.amazonaws.com
+docker pull 905418457861.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-905418457861-us-east-1:2aa906cc65c8963f9bead1a3e5363cb5949442ff6b7b33423533b15df2
 
 # Attach shell to lambda function locally
 docker run -it --entrypoint /bin/bash -v $(pwd):/tmp service_tier-service_tier:latest

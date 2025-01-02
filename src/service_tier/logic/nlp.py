@@ -14,7 +14,7 @@ from openai import OpenAI
 import time
 from threading import Lock
 
-from pulse_output import PulseOutput
+from logic.pulse_output import PulseOutput
 import common.sqs
 import common.s3
 
