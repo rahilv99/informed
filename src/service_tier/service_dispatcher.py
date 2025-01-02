@@ -1,5 +1,7 @@
-import research.user_topics
-import research.pulse
+import logic.user_topics
+import logic.pulse
+import logic.nlp
+import email.ses
 import json
 
 def _handler(event, context):
@@ -13,7 +15,7 @@ def _handler(event, context):
     if "Records" in event and event["Records"][0].get("eventSource") == "aws:sqs":
         print(f"ServiceTier Lambda Invoked from SQS")
         if len(event["Records"]) > 1:
-            print(f"Got {len(event["Records"])} messages, expected 1 - bailing")
+            print(f"Got {len(event['Records'])} messages, expected 1 - bailing")
             return {
                 "statusCode": 400,
                 "body": f"Multiple messages unsupported"
@@ -32,8 +34,10 @@ def _handler(event, context):
 
     # Map actions to internal functions
     action_map = {
-        "e_user_topics": research.user_topics.handler,
-        "e_pulse": research.pulse.handler
+        "e_user_topics": logic.user_topics.handler,
+        "e_pulse": logic.pulse.handler,
+        "e_nlp": logic.nlp.handler,
+        "e_email": email.ses.handler,
     }
 
     # Route to the appropriate function

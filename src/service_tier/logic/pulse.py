@@ -9,7 +9,7 @@ import os
 import time
 import random
 
-from research.user_topics_output import UserTopicsOutput
+from logic.user_topics_output import UserTopicsOutput
 import common.sqs
 import common.s3
 

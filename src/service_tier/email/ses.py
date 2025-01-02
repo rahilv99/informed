@@ -60,7 +60,7 @@ def handler(payload):
     user_id = payload.get("user_id")
     user_email = payload.get("user_email")
     episode = payload.get("episode")
-    type = payload.get("type")
+    ep_type = payload.get("ep_type")
 
     headers = EmailOutput(user_id)
     email_description = headers.email_description

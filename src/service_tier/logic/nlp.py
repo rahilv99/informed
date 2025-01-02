@@ -84,19 +84,19 @@ def enforce_rate_limit(model_name):
             script_model_counter += 1
 
 # Wrap API calls to enforce rate limits
-def summarize_with_rate_limit(title, text, use='summary', type='secondary'):
+def summarize_with_rate_limit(title, text, use='summary', ep_type='secondary'):
     enforce_rate_limit("summary_model")
-    return summarize(title, text, use, type)
+    return summarize(title, text, use, ep_type)
 
-def make_script_with_rate_limit(summaries, titles, name, plan='free', type='pulse'):
+def make_script_with_rate_limit(summaries, titles, name, plan='free', ep_type='pulse'):
     enforce_rate_limit("script_model")
-    return make_script(summaries, titles, name, plan, type)
+    return make_script(summaries, titles, name, plan, ep_type)
 
 
-def summarize(title, text, use = 'summary', type = 'secondary'):
-  if type == 'secondary':
+def summarize(title, text, use = 'summary', ep_type = 'secondary'):
+  if ep_type == 'secondary':
       tokens = 400
-  elif type == 'primary':
+  elif ep_type == 'primary':
       tokens = 800
   else:
       tokens = 100 # email title + summaries
@@ -121,10 +121,10 @@ def summarize(title, text, use = 'summary', type = 'secondary'):
                                         temperature=0.25))
   return response
 
-def make_script(summaries, titles, name, plan = 'free', type = 'pulse'):
-    if type == 'pulse':
+def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
+    if ep_type == 'pulse':
         additional_text = ''
-    elif type == 'insight':
+    elif ep_type == 'insight':
             additional_text = f'- The first article is the primary focus of this episode. We will explore the details of this article the most in depth, writing mostly about this. \
                 The second and third article have cited the first article, demonstrating the application of the 1st research. Discuss the 1st article in depth, finding how the other article(s) have applied the 1st.\
                 Only include information from the other articles that are direct applications of the first article. \n'
@@ -138,7 +138,7 @@ def make_script(summaries, titles, name, plan = 'free', type = 'pulse'):
         summaries = summaries[:2]
         additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
     
-    if type == 'insight':
+    if ep_type == 'insight':
         tokens = 1500
 
     system_prompt =f"""
@@ -187,26 +187,26 @@ def review_script(script, tokens = 2500):
                                         temperature=0.15))
     return response
 
-def generate_script(all_data, name, plan = 'free', type = 'pulse'):
+def generate_script(all_data, name, plan = 'free', ep_type = 'pulse'):
     for index, row in all_data.iterrows():
         title = row['title']
         text = row['text']
 
-        if type == 'insight' and index == 0:
+        if ep_type == 'insight' and index == 0:
             article = 'primary' # extended summary for first article in deep dive (primary article)
         else:
             article = 'secondary'
 
-        summary = summarize_with_rate_limit(title, text, use = 'summary', type = article)
+        summary = summarize_with_rate_limit(title, text, use = 'summary', ep_type = article)
         all_data.at[index, 'summary'] = summary.text
 
     # generate script
     summaries = all_data['summary'].tolist()
     titles = all_data['title'].tolist()
-    script = make_script_with_rate_limit(summaries, titles, name, plan, type)
+    script = make_script_with_rate_limit(summaries, titles, name, plan, ep_type)
     return script.text
 
-def generate_email_headers(all_data, plan = 'free', type = 'pulse'):
+def generate_email_headers(all_data, plan = 'free', ep_type = 'pulse'):
     def clean_summary_text(text):
         text = re.sub(r'\*', '', text)
         return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
@@ -221,7 +221,7 @@ def generate_email_headers(all_data, plan = 'free', type = 'pulse'):
     podcast_description.drop(columns=['summary'], inplace=True)
     
     titles = podcast_description['title'].tolist()
-    if type == 'insight':
+    if ep_type == 'insight':
         titles = titles[0]
     else:
         titles = ", ".join(titles)
@@ -259,7 +259,7 @@ def clean_text_for_conversational_tts(input_text):
     print(output_text)
     return output_text
 
-def create_conversational_podcast(all_data, name, plan='free', type='pulse'):
+def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 
     def _create_line(client, host, line, num, chunk):
 
@@ -293,7 +293,7 @@ def create_conversational_podcast(all_data, name, plan='free', type='pulse'):
             print(f"An error occurred while generating TTS: {e}")
 
     # Instantiates a client
-    script = generate_script(all_data, name, plan=plan, type=type)
+    script = generate_script(all_data, name, plan=plan, ep_type=ep_type)
     turns = clean_text_for_conversational_tts(script)
 
     key = os.environ.get("OPENAI_API_KEY")
@@ -362,16 +362,16 @@ def handler(payload):
     user_email = payload.get("user_email")
     plan = payload.get("plan")
     episode = payload.get("episode")
-    type = payload.get("type")
+    ep_type = payload.get("ep_type")
 
     pulse = PulseOutput(user_id)
     all_data = pulse.all_data
 
-    num_turns = create_conversational_podcast(all_data, user_name, plan = plan, type = type)
+    num_turns = create_conversational_podcast(all_data, user_name, plan = plan, ep_type = ep_type)
 
     write_to_s3(num_turns, user_id)
 
-    email_description, episode_title = generate_email_headers(all_data, plan = plan, type = type)
+    email_description, episode_title = generate_email_headers(all_data, plan = plan, ep_type = ep_type)
 
     # Save the email description to S3
     common.s3.save_serialized(user_id, "EMAIL", {
@@ -388,7 +388,7 @@ def handler(payload):
             "user_id": user_id,
             "user_email": user_email,
             "eposide": episode,
-            "type": type
+            "ep_type": ep_type
             }
         }
         common.sqs.send_to_sqs(next_event)
