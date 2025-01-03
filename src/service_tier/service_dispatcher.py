@@ -1,7 +1,7 @@
 import logic.user_topics
 import logic.pulse
 import logic.nlp
-import email.ses
+import email_delivery.ses
 import json
 
 def _handler(event, context):
@@ -37,7 +37,7 @@ def _handler(event, context):
         "e_user_topics": logic.user_topics.handler,
         "e_pulse": logic.pulse.handler,
         "e_nlp": logic.nlp.handler,
-        "e_email": email.ses.handler,
+        "e_email": email_delivery.ses.handler,
     }
 
     # Route to the appropriate function

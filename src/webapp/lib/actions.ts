@@ -92,6 +92,85 @@ export async function verifyEmail(token: string) {
 }
 
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email().min(3).max(255),
+});
+
+export const forgotPassword = validatedAction(forgotPasswordSchema, async (data, formData) => {
+  const { email } = data;
+
+  const user = await getUserByEmail(email);
+
+  if (!user || user.length === 0) {
+    // Don't reveal if the email exists or not for security reasons
+    return { success: "If an account with that email exists, we've sent a password reset link." };
+  }
+
+  const token = jwt.sign({ userId: user[0].id }, process.env.JWT_SECRET!, { expiresIn: '1h' });
+
+  const ses = new SESClient({ 
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: process.env.ACCESS_KEY!,
+      secretAccessKey: process.env.SECRET_KEY!
+    }
+  });
+
+  const params = {
+    Source: "noreply@auxiomai.com",
+    Destination: {
+      ToAddresses: [email],
+    },
+    Message: {
+      Subject: {
+        Data: "Reset your password",
+      },
+      Body: {
+        Html: {
+          Data: `
+            <h1>Reset your password</h1>
+            <p>Click the link below to reset your password:</p>
+            <a href="${process.env.BASE_URL}/reset-password?token=${token}">Reset Password</a>
+            <p>This link will expire in 1 hour.</p>
+          `,
+        },
+      },
+    },
+  };
+
+  try {
+    await ses.send(new SendEmailCommand(params));
+    return { success: "If an account with that email exists, we've sent a password reset link." };
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return { error: "Failed to send password reset email. Please try again later." };
+  }
+});
+
+// Add this new function to handle password reset
+export const resetPassword = validatedAction(
+  z.object({
+    token: z.string(),
+    newPassword: z.string().min(8).max(100),
+  }),
+  async (data, formData) => {
+    const { token, newPassword } = data;
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
+      const userId = decoded.userId;
+
+      const newPasswordHash = await hashPassword(newPassword);
+      await updateUser(userId, { passwordHash: newPasswordHash });
+
+      return { success: "Password has been reset successfully." };
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      return { error: "Invalid or expired token. Please try the password reset process again." };
+    }
+  }
+);
+
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
   password: z.string().min(8).max(100),

@@ -20,6 +20,7 @@ import common.s3
 
 
 
+TEMP_BASE = "/tmp"
 
 GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -270,7 +271,7 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
             # male
             voice = 'onyx'
 
-        output_file = f"tmp/conversation/{host}/line_{num}_{chunk}.mp3"
+        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}_{chunk}.mp3"
 
          # Ensure the output directory exists
         output_dir = os.path.dirname(output_file)
@@ -296,6 +297,8 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
     script = generate_script(all_data, name, plan=plan, ep_type=ep_type)
     turns = clean_text_for_conversational_tts(script)
 
+    turns = turns[:4]  # for testing
+
     key = os.environ.get("OPENAI_API_KEY")
     client = OpenAI(api_key=key)
 
@@ -310,13 +313,13 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
             for chunk_index, chunk in enumerate(chunks):
                 _create_line(client, host, chunk, index, chunk_index)
 
-            chunk_files = [f"tmp/conversation/{host}/line_{index}_{i}.mp3" for i in range(len(chunks))]
+            chunk_files = [f"{TEMP_BASE}/conversation/{host}/line_{index}_{i}.mp3" for i in range(len(chunks))]
             combined_audio = AudioSegment.empty()
             for file in chunk_files:
                 audio_segment = AudioSegment.from_mp3(file)
                 combined_audio += audio_segment
 
-            combined_output_file = f"tmp/conversation/{host}/line_{index}_0.mp3"
+            combined_output_file = f"{TEMP_BASE}/conversation/{host}/line_{index}_0.mp3"
             combined_audio.export(combined_output_file, format="mp3")
 
             # Clean up individual chunk files
@@ -332,9 +335,9 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 def write_to_s3(num_turns, user_id):
     # merge audio files
     # Create a new AudioSegment object
-    final_audio = AudioSegment.from_mp3('tmp/conversation/1/line_0_0.mp3')
+    final_audio = AudioSegment.from_mp3(f'{TEMP_BASE}/conversation/1/line_0_0.mp3')
     for i in range(1, num_turns):
-        audio = AudioSegment.from_mp3(f"tmp/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
+        audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
         # clean up -- TURN ON IF TESTING LOCAL
         #os.remove(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
 
@@ -342,16 +345,16 @@ def write_to_s3(num_turns, user_id):
 
     # add intro music
     # Load the intro music from s3
-    common.s3.restore_from_system("INTRO", "tmp/intro_music.mp3")
+    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
 
-    intro_music = AudioSegment.from_file("tmp/intro_music.mp3")
+    intro_music = AudioSegment.from_file(f"{TEMP_BASE}/intro_music.mp3")
     final_audio = intro_music.append(final_audio, crossfade=1000)
 
-    final_audio.export("tmp/podcast.mp3", format="mp3")
-    print("Conversation audio file saved as tmp/podcast.mp3")
+    final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
+    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.mp3")
 
     # Export the final audio
-    common.s3.save(user_id, "PODCAST", "tmp/podcast.mp3")
+    common.s3.save(user_id, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
 
 
 

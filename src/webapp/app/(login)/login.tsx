@@ -43,7 +43,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       {(state?.success || message) && (
-          <Alert className="mb-6 bg-gray-800 text-white font-bold">
+          <Alert className="mb-6 bg-gray-800 text-white font-bold text-center">
             <AlertDescription>{state?.message || message}</AlertDescription>
           </Alert>
         )}
@@ -141,6 +141,14 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 : 'Sign in to existing account'}
             </Link>
           </div>
+
+          {mode === 'signin' && (
+            <div className="mt-4 text-center">
+              <Link href="/forgot-password" className="text-sm text-gray-600 hover:text-gray-800">
+                Forgot your password?
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

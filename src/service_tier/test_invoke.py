@@ -21,7 +21,7 @@ pulse_json = {
         "user_id": "5678",
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
-        "plan": "plus",          # "plus" | "free"
+        "plan": "free",          # "plus" | "free"
         "episode": "1"
     }
 }
@@ -32,7 +32,7 @@ nlp_json = {
         "user_id": "5678",
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
-        "plan": "plus",          # "plus" | "free"
+        "plan": "free",          # "plus" | "free"
         "episode": "1",
         "type": "pulse"          # "pulse" | "insight"
     }
