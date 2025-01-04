@@ -2,7 +2,7 @@ import { checkoutAction } from '@/lib/payments/actions';
 import { Check } from 'lucide-react';
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
 import { SubmitButton } from './submit-button';
-import { getCurrentPlan } from '@/lib/actions';
+import { getCurrentPlan } from '@/lib/actions'; 
 
 // Prices are fresh for one hour max
 export const revalidate = 3600;
@@ -13,7 +13,12 @@ export default async function PricingPage() {
     getStripeProducts(),
   ]);
 
-  const plan = await getCurrentPlan();
+  let plan = 'free';
+  try {
+    plan = await getCurrentPlan();
+  } catch {
+    plan = 'free';
+  }
 
   
   const plusPlan = products.find((product) => product.name === 'Plus');
