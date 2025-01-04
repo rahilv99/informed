@@ -130,7 +130,7 @@ def handler(event, context):
     Lambda handler triggered by the scheduled event.
     """
     try:
-        _handler(event, context);
+        _handler(event, context)
         return {
             "statusCode": 200,
             "body": json.dumps({"message": "Job executed successfully"})

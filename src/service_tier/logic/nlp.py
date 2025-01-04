@@ -125,20 +125,20 @@ def summarize(title, text, use = 'summary', ep_type = 'secondary'):
 def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
     if ep_type == 'pulse':
         if plan == 'plus':
-            tokens = 3500
+            tokens = 2500
             summaries = summaries
             additional_text = ''
         else: # free
-            tokens = 1500
+            tokens = 1000
             summaries = summaries[:2]
             additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
     elif ep_type == 'insight':
             additional_text = f'- The first article is the primary focus of this episode. We will explore the details of this article the most in depth, writing mostly about this. \
                 The second and third article have cited the first article, demonstrating the application of the 1st research. Discuss the 1st article in depth, finding how the other article(s) have applied the 1st.\
                 Only include information from the other articles that are direct applications of the first article. \n'
-            tokens = 1500
+            tokens = 1000
     else: # backup
-        tokens = 1500
+        tokens = 1000
         additional_text = ''
         summaries = summaries
 
@@ -154,7 +154,7 @@ def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
     - Create a sequence, exploring the details of each article one by one
     - Do not reference the summary generator or the AI model
     - You may bring in knowledge from the your corpus of web data where necessary
-    SPEECH TEXT
+    SPEECH TIPS
     - The hosts should be critical if the article has limitations
     - These hosts are charismatic and professional. They are excited about the information.
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.

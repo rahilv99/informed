@@ -82,7 +82,6 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
         print(f"Unexpected error: {e}")
 
 
-
 # Main Execution
 def handler(payload):
     user_id = payload.get("user_id")
