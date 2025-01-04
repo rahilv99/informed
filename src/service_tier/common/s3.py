@@ -15,6 +15,8 @@ def s3LocationMapping(user_id, type):
         return f"user/{user_id}/email.pkl"
     elif (type == "PODCAST"):
         return f"user/{user_id}/podcast.mp3"
+    elif type == "INTRO":
+        return f"system/intro_music.mp3"
     else:
         print(f"Unsupported type {type}")
 
@@ -53,7 +55,9 @@ def save(user_id, type, f_path):
     # Upload to S3
     try:
         s3 = boto3.client('s3')
-        s3.upload_fileobj(f_path, bucket_name, object_key)
+
+        with open(f_path, 'rb') as f:
+            s3.upload_fileobj(f, bucket_name, object_key)
         print('Saved data')
     except Exception as e:
         print(f"Error saving to bucket {e}")
@@ -64,7 +68,8 @@ def restore(user_id, type, f_path):
     s3 = boto3.client('s3')
 
     try:
-        s3.download_fileobj(bucket_name, object_key, f_path)
+        with open(f_path, 'wb') as f:
+            s3.download_fileobj(bucket_name, object_key, f)
         print('Retrieved data')
     except Exception as e:
         print(f"Error reading from bucket {e}")
@@ -72,18 +77,18 @@ def restore(user_id, type, f_path):
     
 
 def restore_from_system(type, f_path):
-
-    def _s3LocationMapping(type):
-        if type == "INTRO":
-            return f"system/intro_music.mp3"
-    
+    object_key = s3LocationMapping('', type) # user id doesn't matter
     # Download data from S3
     s3 = boto3.client('s3')
 
+    # Check if the object exists before attempting to download
     try:
-        object_key = _s3LocationMapping(type)
-        s3.download_fileobj(bucket_name,object_key, f_path)
+        with open(f_path, 'wb') as f:
+            s3.download_fileobj(bucket_name, object_key, f)
         print('Retrieved data')
+    except s3.exceptions.NoSuchKey:
+        print(f"Error: Object with key '{object_key}' does not exist in the bucket.")
+        return {}
     except Exception as e:
-        print(f"Error reading from bucket {e}")
+        print(f"Error reading from bucket: {e}")
         return {}

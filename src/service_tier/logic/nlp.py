@@ -292,12 +292,14 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 
         except Exception as e:
             print(f"An error occurred while generating TTS: {e}")
+        
+        if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
+            raise ValueError(f"Failed to create audio file: {output_file}")
+
 
     # Instantiates a client
     script = generate_script(all_data, name, plan=plan, ep_type=ep_type)
     turns = clean_text_for_conversational_tts(script)
-
-    turns = turns[:4]  # for testing
 
     key = os.environ.get("OPENAI_API_KEY")
     client = OpenAI(api_key=key)
@@ -319,6 +321,7 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
                 audio_segment = AudioSegment.from_mp3(file)
                 combined_audio += audio_segment
 
+            print(f"Combined chunked audio for line {index}")
             combined_output_file = f"{TEMP_BASE}/conversation/{host}/line_{index}_0.mp3"
             combined_audio.export(combined_output_file, format="mp3")
 
@@ -335,14 +338,18 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 def write_to_s3(num_turns, user_id):
     # merge audio files
     # Create a new AudioSegment object
-    final_audio = AudioSegment.from_mp3(f'{TEMP_BASE}/conversation/1/line_0_0.mp3')
+    print("Merging audio files...")
+
+    final_audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/1/line_0_0.mp3")
     for i in range(1, num_turns):
+
         audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
         # clean up -- TURN ON IF TESTING LOCAL
         #os.remove(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
 
         final_audio = final_audio.append(audio)
 
+    print("Audio files merged.")
     # add intro music
     # Load the intro music from s3
     common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
@@ -350,13 +357,13 @@ def write_to_s3(num_turns, user_id):
     intro_music = AudioSegment.from_file(f"{TEMP_BASE}/intro_music.mp3")
     final_audio = intro_music.append(final_audio, crossfade=1000)
 
+    print("Intro music added.")
     final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
     print(f"Conversation audio file saved as {TEMP_BASE}/podcast.mp3")
-
     # Export the final audio
     common.s3.save(user_id, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
 
-
+    print("Audio file uploaded to S3.")
 
 # Main Execution
 def handler(payload):

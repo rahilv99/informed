@@ -3,6 +3,7 @@ import logic.pulse
 import logic.nlp
 import email_delivery.ses
 import json
+import traceback
 
 def _handler(event, context):
     """
@@ -55,6 +56,7 @@ def handler(event, context):
         }
     except Exception as e:
         print(f"Lambda Exception {e}")
+        traceback.print_exc()
         return {
             "statusCode": 500,
             "body": f"Error executing action '{event}': {str(e)}"

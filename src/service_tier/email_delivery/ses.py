@@ -2,7 +2,11 @@ import boto3
 from botocore.exceptions import ClientError
 import os          
 from string import Template
-
+import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 from email_delivery.email_output import EmailOutput
 import common.s3
@@ -17,19 +21,44 @@ def generate_html(episode_title, email_description, episode):
     def _generate_articles_html(articles):
         articles_html = ''
         for _, article in articles.iterrows():
-            articles_template = _load_template('article.html')
+            articles_template = _load_template('email_delivery/article.html')
             articles_html += articles_template.substitute(title=article['title'], description=article['description'], url=article['url'])
         return articles_html
 
-    template = _load_template('index.html')
+    template = _load_template('email_delivery/index.html')
     articles_html = _generate_articles_html(email_description)
-    template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html)
+    return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html)
+
 
 
 
 def send_email(RECIPIENT, SUBJECT, BODY_HTML):
-    attachment = '/tmp/podcast.mp3'
+    FILE_PATH = '/tmp/podcast.mp3'
 
+    # Create a multipart/mixed parent container
+    msg = MIMEMultipart('mixed')
+    msg['Subject'] = SUBJECT
+    msg['From'] = "delivery@auxiomai.com"
+    msg['To'] = RECIPIENT
+
+    # Add the HTML body to the email
+    msg_body = MIMEMultipart('alternative')
+    html_part = MIMEText(BODY_HTML, 'html', 'utf-8')
+    msg_body.attach(html_part)
+    msg.attach(msg_body)
+
+    # Add the attachment to the email
+    with open(FILE_PATH, 'rb') as attachment:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment.read())
+        encoders.encode_base64(part)
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename="{podcast_title}.mp3"'
+        )
+        msg.attach(part)
+
+    # Send the email
     client = boto3.client('ses',
                         region_name="us-east-1",
                         aws_access_key_id= os.environ.get('AWS_ACCESS_KEY'), # make sure these are set
@@ -37,30 +66,21 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
                         )
 
     try:
-        response = client.send_email(
-            Destination={
-                'ToAddresses': [RECIPIENT],
-            },
-            Message={
-                'Body': {
-                    'Html': {
-                        'Charset': 'UTF-8',
-                        'Data': BODY_HTML,
-                    }
-                },
-                'Subject': {
-                    'Charset': 'UTF-8',
-                    'Data': SUBJECT,
-                },
-            },
-            Source='delivery@auxiomai.com'
+        response = client.send_raw_email(
+            Source=SENDER,
+            Destinations=[RECIPIENT],
+            RawMessage={
+                'Data': msg.as_string(),
+            }
         )
-
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-    else:
         print("Email sent! Message ID:"),
         print(response['MessageId'])
+
+    except client.exceptions.MessageRejected as e:
+        print(f"Email rejected: {e}")
+    except client.exceptions.ClientError as e:
+        print(f"Unexpected error: {e}")
+
 
 
 # Main Execution
