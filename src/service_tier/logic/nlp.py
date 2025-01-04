@@ -124,37 +124,42 @@ def summarize(title, text, use = 'summary', ep_type = 'secondary'):
 
 def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
     if ep_type == 'pulse':
-        additional_text = ''
+        if plan == 'plus':
+            tokens = 3500
+            summaries = summaries
+            additional_text = ''
+        else: # free
+            tokens = 1500
+            summaries = summaries[:2]
+            additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
     elif ep_type == 'insight':
             additional_text = f'- The first article is the primary focus of this episode. We will explore the details of this article the most in depth, writing mostly about this. \
                 The second and third article have cited the first article, demonstrating the application of the 1st research. Discuss the 1st article in depth, finding how the other article(s) have applied the 1st.\
                 Only include information from the other articles that are direct applications of the first article. \n'
-    
-
-    if plan == 'plus':
-        tokens = 3000
+            tokens = 1500
+    else: # backup
+        tokens = 1500
+        additional_text = ''
         summaries = summaries
-    else: # free
-        tokens = 1500
-        summaries = summaries[:2]
-        additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
-    
-    if ep_type == 'insight':
-        tokens = 1500
 
     system_prompt =f"""
-    Act as a professional podcast script writer for a podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** is asking questions, and **HOST 2** explains using the summaries of articles below.
+    Act as a podcast script writer for a podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** is asking questions, and **HOST 2** explains using the summaries of articles below.
+    FORMAT
     - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
     - The speakers should minimize referring to each other. If they must, HOST 1 = Mia and HOST 2 = Leo
     - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Leo.
+    - Make the conversation at least {tokens} tokens long.
+    EXTRACT FROM TEXT
+    - Use specific details from the text relevant to the goals, methods, and results
     - Create a sequence, exploring the details of each article one by one
-    - Extract as much substance (main points, results, methods, goals) from the article as possible
+    - Do not reference the summary generator or the AI model
+    - You may bring in knowledge from the your corpus of web data where necessary
+    SPEECH TEXT
     - The hosts should be critical if the article has limitations
     - These hosts are charismatic and professional. They are excited about the information.
-    - Make the conversation at least {tokens} tokens long.
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.
+    - Sound human-like, be original and dynamic in the conversation.
     - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
-    - Use specific details from the text relevant to the goals, methods, and results
     - Close with 'Thanks for listening, stay tuned for more episodes.'
     - This is custom made for one listener named {name}, greet them at the beginning of the episode.
     
@@ -173,7 +178,7 @@ Articles: """
     response = script_model.generate_content(system_prompt, 
                                       generation_config = genai.GenerationConfig(
                                         max_output_tokens=tokens+500,
-                                        temperature=0.25))
+                                        temperature=0.3))
     if plan == 'pro' or plan == 'plus':
         response = review_script(response, tokens)
     
@@ -208,7 +213,7 @@ def generate_script(all_data, name, plan = 'free', ep_type = 'pulse'):
     return script.text
 
 def generate_email_headers(all_data, plan = 'free', ep_type = 'pulse'):
-    def clean_summary_text(text):
+    def _clean_summary_text(text):
         text = re.sub(r'\*', '', text)
         return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
     if plan == 'free':
@@ -217,7 +222,7 @@ def generate_email_headers(all_data, plan = 'free', ep_type = 'pulse'):
     podcast_description = all_data[['title', 'url', 'summary']].copy()
 
     podcast_description['description'] = podcast_description.apply(
-        lambda row: clean_summary_text(summarize_with_rate_limit(row['title'], row['summary'], use='email').text),
+        lambda row: _clean_summary_text(summarize_with_rate_limit(row['title'], row['summary'], use='email').text),
         axis=1)
     podcast_description.drop(columns=['summary'], inplace=True)
     
@@ -227,8 +232,9 @@ def generate_email_headers(all_data, plan = 'free', ep_type = 'pulse'):
     else:
         titles = ", ".join(titles)
     episode_title = summarize_with_rate_limit("", titles, use = 'title')
+    episode_title = _clean_summary_text(episode_title.text)
 
-    return podcast_description, episode_title.text
+    return podcast_description, episode_title
 
 def clean_text_for_conversational_tts(input_text):
     """

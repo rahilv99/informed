@@ -174,10 +174,14 @@ export const resetPassword = validatedAction(
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
   password: z.string().min(8).max(100),
+  redirect: z.string().optional(),
+  priceId: z.string().optional(),
+  inviteId: z.string().optional(),
+  message: z.string().optional()
 });
 
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
-  const { email, password } = data;
+  const { email, password, redirect: redirectUrl, priceId, inviteId, message } = data;
 
   const user = await getUserByEmail(email);
 
@@ -206,10 +210,11 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   await Promise.all([
     setSession(foundUser)
   ]);
+
   if (!foundUser.active) {
-    redirect('/identity')
+    redirect('/identity');
   } else {
-  redirect('/dashboard/pulse');
+    redirect(redirectUrl || '/dashboard/pulse');
   }
 });
 

@@ -54,7 +54,7 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
         encoders.encode_base64(part)
         part.add_header(
             'Content-Disposition',
-            f'attachment; filename="{podcast_title}.mp3"'
+            f'attachment; filename="{SUBJECT}.mp3"'
         )
         msg.attach(part)
 
@@ -67,7 +67,7 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
 
     try:
         response = client.send_raw_email(
-            Source=SENDER,
+            Source='delivery@auxiomai.com',
             Destinations=[RECIPIENT],
             RawMessage={
                 'Data': msg.as_string(),

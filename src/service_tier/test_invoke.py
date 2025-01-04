@@ -21,7 +21,7 @@ pulse_json = {
         "user_id": "5678",
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
-        "plan": "free",          # "plus" | "free"
+        "plan": "free",
         "episode": "1"
     }
 }
@@ -32,9 +32,9 @@ nlp_json = {
         "user_id": "5678",
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
-        "plan": "free",          # "plus" | "free"
+        "plan": "plus",
         "episode": "1",
-        "type": "pulse"          # "pulse" | "insight"
+        "type": "pulse"
     }
 }
 
@@ -44,7 +44,7 @@ email_json = {
         "user_id": "5678",
         "user_email": "rahilv99@gmail.com",
         "episode": "1",
-        "type": "pulse"          # "pulse" | "insight" | "note"
+        "type": "pulse"
     }
 }
 
