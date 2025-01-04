@@ -39,12 +39,9 @@ function NavDropdown({ user }: { user: any }) {
               Dashboard
             </Link>
           ) : (
-            <p>Coming Soon</p>
-            /*
           <Link href="/sign-up" className="flex items-center">
             Sign Up
           </Link>
-          */
           )}
           
         </DropdownMenuItem>

@@ -26,12 +26,19 @@ export function EditKeywords({ name, interests }: { name: string; interests: str
   }
 
   const handleSubmit = async () => {
-    await updateInterests(keywords);
-
-    toast({
-      title: "Settings Saved",
-      description: "Your keywords have been updated.",
-    });
+    const ret = await updateInterests(keywords);
+    if (ret.error) {
+      return toast({
+        title: "Error",
+        description: ret.error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Settings Saved",
+        description: "Your keywords have been updated.",
+      });
+    }
   }
 
   return (

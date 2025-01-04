@@ -16,10 +16,52 @@ import {
   validatedAction,
 } from '@/lib/auth/middleware';
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+// Initialize the SQS client
+const sqs = new SQSClient({
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: process.env.ACCESS_KEY!,
+    secretAccessKey: process.env.SECRET_KEY!
+  }
+});
+
+export async function sendToSQS(keywords: string[]) {
+  
+  const user = await getUser();
+  if (!user) {
+    redirect('/sign-in');
+  }
+
+  if (keywords.length === 0) {
+    return {error: 'Keywords passed to SQS incorrectly' };
+  }
+
+  const params = {
+    QueueUrl: process.env.SQS_QUEUE_URL,
+    MessageBody: JSON.stringify({
+      "action": "e_user_topics",
+      "payload": {
+          "user_id": user.id,
+          "user_input": keywords
+      }
+    })
+  };
+
+  try {
+    const command = new SendMessageCommand(params);
+    await sqs.send(command);
+    
+    return { success: 'Message sent successfully to SQS' };
+  } catch (error) {
+    return { error: 'Failed to send message to SQS' };
+  }
+}
 
 async function sendVerificationEmail(email: string, userId: number) {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '1d' });
@@ -57,7 +99,7 @@ async function sendVerificationEmail(email: string, userId: number) {
     await ses.send(new SendEmailCommand(params));
   } catch (error) {
     console.error("Error sending email:", error);
-    throw new Error("Failed to send verification email");
+    return { error: "Failed to send verification email. Please try again later." };
   }
 }
 
@@ -231,7 +273,7 @@ export const signUp = validatedAction(signUpSchema, async (data) => {
   const existingUser = await getUserByEmail(email);
 
   if (existingUser.length > 0) {
-    throw new Error('User already exists');
+    return { error: 'An account with that email already exists. Please sign in.' };
   }
 
   const passwordHash = await hashPassword(password);
@@ -271,7 +313,7 @@ export async function updatePassword(formData: { currentPassword: string; newPas
 
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   const isPasswordValid = await comparePasswords(
@@ -302,7 +344,7 @@ const deleteAccountSchema = z.object({
 export async function deleteAccount() {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   await db.delete(users).where(eq(users.id, user.id));
@@ -314,7 +356,7 @@ export async function updateEmail(user_input: string) {
 
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   // Update the user's email in the database
@@ -328,7 +370,7 @@ export async function updateUserRole(designations: string[]) {
 
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   // Combine selected roles into a comma-separated string
@@ -344,7 +386,7 @@ export async function updateUserRole(designations: string[]) {
 export async function submitInterests(user_input: string) {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   if (!user_input) {
@@ -358,27 +400,37 @@ export async function submitInterests(user_input: string) {
   }
   // Update the user's keywords in the database
   await updateUser(user.id, { keywords: keys });
+  const res = await sendToSQS(keys);
 
-  return { success: true, message: 'Keywords updated successfully' };
+  if (res.error) {
+    return { error: "Error setting interests. Please try again later." };
+  }
+
+  return { success: true, message: 'Interests set successfully' };
 }
 
 export async function updateInterests(keywords: string[]) {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   // Update the user's keywords in the database
   await updateUser(user.id, { keywords: keywords });
+  const res = await sendToSQS(keywords);
 
-  return { success: true, message: 'Keywords updated successfully' };
+  if (res.error) {
+    return { error: 'Interests updated successfully' };
+  }
+
+  return { success: true, message: 'Interests updated successfully' };
 }
 
 
 export async function submitDay(day: number) {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   // Update the user's keywords in the database
@@ -390,7 +442,7 @@ export async function submitDay(day: number) {
 export async function updateUserNameOccupation(formData: { name: string; occupation: string }) {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   // Update the user's name and occupation in the database
@@ -402,7 +454,7 @@ export async function updateUserNameOccupation(formData: { name: string; occupat
 export async function getKeywords(): Promise<string[]> {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   const keywords = user.keywords;
@@ -410,14 +462,14 @@ export async function getKeywords(): Promise<string[]> {
   if (Array.isArray(keywords)) {
     return keywords;
   } else {
-    throw new Error('Error parsing jsonb');
+    return [];
   }
 }
 
 export async function getDay(): Promise<number> {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   return user.deliveryDay;
@@ -426,7 +478,7 @@ export async function getDay(): Promise<number> {
 export async function getName(): Promise<string> {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   if (user.name) {
@@ -439,7 +491,7 @@ export async function getName(): Promise<string> {
 export async function getDeliveryStatus(): Promise<boolean> {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
   const now = new Date();
   const lastSunday = new Date();
@@ -452,7 +504,7 @@ export async function getDeliveryStatus(): Promise<boolean> {
 export async function getAccountStatus(): Promise<boolean> {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   return user.active;
@@ -461,7 +513,7 @@ export async function getAccountStatus(): Promise<boolean> {
 export async function setAccountStatus(status: boolean) {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
   // verify keywords not null
   const keywords = user.keywords;
@@ -490,7 +542,7 @@ export async function addToNewsletter(formData: { email: string }) {
 export async function getCurrentPlan(): Promise<string> {
   const user = await getUser();
   if (!user) {
-    throw new Error('User is not authenticated');
+    redirect('/sign-in');
   }
 
   return user.plan;

@@ -20,25 +20,25 @@ def _handler(event, context):
     user_records = db_getusers(today_weekday)
     print(f"Got {len(user_records)} records from DB")
     for user in user_records:
-        id, name, email, plan, last_delivered_ts, episode = user
-        if not skip_delivery(last_delivered_ts):
+        user_id, name, email, plan, last_delivered_ts, episode = user
+        if not skip_delivery(last_delivered_ts.timestamp()):
             print(f"Sent pulse for user {email}")
             send_to_sqs(
                 {
                     "action": "e_pulse",
                     "payload": {
-                        "user_id": id,
+                        "user_id": user_id,
                         "user_name": name,
                         "user_email": email,
                         "plan": plan,
-                        "episode": episode      # Where does this come from?????
+                        "episode": episode
                     }
                 }
             )
 
             # Update user's delivery information
             print(f"Updated delivery for user {email}")
-            update_user_delivery(id)
+            update_user_delivery(user_id)
 
 
 def db_getusers(today_weekday):

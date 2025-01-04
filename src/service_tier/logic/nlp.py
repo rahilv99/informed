@@ -125,18 +125,18 @@ def summarize(title, text, use = 'summary', ep_type = 'secondary'):
 def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
     if ep_type == 'pulse':
         if plan == 'plus':
-            tokens = 2500
+            tokens = 1600
             summaries = summaries
             additional_text = ''
         else: # free
-            tokens = 1000
+            tokens = 800
             summaries = summaries[:2]
             additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
     elif ep_type == 'insight':
             additional_text = f'- The first article is the primary focus of this episode. We will explore the details of this article the most in depth, writing mostly about this. \
                 The second and third article have cited the first article, demonstrating the application of the 1st research. Discuss the 1st article in depth, finding how the other article(s) have applied the 1st.\
                 Only include information from the other articles that are direct applications of the first article. \n'
-            tokens = 1000
+            tokens = 800
     else: # backup
         tokens = 1000
         additional_text = ''
