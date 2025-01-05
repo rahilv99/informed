@@ -521,7 +521,7 @@ export async function setAccountStatus(status: boolean) {
   // verify keywords not null
   const keywords = user.keywords;
   if (Array.isArray(keywords) && keywords.length < 5 || user.name === '' || user.occupation === '' ) {
-    console.log('Onboarding not complete')
+
     return { error: 'Onboarding not complete' };
   }
 

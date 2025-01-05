@@ -155,8 +155,8 @@ export default function PulsePage({ keywords, day, deliveryStatus, accountStatus
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="absolute left-0 sm:-left-8 md:-left-12 bg-slate-600/30 rounded-3xl backdrop-filter backdrop-blur-lg text-gray-800 border-none hover:bg-slate-600/50 transition duration-300" />
-                  <CarouselNext className="absolute right-0 sm:-right-8 md:-right-12 bg-slate-600/30 rounded-3xl backdrop-filter backdrop-blur-lg text-gray-800 border-none hover:bg-slate-600/50 transition duration-300" />
+                  <CarouselPrevious className="hidden md:flex bg-black text-black bg-opacity-20 rounded-full backdrop-filter backdrop-blur-lg border-none hover:bg-gray-700 transition duration-300" /> 
+                  <CarouselNext className="hidden md:flex bg-black text-black bg-opacity-20 rounded-full backdrop-filter backdrop-blur-lg border-none hover:bg-gray-700 transition duration-300" />
                 </Carousel>
               </div>
             </div>
