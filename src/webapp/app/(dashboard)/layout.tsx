@@ -99,7 +99,7 @@ function Header() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-amber-100/40">
+    <div className="flex flex-col min-h-screen bg-amber-100/40">
       <Header />
       <main className="flex-grow">
         {children}

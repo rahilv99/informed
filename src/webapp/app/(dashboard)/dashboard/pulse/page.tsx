@@ -23,6 +23,10 @@ export default async function Page() {
 
     if (!isActive && currentKeywords.length === 0) {
       redirect('/identity');
+    } 
+
+    if (!isActive) {
+      redirect('/day');
     }
 
     return (

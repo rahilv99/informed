@@ -404,6 +404,7 @@ export async function submitInterests(user_input: string) {
   const res = await sendToSQS(keys);
 
   if (res.error) {
+    console.log(res.error)
     return { error: "Error setting interests. Please try again later." };
   }
 
@@ -421,6 +422,7 @@ export async function updateInterests(keywords: string[]) {
   const res = await sendToSQS(keywords);
 
   if (res.error) {
+    console.log(res.error)
     return { error: 'Interests updated successfully' };
   }
 

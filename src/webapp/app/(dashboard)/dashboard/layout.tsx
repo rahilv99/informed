@@ -12,9 +12,9 @@ export default function DashboardLayout({
   const isMobile = useMediaQuery("(max-width: 768px)")
 
   return (
-    <div className="flex h-screen flex-col md:flex-row">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {isMobile ? <MobileHeader /> : <Sidebar />}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+      <main className="flex-1 p-4 md:p-8">{children}</main>
     </div>
   )
 }
