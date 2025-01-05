@@ -20,23 +20,31 @@ export function Interests() {
   };
 
   const handleSubmit = async () => {
-    // BACKEND - send the keywords to database
-    const ret = await submitInterests(keywords);
+    try {
+      const ret = await submitInterests(keywords);
 
-    if (ret.error) {
+      if (ret.error) {
+        toast({
+          title: "Error",
+          description: ret.error,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Your interests have been saved.",
+        });
+        
+        setCurrentPage(4);
+        router.push("/day");
+      }
+    } catch (error) {
+      console.error("Error submitting interests:", error);
       toast({
         title: "Error",
-        description: ret.error,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Your interests have been saved.",
-      });
-      setCurrentPage(4)
-      router.push("/day")
-      
     }
   };
 
@@ -50,7 +58,7 @@ export function Interests() {
                 Tell us about your interests
               </h1>
               <p className="mt-4 text-base text-gray-700">
-                Enter a 5-10 keywords that describe your research, projects, or
+                Enter 5-10 keywords that describe your research, projects, or
                 work.
               </p>
             </div>

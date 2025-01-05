@@ -10,7 +10,7 @@ export const users = pgTable('users', {
   delivered: timestamp('delivered').notNull().default(new Date(0)),
   active: boolean('active').notNull().default(false),
   keywords: jsonb('keywords').notNull(),
-  role: varchar('role', { length: 20 }).notNull().default('Other'),
+  role: varchar('role', { length: 255 }).notNull().default('Other'),
   occupation: varchar('occupation', { length: 255 }),
   stripeCustomerId: text('stripe_customer_id').unique(),
   stripeSubscriptionId: text('stripe_subscription_id').unique(),

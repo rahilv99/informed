@@ -379,6 +379,7 @@ export async function updateUserRole(designations: string[]) {
   // Update the user's position
   await updateUser(user.id, { role: roleString });
 
+
   return { success: true, message: 'Roles updated successfully' };
 }
 
