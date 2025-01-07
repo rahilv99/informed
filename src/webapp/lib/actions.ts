@@ -215,7 +215,7 @@ export const resetPassword = validatedAction(
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
-  password: z.string().min(8).max(100),
+  password: z.string().min(8, { message: "Password must be 8 characters or longer" }).max(100),
   redirect: z.string().optional(),
   priceId: z.string().optional(),
   inviteId: z.string().optional(),
@@ -227,7 +227,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   const user = await getUserByEmail(email);
 
-  if (!user) {
+  if (user.length === 0) {
     return { error: 'Invalid email or password. Please try again.' };
   }
 

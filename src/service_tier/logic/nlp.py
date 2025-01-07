@@ -403,7 +403,7 @@ def handler(payload):
             "payload": { 
             "user_id": user_id,
             "user_email": user_email,
-            "eposide": episode,
+            "episode": episode,
             "ep_type": ep_type
             }
         }
