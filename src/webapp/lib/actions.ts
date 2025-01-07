@@ -32,14 +32,14 @@ const sqs = new SQSClient({
 });
 
 export async function sendToSQS(keywords: string[]) {
-  
+
   const user = await getUser();
   if (!user) {
     redirect('/sign-in');
   }
 
   if (keywords.length === 0) {
-    return {error: 'Keywords passed to SQS incorrectly' };
+    return { error: 'Keywords passed to SQS incorrectly' };
   }
 
   const params = {
@@ -47,8 +47,8 @@ export async function sendToSQS(keywords: string[]) {
     MessageBody: JSON.stringify({
       "action": "e_user_topics",
       "payload": {
-          "user_id": user.id,
-          "user_input": keywords
+        "user_id": user.id,
+        "user_input": keywords
       }
     })
   };
@@ -56,7 +56,7 @@ export async function sendToSQS(keywords: string[]) {
   try {
     const command = new SendMessageCommand(params);
     await sqs.send(command);
-    
+
     return { success: 'Message sent successfully to SQS' };
   } catch (error) {
     return { error: 'Failed to send message to SQS' };
@@ -86,9 +86,91 @@ async function sendVerificationEmail(email: string, userId: number) {
       Body: {
         Html: {
           Data: `
-            <h1>Verify your email address</h1>
-            <p>Click the link below to verify your email address:</p>
-            <a href="${process.env.BASE_URL}/verify-email?token=${token}">Verify Email</a>
+          <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Verify Your Email</title>
+                <style>
+                    body {
+                        font-family: 'Inter', 'Lato', Arial, sans-serif;
+                        background-color: #F8F7FD;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                        text-align: center;
+                    }
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background-color: #FFFFFF;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    }
+                    .header {
+                        background-color: #1F2937;
+                        padding: 20px;
+                    }
+                    .header img {
+                        max-width: 60px;
+                        height: auto;
+                    }
+                    .header h1 {
+                        color: #FFFFFF;
+                        font-size: 24px;
+                        margin: 10px 0 0;
+                    }
+                    .content {
+                        padding: 20px;
+                        background-color: #FBF7E7;
+                    }
+                    .content h2 {
+                        color: #1F2937;
+                        font-size: 22px;
+                    }
+                    .content p {
+                        margin: 15px 0;
+                        font-size: 16px;
+                        line-height: 1.5;
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 10px 20px;
+                        background-color: #1F2937;
+                        color: #FFFFFF;
+                        text-decoration: none;
+                        font-size: 16px;
+                        border-radius: 5px;
+                        margin-top: 20px;
+                    }
+                    .footer {
+                        padding: 10px;
+                        font-size: 12px;
+                        color: #9F9DA8;
+                        background-color: #FBF7E7;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <img src="https://auxiom-email-assets.s3.us-east-1.amazonaws.com/2.png" alt="Auxiom Logo">
+                        <h1>Auxiom</h1>
+                    </div>
+                    <div class="content">
+                        <h2>Welcome to Your Auxiom!</h2>
+                        <p>Thank you for signing up. Please verify your email address to complete your registration and get started with your account.</p>
+                        <a href="${process.env.BASE_URL}/verify-email?token=${token}" class="button">Verify Email</a>
+                    </div>
+                    <div class="footer">
+                        <p>If you did not sign up for this account, please ignore this email.</p>
+                        <p>Copyright © 2025 Auxiom, all rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
           `,
         },
       },
@@ -104,33 +186,33 @@ async function sendVerificationEmail(email: string, userId: number) {
 }
 
 export async function verifyEmail(token: string) {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-    const userId = parseInt(decoded.userId, 10);
+  const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+  const userId = parseInt(decoded.userId, 10);
 
-    if (isNaN(userId)) {
-      redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
-    }
+  if (isNaN(userId)) {
+    redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
+  }
 
-    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
-    if (user.length === 0) {
-      redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
-    }
+  if (user.length === 0) {
+    redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
+  }
 
-    // Update the user's email_verified status
-    try {
-      await updateUser(userId, { verified: true });
-    } catch (error) {
-      redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
-    }
+  // Update the user's email_verified status
+  try {
+    await updateUser(userId, { verified: true });
+  } catch (error) {
+    redirect('/sign-in?message=Invalid or expired verification link. Please sign in again.');
+  }
 
-    await setSession(user[0]);
+  await setSession(user[0]);
 
-    if (user[0].active === false) {
-      redirect('/identity');
-    } else {
-      redirect('/dashboard/pulse');
-    }
+  if (user[0].active === false) {
+    redirect('/identity');
+  } else {
+    redirect('/dashboard/pulse');
+  }
 }
 
 
@@ -150,7 +232,7 @@ export const forgotPassword = validatedAction(forgotPasswordSchema, async (data,
 
   const token = jwt.sign({ userId: user[0].id }, process.env.JWT_SECRET!, { expiresIn: '1h' });
 
-  const ses = new SESClient({ 
+  const ses = new SESClient({
     region: "us-east-1",
     credentials: {
       accessKeyId: process.env.ACCESS_KEY!,
@@ -170,10 +252,91 @@ export const forgotPassword = validatedAction(forgotPasswordSchema, async (data,
       Body: {
         Html: {
           Data: `
-            <h1>Reset your password</h1>
-            <p>Click the link below to reset your password:</p>
-            <a href="${process.env.BASE_URL}/reset-password?token=${token}">Reset Password</a>
-            <p>This link will expire in 1 hour.</p>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Reset Your Password</title>
+                <style>
+                    body {
+                        font-family: 'Inter', 'Lato', Arial, sans-serif;
+                        background-color: #F8F7FD;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                        text-align: center;
+                    }
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background-color: #FFFFFF;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    }
+                    .header {
+                        background-color: #1F2937;
+                        padding: 20px;
+                    }
+                    .header img {
+                        max-width: 60px;
+                        height: auto;
+                    }
+                    .header h1 {
+                        color: #FFFFFF;
+                        font-size: 24px;
+                        margin: 10px 0 0;
+                    }
+                    .content {
+                        padding: 20px;
+                        background-color: #FBF7E7;
+                    }
+                    .content h2 {
+                        color: #1F2937;
+                        font-size: 22px;
+                    }
+                    .content p {
+                        margin: 15px 0;
+                        font-size: 16px;
+                        line-height: 1.5;
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 10px 20px;
+                        background-color: #1F2937;
+                        color: #FFFFFF;
+                        text-decoration: none;
+                        font-size: 16px;
+                        border-radius: 5px;
+                        margin-top: 20px;
+                    }
+                    .footer {
+                        padding: 10px;
+                        font-size: 12px;
+                        color: #9F9DA8;
+                        background-color: #FBF7E7;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <img src="https://auxiom-email-assets.s3.us-east-1.amazonaws.com/2.png" alt="Auxiom Logo">
+                        <h1>Auxiom</h1>
+                    </div>
+                    <div class="content">
+                        <h2>Reset Your Password</h2>
+                        <p>We received a request to reset your password. Click the button below to reset it. This link will expire in 1 hour.</p>
+                        <a href="${process.env.BASE_URL}/reset-password?token=${token}" class="button">Reset Password</a>
+                    </div>
+                    <div class="footer">
+                        <p>If you didn’t request a password reset, you can safely ignore this email.</p>
+                        <p>Copyright © 2025 Auxiom, all rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
           `,
         },
       },
@@ -520,7 +683,7 @@ export async function setAccountStatus(status: boolean) {
   }
   // verify keywords not null
   const keywords = user.keywords;
-  if (Array.isArray(keywords) && keywords.length < 5 || user.name === '' || user.occupation === '' ) {
+  if (Array.isArray(keywords) && keywords.length < 5 || user.name === '' || user.occupation === '') {
 
     return { error: 'Onboarding not complete' };
   }
