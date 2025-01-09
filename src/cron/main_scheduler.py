@@ -21,6 +21,9 @@ def _handler(event, context):
     print(f"Got {len(user_records)} records from DB")
     for user in user_records:
         user_id, name, email, plan, last_delivered_ts, episode = user
+
+        name = split(name, ' ')[0]
+        
         if not skip_delivery(last_delivered_ts.timestamp()):
             print(f"Sent pulse for user {email}")
             send_to_sqs(

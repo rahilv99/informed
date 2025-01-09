@@ -110,7 +110,7 @@ const toggleNoteSelection = (id: number) => {
               {notes.map((note) => (
                 <div key={note.id} className="mb-4 group relative">
                   <div className={`p-3 pl-4 rounded-md transition-all duration-200 flex items-center ${
-                    note.isComplete ? 'bg-slate-600/30' : 'bg-cyan-900/10'
+                    note.isComplete ? 'bg-slate-600/30' : 'bg-gray-900/10'
                   }`}>
                     {note.isComplete && (
                       <Checkbox

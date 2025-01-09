@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { customerPortalAction } from "@/lib/payments/actions"
 
 const cancelSubscriptionFormSchema = z.object({
   confirmCancel: z.literal("CANCEL", {
@@ -39,11 +40,11 @@ type CancelSubscriptionFormValues = z.infer<typeof cancelSubscriptionFormSchema>
 
 // Mock function to simulate Stripe API call
 const cancelStripeSubscription = async (customerId: string) => {
-  // In a real implementation, you would use the Stripe SDK here
-  console.log(`Cancelling subscription for customer: ${customerId}`)
-  
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  // create form data
+  const formData = new FormData()
+  formData.append("customerId", customerId)
+
+  await customerPortalAction(formData)
   
   // Simulate successful cancellation
   return { success: true, message: "Subscription successfully cancelled" }

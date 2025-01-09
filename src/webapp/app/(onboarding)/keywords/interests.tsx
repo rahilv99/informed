@@ -58,7 +58,7 @@ export function Interests() {
                 Tell us about your interests
               </h1>
               <p className="mt-4 text-base text-gray-700">
-                Enter 5-10 keywords that describe your research, projects, or
+                Enter 5-10 interests that describe your research, projects, or
                 work.
               </p>
             </div>
