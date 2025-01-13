@@ -22,7 +22,8 @@ def _handler(event, context):
     for user in user_records:
         user_id, name, email, plan, last_delivered_ts, episode = user
 
-        name = split(name, ' ')[0]
+        name = name.split(' ')
+        name = name[0]
         
         if not skip_delivery(last_delivered_ts.timestamp()):
             print(f"Sent pulse for user {email}")

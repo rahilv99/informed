@@ -143,7 +143,7 @@ def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
         summaries = summaries
 
     system_prompt =f"""
-    Act as a podcast script writer for a podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** is asking questions, and **HOST 2** explains using the summaries of articles below.
+    Act as a podcast script writer for a podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** and **HOST 2** have an academic dialouge using the summaries of articles below.
     FORMAT
     - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
     - The speakers should minimize referring to each other. If they must, HOST 1 = Mia and HOST 2 = Leo
@@ -166,8 +166,8 @@ def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
     {additional_text}
     Example: 
     **HOST 1**: Today we have an article about X...
-    **HOST 2 **: That's right, Mia. The article discusses Y...
-    **HOST 1**: Leo, how does this article relate to Z?
+    **HOST 2 **: That's right. The article discusses Y...
+    **HOST 1**: How does this article relate to Z?
 
     Remember: This script must be at least {tokens} tokens long. Do not produce fewer.
 
@@ -216,8 +216,6 @@ def generate_email_headers(all_data, plan = 'free', ep_type = 'pulse'):
     def _clean_summary_text(text):
         text = re.sub(r'\*', '', text)
         return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
-    if plan == 'free':
-        all_data = all_data.head(2)
 
     podcast_description = all_data[['title', 'url', 'summary']].copy()
 
@@ -382,6 +380,9 @@ def handler(payload):
 
     pulse = PulseOutput(user_id)
     all_data = pulse.all_data
+
+    if plan == 'free':
+        all_data = all_data.head(3)
 
     num_turns = create_conversational_podcast(all_data, user_name, plan = plan, ep_type = ep_type)
 
