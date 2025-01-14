@@ -22,20 +22,6 @@ const products = [
     ]
   },
   {
-    id: 'Insight',
-    name: 'Insight',
-    tagline: 'The Best Morning Routine Since Coffee',
-    description: 'Apply Auxiom models to your documents to gain deeper insights in less time.',
-    subProducts: [
-      {
-        id: 'insight',
-        name: 'Insight',
-        description: 'Want your podcast to be about something in particular? Queue up scientific papers or topics, and get expert summaries and analysis.',
-        demo: '/demo/insight'
-      }
-    ]
-    },
-  {
     id: 'Notes',
     name: 'Notes',
     tagline: 'Fuel your Curiosity',
