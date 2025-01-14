@@ -212,7 +212,7 @@ def generate_script(all_data, name, plan = 'free', ep_type = 'pulse'):
     script = make_script_with_rate_limit(summaries, titles, name, plan, ep_type)
     return script.text
 
-def generate_email_headers(all_data, plan = 'free', ep_type = 'pulse'):
+def generate_email_headers(all_data, ep_type = 'pulse'):
     def _clean_summary_text(text):
         text = re.sub(r'\*', '', text)
         return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
@@ -388,7 +388,7 @@ def handler(payload):
 
     write_to_s3(num_turns, user_id)
 
-    email_description, episode_title = generate_email_headers(all_data, plan = plan, ep_type = ep_type)
+    email_description, episode_title = generate_email_headers(all_data, ep_type = ep_type)
 
     # Save the email description to S3
     common.s3.save_serialized(user_id, "EMAIL", {

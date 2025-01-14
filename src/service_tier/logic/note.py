@@ -111,19 +111,31 @@ def enforce_rate_limit(model_name):
             script_model_counter += 1
 
 # Wrap API calls to enforce rate limits
-def summarize_with_rate_limit(url, use = 'script'):
-    enforce_rate_limit("summary_model")
-    return summarize(url, use)
+def summarize_with_rate_limit(arg, use = 'script'):
+    enforce_rate_limit("summary_model")        
+    return summarize(arg, use)
 
 def make_script_with_rate_limit(topics, summaries, sources, name):
     enforce_rate_limit("script_model")
     return make_script(topics, summaries, sources, name)
 
 
-def summarize(url):
-    prompt = f"Provide a succinct summary of the source. \
-        Highlight the key details that fundamentally explain the contents of the source. Only include the summary itself;\
-        avoid any introductions, explanations, or meta-comments. Make the summary attention-grabbing and informative. {url}"
+def summarize(arg, use = 'script'):
+    if use == 'title':
+        prompt = f"Create a title for the podcast based on the title of the academic articles discussed. The title should be attention-grabbing, professional, and informative.\
+                    Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This generated title will be in an email newsletter.\
+            Titles: {arg}"
+    elif use == 'article_title':
+        prompt = f"Scrape the title from this webpage. If the title is not directly available, infer a title from the contents.\
+                    Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This title will be in an email newsletter.\
+            URL: {arg}"
+    elif use == 'email':
+        f"Provide a succinct TLDR summary about the article linked'.\
+        Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
+        avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
+        URL: {arg}"
+    else:
+        prompt = f"Provide a clear summary of the source. Highlighting the key details that fundamentally explain the contents of the source. URL: {arg}"
     
     response = summary_model.generate_content(prompt)
     return response
@@ -149,7 +161,7 @@ def make_script(topics, summaries, sources, name):
     - This is custom made for one listener named {name}, greet them at the beginning of the episode.
     Example: 
     **HOST 1**: Today we have a super exciting show for you. We're talking about the latest in X, Y, and Z.
-    **HOST 2**: That's right. These new developments are really pushing the boundaries of technology.
+    **HOST 2**: That's right. These new developments are really pushing the boundaries of this field.
     **HOST 1**: Absolutely. Let's dive right in. So, X is being used in ...
     **HOST 2**: What developments made X possible?
     ... (continue the conversation)
@@ -201,7 +213,7 @@ def clean_text_for_conversational_tts(input_text):
 
     output_text = []
     for statement in statements:
-        # Remove (Aria): and (Theo): if exist
+        # Remove (Aria): and (Leo): if exist
         ret = statement.replace('(Leo):', '').replace('(Mia):', '')
 
         # Replace '\n' with a space
@@ -219,11 +231,9 @@ def clean_text_for_conversational_tts(input_text):
     print(output_text)
     return output_text
 
-def create_conversational_podcast(all_data, name):
+def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 
     def _create_line(client, host, line, num, chunk):
-        # $5 of credit here
-        # can spend on summarization and script generation
 
         if host == 1:
             # female
@@ -232,7 +242,7 @@ def create_conversational_podcast(all_data, name):
             # male
             voice = 'onyx'
 
-        output_file = f"data/conversation/{host}/line_{num}_{chunk}.mp3"
+        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}_{chunk}.mp3"
 
          # Ensure the output directory exists
         output_dir = os.path.dirname(output_file)
@@ -240,7 +250,7 @@ def create_conversational_podcast(all_data, name):
         
         try:
             response = client.audio.speech.create(
-                model="tts-1",  # Model for TTS (use "tts-1" or "tts-1-hd")
+                model="tts-1", # (use "tts-1" or "tts-1-hd")
                 voice=voice,
                 input=line
             )
@@ -252,10 +262,13 @@ def create_conversational_podcast(all_data, name):
             print(f"Audio file saved as {output_file}")
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"An error occurred while generating TTS: {e}")
+        
+        if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
+            raise ValueError(f"Failed to create audio file: {output_file}")
+
 
     # Instantiates a client
-
     script = generate_script(all_data, name)
     turns = clean_text_for_conversational_tts(script)
 
@@ -273,41 +286,52 @@ def create_conversational_podcast(all_data, name):
             for chunk_index, chunk in enumerate(chunks):
                 _create_line(client, host, chunk, index, chunk_index)
 
-            chunk_files = [f"data/conversation/{host}/line_{index}_{i}.mp3" for i in range(len(chunks))]
+            chunk_files = [f"{TEMP_BASE}/conversation/{host}/line_{index}_{i}.mp3" for i in range(len(chunks))]
             combined_audio = AudioSegment.empty()
             for file in chunk_files:
                 audio_segment = AudioSegment.from_mp3(file)
                 combined_audio += audio_segment
 
-            combined_output_file = f"data/conversation/{host}/line_{index}_0.mp3"
+            print(f"Combined chunked audio for line {index}")
+            combined_output_file = f"{TEMP_BASE}/conversation/{host}/line_{index}_0.mp3"
             combined_audio.export(combined_output_file, format="mp3")
 
             # Clean up individual chunk files
             for file in chunk_files:
                 os.remove(file)
-
         else:
             _create_line(client, host, sentence, index, 0)
 
         time.sleep(60 / 500)  # rate limit = 500 requests per minute
 
-    # merge audio files
-    # Create a new AudioSegment object
-    final_audio = AudioSegment.from_mp3('data/conversation/1/line_0_0.mp3')
-    for i in range(1, len(turns)):
-        audio = AudioSegment.from_mp3(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
-        # clean up
-        os.remove(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
+    return len(turns)
 
-        final_audio = final_audio.append(audio)
+def generate_email_headers(all_data):
+    def _clean_summary_text(text):
+        text = re.sub(r'\*', '', text)
+        return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
 
-    # add intro music
-    intro_music = AudioSegment.from_file("data/intro_music.mp3")
-    final_audio = intro_music.append(final_audio, crossfade=1000)
+    rows = []
+    for row in all_data.iterrows:
+        citations = row['citations']
+        for url in citations:
+                summary = summarize_with_rate_limit(url, use = 'email').text
+                summary = _clean_summary_text(summary)
+                title = summarize_with_rate_limit(url, use = 'article_title').text
+                title = _clean_summary_text(title)
 
-    # Export the final audio
-    final_audio.export("data/conversation/final_conversation.mp3", format="mp3")
-    print("Conversation audio file saved as data/conversation/final_conversation.mp3")
+                rows.append({'description': summary, 'title': title, 'url': url})
+
+    podcast_description = pd.DataFrame(rows)
+    
+    titles = podcast_description['title'].tolist()
+    titles = ", ".join(titles)
+
+    episode_title = summarize_with_rate_limit("", titles, use = 'title')
+    episode_title = _clean_summary_text(episode_title.text)
+
+    return podcast_description, episode_title
+
 
 def get_data(user_topics):
     all_data = pd.DataFrame(user_topics, columns=['topic'])
@@ -319,11 +343,12 @@ def get_data(user_topics):
     for index, row in all_data.iterrows():
         response = perplexity(row['topic'])
         all_data.at[index, 'summary'] = response['choices'][0]['message']['content']
-        all_data.at[index, 'citations'] = response['citations']
-
         citations = response['citations']
+        citations = citations[:3]
+        all_data.at[index, 'citations'] = citations
         sources = {}
-        for url in citations[0:3]:
+
+        for url in citations:
             summary = summarize_with_rate_limit(url, use = 'script')
             
             sources[url] = summary.text
@@ -337,13 +362,51 @@ def get_data(user_topics):
     return all_data
 
 
-
-
-if __name__ == '__main__':
-
-    user_topics = ['Latest updates on the Google Willow Chip', 'What are the latest trends on the Chinese real estate market?', 'What makes ozempic so effective?']
-    name = 'Rahil'
+def handler(payload):
+    user_id = payload.get("user_id")
+    user_name = payload.get("user_name")
+    user_email = payload.get("user_email")
+    plan = payload.get("plan")
+    episode = payload.get("episode")
+    ep_type = payload.get("ep_type")
+    user_topics = payload.get("user_topics")
 
     all_data = get_data(user_topics)
 
-    create_conversational_podcast(all_data, name)
+    num_turns = create_conversational_podcast(all_data, name)
+
+    write_to_s3(num_turns, user_id)
+
+    email_description, episode_title = generate_email_headers(all_data)
+
+    # Save the email description to S3
+    common.s3.save_serialized(user_id, "EMAIL", {
+        "email_description": email_description,
+        "episode_title": episode_title
+    })
+
+    # Send message to SQS
+    try:
+        next_event = {
+            "action": "e_email",
+            "payload": { 
+            "user_id": user_id,
+            "user_email": user_email,
+            "episode": episode,
+            "ep_type": ep_type
+            }
+        }
+        common.sqs.send_to_sqs(next_event)
+        print(f"Sent message to SQS for next action {next_event['action']}")
+    except Exception as e:
+        print(f"Exception when sending message to SQS {e}")
+
+if __name__ == "__main__":
+    handler(None)
+
+    #user_topics = ['Latest updates on the Google Willow Chip', 'What are the latest trends on the Chinese real estate market?', 'What makes ozempic so effective?']
+    #name = 'Rahil'
+
+    #all_data = get_data(user_topics)
+
+    #create_conversational_podcast(all_data, name)

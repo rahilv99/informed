@@ -1,6 +1,7 @@
 import logic.user_topics
 import logic.pulse
 import logic.nlp
+import logic.note
 import email_delivery.ses
 import json
 import traceback
@@ -39,6 +40,7 @@ def _handler(event, context):
         "e_pulse": logic.pulse.handler,
         "e_nlp": logic.nlp.handler,
         "e_email": email_delivery.ses.handler,
+        "e_note": logic.note.handler
     }
 
     # Route to the appropriate function
