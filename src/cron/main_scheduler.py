@@ -15,6 +15,9 @@ db_access_url = "postgresql://auxiompostgres:astrapodcast!@auxiom-db.cls8qy6qqk3
 def _handler(event, context):
     print("Cron lambda Invoked")
 
+
+    # handle pulse customers 
+    pulse_customers = []
     # Get all active users whose delivery day is today
     today_weekday = datetime.now().weekday() + 1  # Python weekday 0=Mon, 1=Tues and so on
     user_records = db_getusers(today_weekday)
@@ -26,6 +29,7 @@ def _handler(event, context):
         name = name[0]
         
         if not skip_delivery(last_delivered_ts.timestamp()):
+            pulse_customers.append(user_id)
             print(f"Sent pulse for user {email}")
             send_to_sqs(
                 {
@@ -43,6 +47,34 @@ def _handler(event, context):
             # Update user's delivery information
             print(f"Updated delivery for user {email}")
             update_user_delivery(user_id)
+    
+    # handle notes customers
+
+    user_records = db_getnotes()
+
+    for user in user_records:
+        user_id, name, email, plan, notes, active_notes, episode = user
+
+        if user_id in pulse_customers:
+            print(f"Skipping notes for user {email} as they were already sent pulse")
+            continue
+        send_to_sqs(
+            {
+                "action": "e_note",
+                "payload": {
+                    "user_id": user_id,
+                    "user_name": name,
+                    "user_email": email,
+                    "plan": plan,
+                    "notes": notes,
+                    "episode": episode
+                }
+            }
+        )
+
+        # Clear active notes for the user
+        db_clear_active_notes(user_id, active_notes)
+
 
 
 def db_getusers(today_weekday):
@@ -119,6 +151,118 @@ def skip_delivery(last_delivered_ts):
     
     return False
 
+def db_getnotes():
+    try:
+        # Connect to the database
+        conn = psycopg2.connect(
+            dsn=db_access_url
+        )
+        cursor = conn.cursor()
+
+        # Query to retrieve users with non-empty active_notes
+        query = """
+            SELECT id, name, email, plan, notes, active_notes, episode
+            FROM users
+            WHERE jsonb_array_length(active_notes) > 0
+            """
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows
+        rows = cursor.fetchall()
+
+        # Process rows to parse jsonb columns
+        processed_rows = []
+        for row in rows:
+            user_id, user_name, user_email, plan, notes, active_notes, episode = row
+            
+            # Deserialize notes and active_notes from JSONB into Python lists
+            notes_list = json.loads(notes) if notes else []
+            active_notes_list = json.loads(active_notes) if active_notes else []
+
+            # Get the specific notes indexed by active_notes
+            indexed_notes = [notes_list[i] for i in active_notes_list if i < len(notes_list)]
+
+            processed_rows.append({
+                "user_id": user_id,
+                "user_name": user_name,
+                "user_email": user_email,
+                "plan": plan,
+                "notes": indexed_notes,
+                "active_notes": active_notes_list,
+                "episode": episode
+            })
+
+        return processed_rows
+
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def db_clear_active_notes(user_id, active_notes):
+    try:
+        # Connect to the database
+        conn = psycopg2.connect(
+            dsn=db_access_url
+        )
+        cursor = conn.cursor()
+
+        # Fetch current notes for the given user
+        cursor.execute(
+            """
+            SELECT notes
+            FROM users
+            WHERE id = %s
+            """,
+            (user_id,)
+        )
+        result = cursor.fetchone()
+
+        if not result:
+            print(f"User with ID {user_id} not found.")
+            return
+
+        # Parse notes from JSONB
+        notes = json.loads(result[0]) if result[0] else []
+
+        # Remove notes specified by indices in active_notes
+        filtered_notes = [
+            note for i, note in enumerate(notes) if i not in active_notes
+        ]
+
+        # Update notes and reset active_notes in the database
+        cursor.execute(
+            """
+            UPDATE users
+            SET notes = %s,
+                active_notes = '[]'::jsonb
+            WHERE id = %s
+            """,
+            (json.dumps(filtered_notes), user_id)
+        )
+
+        # Commit changes
+        conn.commit()
+        print(f"Successfully cleared active notes for user {user_id}.")
+
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        if conn:
+            conn.rollback()
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 def send_to_sqs(message):
     """

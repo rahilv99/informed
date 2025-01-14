@@ -368,8 +368,7 @@ def handler(payload):
     user_email = payload.get("user_email")
     plan = payload.get("plan")
     episode = payload.get("episode")
-    ep_type = payload.get("ep_type")
-    user_topics = payload.get("user_topics")
+    user_topics = payload.get("notes")
 
     all_data = get_data(user_topics)
 
