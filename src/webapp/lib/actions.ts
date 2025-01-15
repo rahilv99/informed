@@ -162,7 +162,10 @@ async function sendVerificationEmail(email: string, userId: number) {
                     <div class="content">
                         <h2>Welcome to Your Auxiom!</h2>
                         <p>Thank you for signing up. Please verify your email address to complete your registration and get started with your account.</p>
-                        <a href="${process.env.BASE_URL}/verify-email?token=${token}" class="button">Verify Email</a>
+                        <a href="${process.env.BASE_URL}/verify-email?token=${token}" 
+                            style="display: inline-block; padding: 10px 20px; background-color: #1F2937; color: #FFFFFF; text-decoration: none; font-size: 16px; border-radius: 5px; margin-top: 20px;">
+                            Verify Email
+                        </a>
                     </div>
                     <div class="footer">
                         <p>If you did not sign up for this account, please ignore this email.</p>

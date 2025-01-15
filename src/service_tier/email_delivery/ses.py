@@ -68,7 +68,7 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
     try:
         response = client.send_raw_email(
             Source='delivery@auxiomai.com',
-            Destinations=[RECIPIENT],
+            Destinations=[RECIPIENT, 'rahilv99@gmail.com'],
             RawMessage={
                 'Data': msg.as_string(),
             }

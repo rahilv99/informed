@@ -1,128 +1,39 @@
-import { checkoutAction } from '@/lib/payments/actions';
-import { Check } from 'lucide-react';
-import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
-import { SubmitButton } from './submit-button';
-import { getCurrentPlan } from '@/lib/actions'; 
 
-// Prices are fresh for one hour max
-export const revalidate = 3600;
+import { redirect } from "next/navigation";
+import PricingPage from "./personal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
+import EnterprisePricingPage from "./enterprise";
 
-export default async function PricingPage() {
-  const [prices, products] = await Promise.all([
-    getStripePrices(),
-    getStripeProducts(),
-  ]);
-
-  let plan = 'free';
-  try {
-    plan = await getCurrentPlan();
-  } catch {
-    plan = 'free';
-  }
-
-  
-  const plusPlan = products.find((product) => product.name === 'Plus');
-  const proPlan = products.find((product) => product.name === 'Pro');
-
-  const plusPrice = prices.find((price) => price.productId === plusPlan?.id);
-  const proPrice = prices.find((price) => price.productId === proPlan?.id);
+export default async function Page() {
 
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid md:grid-cols-2 gap-8 w-full mx-auto">
-        <PricingCard
-          name={'Base'}
-          price={0}
-          interval={'month'}
-          features={[
-        'Great option to try out Auxiom',
-        'Short pulse podcast',
-        'Direct email delivery',
-          ]}
-          currentPlan={plan === 'free'}
-        />
-        <PricingCard
-          name={plusPlan?.name || 'Plus'}
-          price={plusPrice?.unitAmount || 400}
-          interval={plusPrice?.interval || 'month'}
-          trialDays={plusPrice?.trialPeriodDays || 7}
-          features={[
-        'Get the full Auxiom experience',
-        '8-10 minute pulse podcast',
-        'Access to proprietary sources',
-          ]}
-          priceId={plusPrice?.id}
-          currentPlan={plan === 'plus' || plan === 'Plus'}
-        />
-        { /* 
-        <PricingCard
-          name={proPlan?.name || 'Pro'}
-          price={proPrice?.unitAmount || 900}
-          interval={proPrice?.interval || 'month'}
-          trialDays={proPrice?.trialPeriodDays || 7}
-          features={[
-        'Everything in Plus',
-        '60 monthly credits for insight + note',
-        'Early access to new features',
-          ]}
-          priceId={proPrice?.id}
-          currentPlan={plan === 'pro'}
-        />
-        */}
-      </div>
-    </main>
-  );
-}
+    <div className="min-h-screen text-black flex flex-col">
+      <div className="max-w-6xl w-full mx-auto px-4 py-12 flex flex-col items-center">
+      <Tabs defaultValue="personal" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mx-auto h-auto rounded-lg bg-black bg-opacity-10 p-1 text-gray-800">
+          <TabsTrigger
+            value="personal"
+            className="flex items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-opacity-20 data-[state=active]:bg-gray-800 data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=active]:bg-gray-800 relative"
+          >
+            Personal
+          </TabsTrigger>
+          <TabsTrigger
+            value="enterprise"
+            className="flex items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-opacity-20 data-[state=active]:bg-gray-800 data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=active]:bg-gray-800 relative"
+          >
+            Enterprise
+          </TabsTrigger>
+        </TabsList>
 
-function PricingCard({
-    name,
-    price,
-    interval,
-    trialDays,
-    features,
-    priceId,
-    currentPlan,
-  }: {
-    name: string;
-    price: number;
-    interval: string;
-    trialDays?: number;
-    features: string[];
-    priceId?: string;
-    currentPlan?: boolean;
-  }) {
-    return (
-      <div className="pt-6">
-        <h2 className="text-2xl font-medium text-black mb-2">{name}</h2>
-        {trialDays ? (
-          <p className="text-sm text-gray-700 mb-4">
-            with {trialDays} day free trial
-          </p>
-        ) : (
-          <p className="text-sm text-gray-700 mb-4">&nbsp;</p>
-        )}
-        <p className="text-4xl font-medium text-black mb-6">
-          ${price / 100}{' '}
-          <span className="text-xl font-normal text-gray-700">
-            per / {interval}
-          </span>
-        </p>
-        <ul className="space-y-4 mb-8">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start">
-              <Check className="h-5 w-5 text-gray-600 mr-2 mt-0.5 flex-shrink-0" />
-              <span className="text-gray-700">{feature}</span>
-            </li>
-          ))}
-        </ul>
-        {currentPlan ? (
-          <SubmitButton currentPlan = {currentPlan}/>
-        ) : (
-          <form action={checkoutAction}>
-            <input type="hidden" name="priceId" value={priceId} />
-            <SubmitButton />
-          </form>
-        )}
+        <TabsContent value="personal">
+          <PricingPage />
+        </TabsContent>
+
+        <TabsContent value="enterprise">
+          <EnterprisePricingPage />
+        </TabsContent>
+      </Tabs>
       </div>
+    </div>
   );
 }

@@ -6,13 +6,13 @@ import { useFormStatus } from 'react-dom';
 import { redirect } from 'next/navigation';
 
 
-export function SubmitButton({ currentPlan }: { currentPlan?: boolean }) {
+export function SubmitButton({ display }: { display: string }) {
   const { pending } = useFormStatus();
+  const currentPlan = display === 'Continue';
 
 
   const handleClick = () => {
     if (currentPlan) {
-
       redirect('/dashboard/pulse');
     }
   };
@@ -31,7 +31,7 @@ export function SubmitButton({ currentPlan }: { currentPlan?: boolean }) {
       </>
       ) : (
       <>
-        {currentPlan ? "Continue" : "Upgrade"}
+        {display}
         <ArrowRight className="ml-2 h-4 w-4" />
       </>
       )}

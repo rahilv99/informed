@@ -104,6 +104,9 @@ export async function createCustomerPortalSession(user: User) {
             ],
           },
         },
+        payment_method_update: {
+          enabled: true, // Enable payment method updates to resolve the issue
+        },
       },
     });
   }
