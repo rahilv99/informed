@@ -20,11 +20,12 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-
+  const subscription = event.data.object as Stripe.Subscription;
   switch (event.type) {
     case 'customer.subscription.updated':
+      await handleSubscriptionChange(subscription);
+      break;
     case 'customer.subscription.deleted':
-      const subscription = event.data.object as Stripe.Subscription;
       await handleSubscriptionChange(subscription);
       break;
     default:
