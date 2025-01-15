@@ -53,7 +53,7 @@ def _handler(event, context):
     user_records = db_getnotes()
 
     for user in user_records:
-        user_id, name, email, plan, notes, active_notes, episode = user
+        user_id, name, email, plan, note, active_notes, episode = user
 
         if user_id in pulse_customers:
             print(f"Skipping notes for user {email} as they were already sent pulse")
@@ -66,7 +66,7 @@ def _handler(event, context):
                     "user_name": name,
                     "user_email": email,
                     "plan": plan,
-                    "notes": notes,
+                    "notes": note,
                     "episode": episode
                 }
             }
@@ -161,7 +161,7 @@ def db_getnotes():
 
         # Query to retrieve users with non-empty active_notes
         query = """
-            SELECT id, name, email, plan, notes, active_notes, episode
+            SELECT id, name, email, plan, note, active_notes, episode
             FROM users
             WHERE jsonb_array_length(active_notes) > 0
             """
@@ -174,10 +174,10 @@ def db_getnotes():
         # Process rows to parse jsonb columns
         processed_rows = []
         for row in rows:
-            user_id, user_name, user_email, plan, notes, active_notes, episode = row
+            user_id, user_name, user_email, plan, note, active_notes, episode = row
             
             # Deserialize notes and active_notes from JSONB into Python lists
-            notes_list = json.loads(notes) if notes else []
+            notes_list = json.loads(note) if note else []
             active_notes_list = json.loads(active_notes) if active_notes else []
 
             # Get the specific notes indexed by active_notes
@@ -188,7 +188,7 @@ def db_getnotes():
                 "user_name": user_name,
                 "user_email": user_email,
                 "plan": plan,
-                "notes": indexed_notes,
+                "note": indexed_notes,
                 "active_notes": active_notes_list,
                 "episode": episode
             })
@@ -217,7 +217,7 @@ def db_clear_active_notes(user_id, active_notes):
         # Fetch current notes for the given user
         cursor.execute(
             """
-            SELECT notes
+            SELECT note
             FROM users
             WHERE id = %s
             """,
@@ -241,7 +241,7 @@ def db_clear_active_notes(user_id, active_notes):
         cursor.execute(
             """
             UPDATE users
-            SET notes = %s,
+            SET note = %s,
                 active_notes = '[]'::jsonb
             WHERE id = %s
             """,

@@ -46,7 +46,7 @@ export default function ProductsPage() {
         <h1 className="text-5xl font-bold text-center mb-12">Our Products</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mx-auto h-14 rounded-lg bg-black bg-opacity-10 p-1 text-gray-800">
+          <TabsList className="grid w-full grid-cols-2 mx-auto h-14 rounded-lg bg-black bg-opacity-10 p-1 text-gray-800">
             {products.map((product) => (
               <TabsTrigger
                 key={product.id}
