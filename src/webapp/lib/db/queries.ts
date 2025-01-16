@@ -69,9 +69,10 @@ export async function getUserByStripeCustomerId(stripeCustomerId: string) {
 
 // Update a user's Stripe details
 export async function updateUserSubscription(id: number, subscriptionData: {
+  stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   stripeProductId: string | null;
-  planName: string | null;
+  plan: string | 'free';
 }) {
   return await db.update(users).set(subscriptionData).where(eq(users.id, id)).returning();
 }
