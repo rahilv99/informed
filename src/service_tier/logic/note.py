@@ -15,7 +15,10 @@ from openai import OpenAI
 import time
 from threading import Lock
 
+import common.sqs
+import common.s3
 
+TEMP_BASE = "/tmp"
 
 GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -130,7 +133,7 @@ def summarize(arg, use = 'script'):
                     Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This title will be in an email newsletter.\
             URL: {arg}"
     elif use == 'email':
-        f"Provide a succinct TLDR summary about the article linked'.\
+        prompt = f"Provide a succinct TLDR summary about the article linked'.\
         Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
         avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
         URL: {arg}"
@@ -158,7 +161,7 @@ def make_script(topics, summaries, sources, name):
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.
     - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
     - Close with 'Thanks for listening to Astra, stay tuned for more episodes.'
-    - This is custom made for one listener named {name}, greet them at the beginning of the episode.
+    - This is tailored for one listener ({name}), say hello at the beginning.
     Example: 
     **HOST 1**: Today we have a super exciting show for you. We're talking about the latest in X, Y, and Z.
     **HOST 2**: That's right. These new developments are really pushing the boundaries of this field.
@@ -272,6 +275,8 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
     script = generate_script(all_data, name)
     turns = clean_text_for_conversational_tts(script)
 
+    turns = turns[:4] # for testing purposes
+
     key = os.environ.get("OPENAI_API_KEY")
     client = OpenAI(api_key=key)
 
@@ -306,13 +311,43 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 
     return len(turns)
 
+def write_to_s3(num_turns, user_id):
+    # merge audio files
+    # Create a new AudioSegment object
+    print("Merging audio files...")
+
+    final_audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/1/line_0_0.mp3")
+    for i in range(1, num_turns):
+
+        audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
+        # clean up -- TURN ON IF TESTING LOCAL
+        #os.remove(f"data/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
+
+        final_audio = final_audio.append(audio)
+
+    print("Audio files merged.")
+    # add intro music
+    # Load the intro music from s3
+    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
+
+    intro_music = AudioSegment.from_file(f"{TEMP_BASE}/intro_music.mp3")
+    final_audio = intro_music.append(final_audio, crossfade=1000)
+
+    print("Intro music added.")
+    final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
+    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.mp3")
+    # Export the final audio
+    common.s3.save(user_id, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
+
+    print("Audio file uploaded to S3.")
+
 def generate_email_headers(all_data):
     def _clean_summary_text(text):
         text = re.sub(r'\*', '', text)
         return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
 
     rows = []
-    for row in all_data.iterrows:
+    for row in all_data.iterrows():
         citations = row['citations']
         for url in citations:
                 summary = summarize_with_rate_limit(url, use = 'email').text
@@ -370,9 +405,11 @@ def handler(payload):
     episode = payload.get("episode")
     user_topics = payload.get("notes")
 
+    print(user_topics)
+
     all_data = get_data(user_topics)
 
-    num_turns = create_conversational_podcast(all_data, name)
+    num_turns = create_conversational_podcast(all_data, user_name)
 
     write_to_s3(num_turns, user_id)
 

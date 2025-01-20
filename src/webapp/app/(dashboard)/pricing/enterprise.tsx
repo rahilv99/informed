@@ -7,6 +7,7 @@ export default function B2BPricingPage() {
       <div className="grid md:grid-cols-2 gap-8 w-full mx-auto">
         <PricingCard
           name="Enterprise"
+          tagline = "Tailored for your business needs"
           features={[
             'Receive expertly curated content crucial to your business',
             'Make a company newsletter people will actually listen to',
@@ -16,9 +17,10 @@ export default function B2BPricingPage() {
         />
         <PricingCard
           name="Academic Institutions"
+          tagline = "Tailored for your academic pursuits"
           features={[
-            'Auxiom Pro accounts for everyone in your organization',
-            'Enable your people to be at the frontiers of their field',
+            'Auxiom Pro for everyone in your organization',
+            'Enable progression at the frontiers of fields',
             'Boost productivity and generate inspiration',
             'Organizational dashboard to distribute information',
           ]}
@@ -30,15 +32,17 @@ export default function B2BPricingPage() {
 
 function PricingCard({
   name,
+  tagline,
   features,
 }: {
   name: string;
+  tagline: string;
   features: string[];
 }) {
   return (
     <div className="pt-6">
       <h2 className="text-2xl font-medium text-black mb-2">{name}</h2>
-      <p className="text-sm text-gray-700 mb-4">Tailored for your organization</p>
+      <p className="text-sm text-gray-700 mb-4">{tagline}</p>
       <ul className="space-y-4 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">

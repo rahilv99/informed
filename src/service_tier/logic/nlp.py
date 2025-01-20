@@ -84,153 +84,171 @@ def enforce_rate_limit(model_name):
 
             script_model_counter += 1
 
-# Wrap API calls to enforce rate limits
-def summarize_with_rate_limit(title, text, use='summary', ep_type='secondary'):
+def summarize(title, text, use = 'summary'):
+    if use == 'email' or 'title':
+        tokens = 100 # email title / summaries
+    else: # pulse summaries (depracated)
+        tokens = 500
+        
+    if use == 'title':
+        prompt = f"Create a title for the podcast based on the title of the academic articles discussed. The title should be attention-grabbing, professional, and informative.\
+                    Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This generated title will be in an email newsletter.\
+            Titles: {text}"
+    else: # email header case
+        prompt = f"Provide a succinct TLDR summary about the academic article titled '{title}'.\
+            Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
+            avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
+            Text: {text}"
+    
     enforce_rate_limit("summary_model")
-    return summarize(title, text, use, ep_type)
+    response = summary_model.generate_content(prompt,
+                                                generation_config = genai.GenerationConfig(
+                                            max_output_tokens=tokens,
+                                            temperature=0.25))
+    return response.text
 
-def make_script_with_rate_limit(summaries, titles, name, plan='free', ep_type='pulse'):
-    enforce_rate_limit("script_model")
-    return make_script(summaries, titles, name, plan, ep_type)
 
-
-def summarize(title, text, use = 'summary', ep_type = 'secondary'):
-  if ep_type == 'secondary':
-      tokens = 400
-  elif ep_type == 'primary':
-      tokens = 800
-  else:
-      tokens = 100 # email title + summaries
-    
-  if use == 'summary':
-    prompt = f"Create a summary of the overall goal, methods, and results of the article titled '{title}'.\
-        Be sure to get all important information including the limitations where applicable. Your response should be at least {tokens-200} tokens \
-        Keep notes about the details of the article, including a header of the title.: {text}"
-  elif use == 'title':
-    prompt = f"Create a title for the podcast based on the title of the academic articles discussed. The title should be attention-grabbing, professional, and informative.\
-                Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This generated title will be in an email newsletter.\
-        Titles: {text}"
-  else: # email header case
-    prompt = f"Provide a succinct TLDR summary about the academic article titled '{title}'.\
-        Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
-        avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
-        Text: {text}"
-    
-  response = summary_model.generate_content(prompt,
-                                            generation_config = genai.GenerationConfig(
-                                        max_output_tokens=tokens,
-                                        temperature=0.25))
-  return response
-
-def make_script(summaries, titles, name, plan = 'free', ep_type = 'pulse'):
-    if ep_type == 'pulse':
-        if plan == 'plus':
-            tokens = 1600
-            summaries = summaries
-            additional_text = ''
-        else: # free
-            tokens = 800
-            summaries = summaries[:2]
-            additional_text = 'At the end of the podcast, tell the user they can subscribe to our premium plan for more in-depth analyses and longer podcasts. \n'
-    elif ep_type == 'insight':
-            additional_text = f'- The first article is the primary focus of this episode. We will explore the details of this article the most in depth, writing mostly about this. \
-                The second and third article have cited the first article, demonstrating the application of the 1st research. Discuss the 1st article in depth, finding how the other article(s) have applied the 1st.\
-                Only include information from the other articles that are direct applications of the first article. \n'
-            tokens = 800
-    else: # backup
-        tokens = 1000
-        additional_text = ''
-        summaries = summaries
+### Single article podcast segment
+def academic_segment(text, title, plan = 'free'):
+    if plan == 'free':
+        tokens = 180 # ~ 1:20 minute
+    else: # premium
+        tokens = 250 # ~ 1:40 minutes
 
     system_prompt =f"""
-    Act as a podcast script writer for a podcast Auxiom. Your task is to create a script to be sent to a text-to-speech model where **HOST 1** and **HOST 2** have an academic dialouge using the summaries of articles below.
-    FORMAT
-    - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
-    - The speakers should minimize referring to each other. If they must, HOST 1 = Mia and HOST 2 = Leo
-    - Always maintain the names of the hosts and their order. HOST 1 is always Mia, HOST 2 is always Leo.
-    - Make the conversation at least {tokens} tokens long.
-    EXTRACT FROM TEXT
-    - Use specific details from the text relevant to the goals, methods, and results
-    - Create a sequence, exploring the details of each article one by one
-    - Do not reference the summary generator or the AI model
-    - You may bring in knowledge from the your corpus of web data where necessary
-    SPEECH TIPS
-    - The hosts should be critical if the article has limitations
-    - These hosts are charismatic and professional. They are excited about the information.
-    - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, and don't use complex sentences/phrases.
-    - Sound human-like, be original and dynamic in the conversation.
-    - Include filler words like 'uh' or repeat words in many of the sentences to make the conversation more natural.
-    - Close with 'Thanks for listening, stay tuned for more episodes.'
-    - This is custom made for one listener named {name}, greet them at the beginning of the episode.
+        You are a professional podcast script writer for a podcast named Auxiom. Your task is to write a single section of a script to be sent to a text-to-speech model where 
+        **HOST 1** (Mia) and **HOST 2** (Leo) have an academic dialouge using the article below. 
+        FORMAT
+        - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
+        - HOST 1 = Mia and HOST 2 = Leo
+        - This is an intermeadiate segment. Only include the segment itself. avoid any introductions, explanations, or meta-comments
+        EXTRACT FROM TEXT
+        - Use specific details from the text relevant to the goals, methods, and results
+        - Create a sequence, exploring the details of each article one by one
+        - Be critical if the article has limitations
+        SPEECH TIPS
+        - These hosts are charismatic and professional. They are excited about the information.
+        - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, complex sentences/phrases, or acronyms.
+        - Sound human-like, be original and dynamic in the conversation.
+        - Include filler words like 'uh' or repeat words in the sentences to make the conversation more natural.
+
+        Example: 
+        **HOST 1**: Moving on, we have an article about X titled Y.
+        **HOST 2**: That's right. The article finds Z...
+        **HOST 1**: That's super cool! So they essentially found that X?
+        ...
+
+        Remember: This segment must be at least {tokens} tokens long. Do not produce fewer.
+        Article: {title}
+        Text: {text}"""
+
+    if plan == 'free':
+        enforce_rate_limit("summary_model")
+        response = summary_model.generate_content(system_prompt, 
+                                            generation_config = genai.GenerationConfig(
+                                            max_output_tokens=tokens+50,
+                                            temperature=0.3))
+    else: # premium
+        enforce_rate_limit("script_model")
+        response = script_model.generate_content(system_prompt, 
+                                            generation_config = genai.GenerationConfig(
+                                            max_output_tokens=tokens+100,
+                                            temperature=0.3))
+    return response.text
+
+
+### Podcast formatting and reviewing agent
+def review_script(script, tokens):
+    prompt = f"Review the script for the podcast episode, for input to a text-to-speech model. Refine any wording that may be difficult for a text-to-speech model.\
+              Make sure the content flows well and is engaging. Ensure the structure is marked with **HOST 1** and **HOST 2** at each conversational turn. \
+              Remove or replace acronyms where necessary. Do not add any unecessary phrases; this will be fed directly to a text-to-speech model.\
+        Script: {script}"
+
+    enforce_rate_limit("script_model")
+    response = script_model.generate_content(prompt, generation_config = genai.GenerationConfig(
+                                        max_output_tokens=tokens+250,
+                                        temperature=0.10))
+    return response.text
+
+def make_script(texts, titles, name, plan = 'free'):
+    if plan == 'plus':
+        tokens = 1600
+        summaries = summaries
+    else: # free
+        tokens = 800
+        texts = texts[:3]
+
+    segments = []
+    for i in range(len(texts)):
+        segments.append(academic_segment(texts[i], titles[i], plan))
     
-    {additional_text}
+    print('Processed ', len(segments), ' articles')
+    
+    ### Merge components with transitions, moderate content/speech
+    system_prompt =f"""
+    You are a senior editor for a podcast Auxiom. Your task is to take the segments written by other agents, refine their content, and merge them into a consistent flow.
+    INPUT
+    - Your agents have written multiple segments, with 1 article discussed in each
+    - The scripts should be marked according to the FORMAT below
+    FORMAT
+    - The script should be marked with **HOST 1** and **HOST 2** for each conversational turn
+    - HOST 1 = Mia and HOST 2 = Leo
+    - Make the conversation {tokens} tokens long.
+    TASK
+    - Merge the components, ensure the format is consistent (as above)
+    - Refine the content to be more engaging
+    - OPEN WITH: Hello {name}, welcome back to Auxiom!
+    - CLOST WITH: 'Thanks for listening, stay tuned for more episodes.'
+    SPEECH TIPS
+    - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, complex sentences/phrases, or acronyms.
+    
     Example: 
-    **HOST 1**: Today we have an article about X...
+    **HOST 1**: Hello {name}! Today we have an article about X...
     **HOST 2 **: That's right. The article discusses Y...
     **HOST 1**: How does this article relate to Z?
-
-    Remember: This script must be at least {tokens} tokens long. Do not produce fewer.
+    ...
+    Remember: This script must be {tokens} tokens long. Do not produce fewer.
 
 Articles: """
-    for i in range(len(summaries)):
-        system_prompt += f" Article {i} - {titles[i]}: {summaries[i]}"        
-
+    for i in range(len(segments)):
+        system_prompt += f" Article {i} - {titles[i]}: {segments[i]}"     
+       
+    enforce_rate_limit("script_model")
     response = script_model.generate_content(system_prompt, 
                                       generation_config = genai.GenerationConfig(
-                                        max_output_tokens=tokens+500,
-                                        temperature=0.3))
-    if plan == 'pro' or plan == 'plus':
-        response = review_script(response, tokens)
+                                        max_output_tokens=tokens+100,
+                                        temperature=0.25))
     
-    return response
+    ret = review_script(response.text, tokens)
 
-def review_script(script, tokens = 2500):
-    prompt = f"Review the script for the podcast episode, making it sound very human-like. Refine any wording that may be difficult for a text-to-speech model. Make sure the content flows well and is engaging.\
-        Retain the structure, including the conversational turns between the hosts. Remove or replace acronyms where necessary. Do not add any unecessary phrases as this will be fed directly to a text-to-speech model.\
-        Script: {script}"
-    response = script_model.generate_content(prompt, generation_config = genai.GenerationConfig(
-                                        max_output_tokens=tokens+500,
-                                        temperature=0.15))
-    return response
+    return ret
 
-def generate_script(all_data, name, plan = 'free', ep_type = 'pulse'):
+def generate_script(all_data, name, plan = 'free'):
     for index, row in all_data.iterrows():
         title = row['title']
         text = row['text']
 
-        if ep_type == 'insight' and index == 0:
-            article = 'primary' # extended summary for first article in deep dive (primary article)
-        else:
-            article = 'secondary'
-
-        summary = summarize_with_rate_limit(title, text, use = 'summary', ep_type = article)
-        all_data.at[index, 'summary'] = summary.text
-
     # generate script
-    summaries = all_data['summary'].tolist()
+    texts = all_data['text'].tolist()
     titles = all_data['title'].tolist()
-    script = make_script_with_rate_limit(summaries, titles, name, plan, ep_type)
-    return script.text
+    script = make_script(texts, titles, name, plan)
+    return script
 
-def generate_email_headers(all_data, ep_type = 'pulse'):
+def generate_email_headers(all_data):
     def _clean_summary_text(text):
         text = re.sub(r'\*', '', text)
         return re.sub(r'\s+', ' ', text.replace('\n', ' ').replace('\\', '')).strip()
 
-    podcast_description = all_data[['title', 'url', 'summary']].copy()
+    podcast_description = all_data[['title', 'url', 'text']].copy()
 
     podcast_description['description'] = podcast_description.apply(
-        lambda row: _clean_summary_text(summarize_with_rate_limit(row['title'], row['summary'], use='email').text),
+        lambda row: _clean_summary_text(summarize(row['title'], row['text'], use='email')),
         axis=1)
-    podcast_description.drop(columns=['summary'], inplace=True)
     
     titles = podcast_description['title'].tolist()
-    if ep_type == 'insight':
-        titles = titles[0]
-    else:
-        titles = ", ".join(titles)
-    episode_title = summarize_with_rate_limit("", titles, use = 'title')
-    episode_title = _clean_summary_text(episode_title.text)
+    titles = ", ".join(titles)
+    episode_title = summarize("", titles, use = 'title')
+    episode_title = _clean_summary_text(episode_title)
 
     return podcast_description, episode_title
 
@@ -246,8 +264,10 @@ def clean_text_for_conversational_tts(input_text):
 
     output_text = []
     for statement in statements:
-        # Remove (Aria): and (Theo): if exist
-        ret = statement.replace('(Leo):', '').replace('(Mia):', '')
+        # Remove :
+        statement = statement.replace(':', '')
+        # Remove (Leo): and (Mia): if exist
+        ret = statement.replace('(Leo)', '').replace('(Mia)', '')
 
         # Replace '\n' with a space
         ret = ret.replace('\n', ' ')
@@ -259,12 +279,13 @@ def clean_text_for_conversational_tts(input_text):
         # Ensure no extra spaces
         ret = re.sub(r'\s+', ' ', ret).strip()
         
-        output_text.append(ret)
+        if ret != '':
+          output_text.append(ret)
 
     print(output_text)
     return output_text
 
-def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
+def create_conversational_podcast(all_data, name, plan='free'):
 
     def _create_line(client, host, line, num, chunk):
 
@@ -302,7 +323,7 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
 
 
     # Instantiates a client
-    script = generate_script(all_data, name, plan=plan, ep_type=ep_type)
+    script = generate_script(all_data, name, plan=plan)
     turns = clean_text_for_conversational_tts(script)
 
     key = os.environ.get("OPENAI_API_KEY")
@@ -384,11 +405,11 @@ def handler(payload):
     if plan == 'free':
         all_data = all_data.head(3)
 
-    num_turns = create_conversational_podcast(all_data, user_name, plan = plan, ep_type = ep_type)
+    num_turns = create_conversational_podcast(all_data, user_name, plan = plan)
 
     write_to_s3(num_turns, user_id)
 
-    email_description, episode_title = generate_email_headers(all_data, ep_type = ep_type)
+    email_description, episode_title = generate_email_headers(all_data)
 
     # Save the email description to S3
     common.s3.save_serialized(user_id, "EMAIL", {

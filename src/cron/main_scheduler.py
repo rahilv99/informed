@@ -20,6 +20,8 @@ def _handler(event, context):
     pulse_customers = []
     # Get all active users whose delivery day is today
     today_weekday = datetime.now().weekday() + 1  # Python weekday 0=Mon, 1=Tues and so on
+    if today_weekday == 7:
+        today_weekday = 0
     user_records = db_getusers(today_weekday)
     print(f"Got {len(user_records)} records from DB")
     for user in user_records:

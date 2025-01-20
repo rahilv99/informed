@@ -48,6 +48,19 @@ email_json = {
     }
 }
 
+note_json = {
+    "action": "e_note",
+    "payload": {
+        "user_id": "5678",
+        "user_name": "Rahil",
+        "user_email": "rahilv99@gmail.com",
+        "plan": "pro",
+        "notes": ["Neuralink Implant", "What is causing the recent stock market downturn?", "How to enter the world of building startups"],
+        "episode": "1"
+    }
+}
+
+
 
 
 test_sqs = {'Records': [{'messageId': '42ed9301-9f03-43a8-88bd-ee1d69ddf566', 
