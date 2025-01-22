@@ -23,6 +23,7 @@ This is the active repository for Auxiom AI. There are 3 main components: AWS Or
 #### Information for developing auxiomai.com
 - UI components from shadcn/ui library
 - Useful tool for prototyping: Vercel v0
+- All of the server actions (interactive component) are in `/webapp/lib/actions.ts`
 
 ### Backend (Python)
 1. Navigate to `src/service_tier/logic`
