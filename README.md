@@ -7,7 +7,8 @@ This is the active repository for Auxiom AI. There are 3 main components: AWS Or
 ## Quickstart
 ### General
 1. Clone the repository to your local machine
-2. Note the repository begins in `src`.
+2. Request the .env file from Rahil if you are working on something that requires the db or API keys
+3. Note the repository begins in `src`.
     - The backend (python) is in `src/service_tier/logic`
     - The webapp (nextjs) is in `src/webapp`
     - The AWS orchestration is in `src/service_tier` and `src/cron` depending on the stack you are working on
@@ -18,6 +19,10 @@ This is the active repository for Auxiom AI. There are 3 main components: AWS Or
 3. Run `npm install` to install the dependencies locally
 4. Run `npm run dev` to run a local instance of the auxiom webapp at `localhost:3000`
 5. You can now modify components and see them change in real time!
+
+Information for developing auxiomai.com
+- UI components from shadcn/ui library
+- Useful tool for prototyping: Vercel v0
 
 ### Backend (Python)
 1. Navigate to `src/service_tier/logic`
