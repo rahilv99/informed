@@ -20,7 +20,7 @@ This is the active repository for Auxiom AI. There are 3 main components: AWS Or
 4. Run `npm run dev` to run a local instance of the auxiom webapp at `localhost:3000`
 5. You can now modify components and see them change in real time!
 
-Information for developing auxiomai.com
+#### Information for developing auxiomai.com
 - UI components from shadcn/ui library
 - Useful tool for prototyping: Vercel v0
 
