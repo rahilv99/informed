@@ -608,14 +608,14 @@ export async function submitDay(day: number) {
   return { success: true, message: 'Day updated successfully' };
 }
 
-export async function updateUserNameOccupation(formData: { name: string; occupation: string }) {
+export async function updateUserNameOccupation(formData: { name: string; occupation: string; industry: string }) {
   const user = await getUser();
   if (!user) {
     redirect('/sign-in');
   }
 
   // Update the user's name and occupation in the database
-  await updateUser(user.id, { name: formData.name, occupation: formData.occupation });
+  await updateUser(user.id, { name: formData.name, occupation: formData.occupation, industry: formData.industry });
 
   return { success: true, message: 'Name updated successfully' };
 }

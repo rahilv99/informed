@@ -29,7 +29,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     if (page === 1) {
       redirect("/identity")
     } else if (page === 2) {
-      redirect("/name")
+      redirect("/occupation")
     } else if (page === 3) {
       redirect("/keywords")
     } else if (page === 4) {
@@ -75,7 +75,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/identity" onClick={() => setCurrentPage(1)}>1</PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/name" onClick={() => setCurrentPage(2)}>2</PaginationLink>
+                  <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/occupation" onClick={() => setCurrentPage(2)}>2</PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationLink className="text-xl font-bold hover:bg-black hover:bg-opacity-10" href="/keywords" onClick={() => setCurrentPage(3)}>3</PaginationLink>

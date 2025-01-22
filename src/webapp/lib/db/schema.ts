@@ -12,6 +12,7 @@ export const users = pgTable('users', {
   keywords: jsonb('keywords').notNull(),
   role: varchar('role', { length: 255 }).notNull().default('Other'),
   occupation: varchar('occupation', { length: 255 }),
+  industry: varchar('industry', { length: 255 }),
   stripeCustomerId: text('stripe_customer_id').unique(),
   stripeSubscriptionId: text('stripe_subscription_id').unique(),
   stripeProductId: text('stripe_product_id'),
