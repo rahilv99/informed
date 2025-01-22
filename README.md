@@ -1,33 +1,46 @@
-# Welcome to your CDK TypeScript project
+# Auxiom
+auxiomai.com
 
-This is a blank project for CDK development with TypeScript.
+## Description
+This is the active repository for Auxiom AI. There are 3 main components: AWS Orchestration, Python Logic (Backend), and the Next.js webapp. 
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Quickstart
+### General
+1. Clone the repository to your local machine
+2. Note the repository begins in `src`.
+    - The backend (python) is in `src/service_tier/logic`
+    - The webapp (nextjs) is in `src/webapp`
+    - The AWS orchestration is in `src/service_tier` and `src/cron` depending on the stack you are working on
+  
+### Webapp
+1. Navigate to `src/webapp`
+2. Install node.js (which includes npm) if your node version is not up to date
+3. Run `npm install` to install the dependencies locally
+4. Run `npm run dev` to run a local instance of the auxiom webapp at `localhost:3000`
+5. You can now modify components and see them change in real time!
 
-## Useful commands
+### Backend (Python)
+1. Navigate to `src/service_tier/logic`
+2. Create a `if __name__ == '__main__'` section to test scripts locally
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+### AWS
+For anything related to AWS, you will need to download the AWS CDK. If you are on windows, clone this repository to your WSL (since the CDK is for linux). Request credentials from rahilv99@gmail.com to set up your environment.
 
+## Making Changes
+1. Ensure the repo is cloned locally
+2. Open a git bash terminal and navigate to the parent `/` directory (titled auxiom).
+3. Type `git branch [branch name]`. You have created a new local branch. Name your branch after the feature you're creating.
+4. Type `git checkout [branch name]`. You should now be on that branch.
+5. Make your changes
+6. Type `git push --set-upstream origin [branch name]`. You have now created a branch on the origin (remote) with the same name as your local branch.
+7. Type `git add [file name]` to stage the changes from your specifed file. Type `git add .` to stage all changes.
+8. Type `git commit -m [message]` with an informative message.
+9. Type `git push` to push your changes to the remote instance of your branch.
+10. The change has now created a pull request. Have one of the other contributors review and approve your pull request (or contact Rahil).
+11. While you wait, you can switch back to the main branch with `git checkout main`. Your changes are pending approval so they are not yet reflected.
+12. Once your changes are approved, type `git pull` to pull the changes from the remote branch. Do this frequently to stay up to date with everyone's changes.
+13. Repeat the process for each new feature.
 
-# Useful AWS Commands for logging in
-export AWS_DEFAULT_PROFILE=atul-dev-profile
-aws sso login --profile atul-dev-profile
-## To export creds as env variables after SSO login
-eval "$(aws configure export-credentials --profile atul-dev-profile --format env)"
-
-# ECR Login
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418457861.dkr.ecr.us-east-1.amazonaws.com
-docker pull 905418457861.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-905418457861-us-east-1:2aa906cc65c8963f9bead1a3e5363cb5949442ff6b7b33423533b15df2
-
-# Attach shell to lambda function locally
-docker run -it --entrypoint /bin/bash -v $(pwd):/tmp service_tier-service_tier:latest
-docker run -it --rm --entrypoint /bin/bash -v $(pwd):/tmp $(docker build -q .)
-
-
-## Get account info
-aws sts get-caller-identity
+## Best Practices
+1. ALWAYS branch when making a change. 
+2. This is not for experimenting. Make a python notebook and transfer code once it is roughly functional.
