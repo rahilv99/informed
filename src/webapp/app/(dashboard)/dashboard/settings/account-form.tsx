@@ -28,11 +28,11 @@ const accountFormSchema = z.object({
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
-export function AccountForm() {
+export function AccountForm({ email }: { email: string }) {
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
-      email: "",
+      email: email,
     },
   })
 
@@ -62,10 +62,10 @@ export function AccountForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Your email" {...field} />
+                <Input placeholder= {email} {...field} />
               </FormControl>
               <FormDescription>
-                This is the eamil your Auxiom podcasts are sent to.
+                This is the email your Auxiom podcasts are sent to.
               </FormDescription>
               <FormMessage />
             </FormItem>

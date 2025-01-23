@@ -5,13 +5,31 @@ import { AccountForm } from "./account-form"
 import { SubscriptionForm } from "./subscription-form"
 import { PasswordForm } from "./password-form"
 import { DeleteAccountForm } from "./delete-account-form"
+import { getUser } from "@/lib/db/queries"
+import { getAccountStatus, getKeywords } from "@/lib/actions";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Settings",
   description: "Manage your account settings and preferences.",
 }
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+
+  const isActive: boolean = await getAccountStatus();
+  const user = await getUser();
+  const currentKeywords: string[] = await getKeywords();
+
+  if (!isActive && currentKeywords.length === 0) {
+        redirect('/identity');
+      } 
+  
+      if (!isActive) {
+        redirect('/day');
+      }
+  
+  const email = user?.email || "email"
+
   return (
     <div className="space-y-6 p-10 pb-16">
       <div className="space-y-0.5">
@@ -28,7 +46,7 @@ export default function SettingsPage() {
             <CardDescription>Update your account information.</CardDescription>
           </CardHeader>
           <CardContent>
-            <AccountForm />
+            <AccountForm email={email} />
           </CardContent>
         </Card>
         <Card className="bg-black bg-opacity-10 border-none">
