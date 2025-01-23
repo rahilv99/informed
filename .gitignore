@@ -45,3 +45,9 @@ next-env.d.ts
 postgres_data/
 
 saved_model/
+
+# venv
+auxiom_env
+
+# pycache
+__pycache__
