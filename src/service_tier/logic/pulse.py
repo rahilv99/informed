@@ -145,7 +145,7 @@ def handler(payload):
     plan = payload.get("plan")
     episode = payload.get("episode")
 
-    user_topics_output = UserTopicsOutput(user_id)
+    user_topics_output = UserTopicsOutput(episode, user_id)
     pubmed = PubMed(user_topics_output)
     sem = Sem(user_topics_output)
 
