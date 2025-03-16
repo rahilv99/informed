@@ -13,9 +13,9 @@ import { ComingSoonWrapper } from "@/components/ComingSoonWrapper"
 
 // Mock data
 const mockNotes = [
-  { id: 1, content: "Review latest paper on quantum entanglement", isComplete: true, isSelected: false },
-  { id: 2, content: "Prepare questions for next journal club meeting", isComplete: true, isSelected: true },
-  { id: 3, content: "Summarize findings from neural network experiment", isComplete: true, isSelected: false },
+  { id: 1, content: "Retaliatory tariffs", isComplete: true, isSelected: false },
+  { id: 2, content: "String Theory", isComplete: true, isSelected: true },
+  { id: 3, content: "Quantum Computing", isComplete: true, isSelected: false },
 ]
 const credits = 3
 
