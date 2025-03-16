@@ -10,6 +10,7 @@ import google.generativeai as genai
 from pydub import AudioSegment
 import os
 from cartesia import Cartesia
+from openai import OpenAI
 import time
 from threading import Lock
 
@@ -17,9 +18,9 @@ from logic.pulse_output import PulseOutput
 import common.sqs
 import common.s3
 
-
-
 TEMP_BASE = "/tmp"
+
+cartesia = False
 
 GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -277,39 +278,48 @@ def clean_text_for_conversational_tts(input_text):
 
 def create_conversational_podcast(all_data, name, plan='free'):
 
-    def _create_line(client, host, line, num):
+    def _create_line(client, host, line, num, chunk):
 
         if host == 1:
             # female
-            voice = '156fb8d2-335b-4950-9cb3-a2d33befec77'
+            if cartesia:
+                voice = '156fb8d2-335b-4950-9cb3-a2d33befec77'
+            else:
+              voice = 'nova'
         else: # host = 2
             # male
-            voice = '729651dc-c6c3-4ee5-97fa-350da1f88600'
+            if cartesia:
+                voice = '729651dc-c6c3-4ee5-97fa-350da1f88600'
+            else:
+              voice = 'onyx'
 
-        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}.wav"
+        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}_{chunk}.wav"
 
-         # Ensure the output directory exists
+        # Ensure the output directory exists
         output_dir = os.path.dirname(output_file)
         os.makedirs(output_dir, exist_ok=True)
         
         try:
-            audio_bytes = client.tts.bytes(
-                model_id="sonic-english",
-                transcript=line,
-                voice_id=voice,
-                language="en",
+            if cartesia:
+                audio_bytes = client.tts.bytes(
+                    model_id="sonic-english",
+                    transcript=line,
+                    voice_id=voice,
+                    language="en",
                 output_format={
                     "container": "wav",
                     "sample_rate": 44100,
                     "encoding": "pcm_s16le", 
                 },
-            )
-
-            # Save the response content (audio) to a file
-            with open(output_file, "wb") as audio_file:
-                audio_file.write(audio_bytes)
-
-            print(f"Audio file saved as {output_file}")
+                )
+            else:
+                response = client.audio.speech.create(
+                    model="tts-1",
+                    voice=voice,
+                    input=line,
+                    response_format='wav'
+                )
+                response.stream_to_file(output_file)
 
         except Exception as e:
             print(f"An error occurred while generating TTS: {e}")
@@ -322,11 +332,38 @@ def create_conversational_podcast(all_data, name, plan='free'):
     script = generate_script(all_data, name, plan=plan)
     turns = clean_text_for_conversational_tts(script)
 
-    client = Cartesia(api_key=os.environ.get('CARTESIA_API_KEY'))
+    if cartesia:
+        client = Cartesia(api_key=os.environ.get('CARTESIA_API_KEY'))
+    else:
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
 
     for index, sentence in enumerate(turns):
         host = 1 if index % 2 == 0 else 2
-        _create_line(client, host, sentence, index)
+        
+        
+        # handle lines longer than API limit
+        if len(sentence) > 4096:
+            # Chunk into 4096 characters
+            chunks = [sentence[i:i + 4096] for i in range(0, len(sentence), 4096)]
+
+            for chunk_index, chunk in enumerate(chunks):
+                _create_line(client, host, chunk, index, chunk_index)
+
+            chunk_files = [f"{TEMP_BASE}/conversation/{host}/line_{index}_{i}.wav" for i in range(len(chunks))]
+            combined_audio = AudioSegment.empty()
+            for file in chunk_files:
+                audio_segment = AudioSegment.from_wav(file)
+                combined_audio += audio_segment
+
+            print(f"Combined chunked audio for line {index}")
+            combined_output_file = f"{TEMP_BASE}/conversation/{host}/line_{index}_0.wav"
+            combined_audio.export(combined_output_file, format="wav")
+
+            # Clean up individual chunk files
+            for file in chunk_files:
+                os.remove(file)
+        else:
+            _create_line(client, host, sentence, index, 0)
 
     return len(turns)
 
@@ -335,10 +372,10 @@ def write_to_s3(num_turns, user_id, episode_number):
     # Create a new AudioSegment object
     print("Merging audio files...")
 
-    final_audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/1/line_0.wav")
+    final_audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/1/line_0_0.wav")
     for i in range(1, num_turns):
 
-        audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}.wav")
+        audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.wav")
 
         final_audio = final_audio.append(audio)
 

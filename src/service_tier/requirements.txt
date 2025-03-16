@@ -6,6 +6,7 @@ sentence-transformers
 spacy
 bs4
 cartesia
+openai
 pydub
 google-generativeai # previously had -p -U flag
 boto3
