@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button"
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { submitInterests } from "@/lib/actions"
 import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { useOnboarding } from "../context/OnboardingContext" // Keeping the original import path
+import { useOnboarding } from "../context/OnboardingContext"
 import { X, Plus } from "lucide-react"
 
 // Define the props interface for the component
@@ -17,25 +17,71 @@ interface InterestsProps {
 
 // Suggested interests that might be relevant for academic/research contexts
 const SUGGESTED_INTERESTS = [
-  "Orbital Dynamics",
-  "Drug-Resistant Epilepsy",
-  "Game Theory",
-  "Combinatorics",
-  "Generative Image Models",
-  "Machine Learning",
-  "Quantum Computing",
-  "Neuroscience",
-  "Climate Science",
-  "Bioinformatics",
-  "Cryptography",
-  "Artificial Intelligence",
-  "Data Science",
-  "Robotics",
-  "Molecular Biology",
+  "Climate Change Policy",
+  "Global Supply Chains",
+  "Renewable Energy Transition",
+  "Cybersecurity Threats",
+  "Artificial Intelligence Regulation",
+  "Universal Basic Income",
+  "Voting Rights Reform",
+  "Geopolitical Tensions",
+  "Pandemic Preparedness",
+  "Immigration Policies",
+  "Social Media Influence",
+  "Economic Inequality",
+  "Healthcare Reform",
+  "Cryptocurrency Regulation",
+  "Space Exploration Policies",
+  "Nuclear Disarmament",
+  "Education Reform",
+  "Racial Justice Movements",
+  "Gender Equality Initiatives",
+  "Trade Wars and Tariffs",
+  "Global Health Crises",
+  "Disinformation Campaigns",
+  "Urbanization Challenges",
+  "Refugee Crises",
+  "Political Polarization",
+  "Corporate Lobbying",
+  "Public Infrastructure Investment",
+  "Food Security",
+  "Water Scarcity",
+  "International Trade Agreements",
 ]
 
+// Function to calculate similarity between two strings
+function calculateSimilarity(str1: string, str2: string): number {
+  const s1 = str1.toLowerCase()
+  const s2 = str2.toLowerCase()
+
+  // Check for exact word matches
+  const words1 = s1.split(/\s+/)
+  const words2 = s2.split(/\s+/)
+
+  let wordMatchCount = 0
+  for (const word1 of words1) {
+    if (word1.length < 3) continue // Skip short words
+    for (const word2 of words2) {
+      if (word2.length < 3) continue // Skip short words
+      if (word1 === word2 || word1.includes(word2) || word2.includes(word1)) {
+        wordMatchCount++
+      }
+    }
+  }
+
+  // Check for character-level similarity
+  let charMatchCount = 0
+  for (let i = 0; i < s1.length - 2; i++) {
+    const trigram = s1.substring(i, i + 3)
+    if (s2.includes(trigram)) {
+      charMatchCount++
+    }
+  }
+
+  return wordMatchCount * 3 + charMatchCount
+}
+
 export function Interests({ onComplete }: InterestsProps) {
-  // Initialize with initialInterests if provided
   const [keywords, setKeywords] = useState<string[]>([])
   const router = useRouter()
   const { setCurrentPage } = useOnboarding()
@@ -44,6 +90,28 @@ export function Interests({ onComplete }: InterestsProps) {
   const [suggestions, setSuggestions] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
+
+  // Get dynamic suggestions based on current interests
+  const dynamicSuggestions = useMemo(() => {
+    if (keywords.length === 0) {
+      // If no interests selected yet, return original suggestions
+      return SUGGESTED_INTERESTS
+    }
+
+    // Calculate similarity scores for each suggestion based on current interests
+    const scoredSuggestions = SUGGESTED_INTERESTS.filter((suggestion) => !keywords.includes(suggestion)).map(
+      (suggestion) => {
+        let totalScore = 0
+        for (const keyword of keywords) {
+          totalScore += calculateSimilarity(keyword, suggestion)
+        }
+        return { suggestion, score: totalScore }
+      },
+    )
+
+    // Sort by score (highest first) and return the top 5 suggestions
+    return scoredSuggestions.sort((a, b) => b.score - a.score).slice(0, 5).map((item) => item.suggestion)
+  }, [keywords])
 
   // Handle outside clicks to close suggestions
   useEffect(() => {
@@ -68,7 +136,7 @@ export function Interests({ onComplete }: InterestsProps) {
     const value = e.target.value
     setInputValue(value)
     if (value.trim()) {
-      const filtered = SUGGESTED_INTERESTS.filter(
+      const filtered = dynamicSuggestions.filter(
         (interest) => interest.toLowerCase().includes(value.toLowerCase()) && !keywords.includes(interest),
       )
       setSuggestions(filtered)
@@ -186,7 +254,7 @@ export function Interests({ onComplete }: InterestsProps) {
               type="text"
               placeholder={
                 keywords.length === 0
-                  ? "Examples: Orbital Dynamics, Drug-Resistant Epilepsy, Game Theory..."
+                  ? "Examples: Racial Justice Movements, Gender Equality, Tariffs..."
                   : "Add another interest..."
               }
               value={inputValue}
@@ -215,11 +283,13 @@ export function Interests({ onComplete }: InterestsProps) {
         </div>
       </div>
 
-      {/* Popular suggestions */}
+      {/* Popular suggestions - now dynamically based on current interests */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-        <h3 className="text-sm font-medium mb-2 text-gray-700">Suggested interests</h3>
+        <h3 className="text-sm font-medium mb-2 text-gray-700">
+          {keywords.length > 0 ? "Related interests" : "Suggested interests"}
+        </h3>
         <div className="flex flex-wrap gap-2">
-          {SUGGESTED_INTERESTS.slice(0, 8).map(
+          {dynamicSuggestions.slice(0,10).map(
             (interest) =>
               !keywords.includes(interest) && (
                 <button
