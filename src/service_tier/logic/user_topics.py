@@ -3,7 +3,6 @@ import common.s3
 
 model = SentenceTransformer('./saved_model/all-MiniLM-L6-v2')  # Lightweight and effective model
 
-DEFATULT_TOP_TAXONOMY_MATCHES = 3  # Number of top matches to consider for each keyword
 
 
 class UserTopics:

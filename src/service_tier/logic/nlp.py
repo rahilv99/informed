@@ -116,41 +116,48 @@ def academic_segment(text, title, plan = 'free'):
         tokens = 250
 
     system_prompt =f"""
-        You are a professional podcast script writer for a podcast named Auxiom. Your task is to write a single section of a script to be sent to a text-to-speech model where 
-        **HOST 1** and **HOST 2** have an academic dialouge using the article below. 
-        FORMAT
-        - Mark the script with **HOST 1** and **HOST 2** for each conversational turn
-        - This is an intermeadiate segment. Only include the segment itself. avoid any introductions, explanations, or meta-comments
-        EXTRACT FROM TEXT
-        - Use specific details from the text relevant to the goals, methods, and results
-        - Create a sequence, exploring the details of each article one by one
-        - Be critical if the article has limitations
-        SPEECH TIPS
-        - These hosts are charismatic and professional. They are excited about the information.
-        - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, complex sentences/phrases, or acronyms.
-        - Sound human-like, be original and dynamic in the conversation.
-        - Include filler words like 'uh' or repeat words in the sentences to make the conversation more natural.
-        - Insert pauses using a hypen (-) to indicate a pause.
+        You are a professional podcast script writer for "Auxiom," a podcast that breaks down complex government documents from the last week. Your task is to write a single, engaging segment of a script for a text-to-speech model. This segment will feature a dialogue between **HOST 1** and **HOST 2**, discussing the key takeaways from the provided document.
 
-        Example: 
-        **HOST 1**: Moving on, we have an article about X titled Y.
-        **HOST 2**: That's right. The article finds Z...
-        **HOST 1**: That's super cool! So they essentially found that X?
-        ...
+        **FORMAT:**
+
+        * Mark each conversational turn with **HOST 1** or **HOST 2**.
+        * This is an intermediate segment. Do not include introductions, summaries, or meta-comments. Jump directly into the dialogue.
+        * Focus on extracting and explaining the core information from the document.
+
+        **EXTRACT FROM TEXT:**
+
+        * Identify and discuss key decisions made.
+        * Present and explain opinions expressed by specific individuals.
+        * Analyze and explain the potential implications of the document's contents.
+        * Be sure to include any metrics like money or deadlines.
+
+        **SPEECH TIPS:**
+
+        * Hosts are charismatic, professional, and genuinely interested in the topic.
+        * Use short, clear sentences suitable for text-to-speech. Avoid complex phrasing, jargon, and acronyms (unless absolutely necessary and explained).
+        * Aim for a natural, dynamic conversational flow.
+        * Incorporate filler words ("uh," "like," "you know") and occasional repetitions for a more human-like sound.
+        * Prioritize clarity and accessibility. Imagine you are explaining this to someone with little prior knowledge of the subject.
+        * Clearly attribute opinions to specific individuals.
+        * Explain the potential impact of decisions made in the document.
+        * Create a dynamic range of responses.
+
+        **Example:**
+
+        **HOST 1:** Another bill came up this week discussing...
+        **HOST 2:** I read that Senator Jones said a lot about...
+        **HOST 1:** Right, I mean he is a big proponent of ... 
+        **HOST 2:** Sounds like it will be a big step for ...
+        **HOST 1:** - This impacts all the countries in ...
 
         Remember: This segment must be at least {tokens} tokens long. Do not produce fewer.
+
         Article: {title}
         Text: {text}"""
 
-    if plan == 'free':
-        response = summary_model.generate_content(system_prompt, 
+    response = script_model.generate_content(system_prompt, 
                                             generation_config = genai.GenerationConfig(
-                                            max_output_tokens=tokens+50,
-                                            temperature=0.3))
-    else: # premium
-        response = script_model.generate_content(system_prompt, 
-                                            generation_config = genai.GenerationConfig(
-                                            max_output_tokens=tokens+100,
+                                            max_output_tokens=tokens*2,
                                             temperature=0.3))
     return response.text
 
@@ -163,7 +170,7 @@ def review_script(script, tokens):
         Script: {script}"
 
     response = script_model.generate_content(prompt, generation_config = genai.GenerationConfig(
-                                        max_output_tokens=tokens+250,
+                                        max_output_tokens=int(tokens*1.5),
                                         temperature=0.10))
     return response.text
 
@@ -183,13 +190,11 @@ def make_script(texts, titles, name, plan = 'free'):
     
     ### Merge components with transitions, moderate content/speech
     system_prompt =f"""
-    You are a senior editor for a podcast Auxiom. Your task is to take the segments written by other agents, refine their content, and merge them into a consistent flow.
+    You are a senior editor for a podcast "Auxiom," a podcast that breaks down complex government documents from the last week. Your task is to take the segments written by other agents, refine their content, and merge them into a consistent flow.
     INPUT
-    - Your agents have written multiple segments, with 1 article discussed in each
-    - The scripts should be marked according to the FORMAT below
-    FORMAT
-    - The script should be marked with **HOST 1** and **HOST 2** for each conversational turn
-    - Make the conversation {tokens} tokens long.
+    - Your agents have written multiple segments, with 1 document discussed in each
+    - The scripts should be marked with **HOST 1** and **HOST 2** for each conversational turn
+    - Make the output conversation {tokens} tokens long.
     TASK
     - Merge the components, ensure the format is consistent (as above)
     - Refine the content to be more engaging
@@ -198,10 +203,19 @@ def make_script(texts, titles, name, plan = 'free'):
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, complex sentences/phrases, or acronyms.
     
     Example: 
-    **HOST 1**: Welcome back to Auxiom! Today we have an article about X...
-    **HOST 2 **: That's right. The article discusses Y...
-    **HOST 1**: How does this article relate to Z?
+    **HOST 1**: Welcome back to Auxiom! This past week there has been ...
+    **HOST 2 **: That's right. Recently a bill came up for...
+    **HOST 1:** I read that Senator Jones said a lot about...
+    **HOST 2:** Right, I mean he is a big proponent of ... 
+    **HOST 1:** Sounds like it will be a big step for ...
+    **HOST 2:** - This impacts all the countries in ...
     ...
+    **HOST 1**: Moving on, there is a new executive order/congressional hearing/bill/court case/etc...
+    ...
+    **HOST 2**: I'm glad you mention that. There's another executive order/congressional hearing/bill/court case/etc...
+    ...
+    **HOST 1**: We hope you have a great day, stay tuned for more episodes.
+
     Remember: This script must be {tokens} tokens long. Do not produce fewer.
 
 Articles: """
@@ -210,7 +224,7 @@ Articles: """
        
     response = script_model.generate_content(system_prompt, 
                                       generation_config = genai.GenerationConfig(
-                                        max_output_tokens=tokens+100,
+                                        max_output_tokens=int(tokens*1.5),
                                         temperature=0.25))
     
     ret = review_script(response.text, tokens)

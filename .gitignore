@@ -51,3 +51,4 @@ auxiom_env
 
 # pycache
 __pycache__cdk.out
+__pycache__

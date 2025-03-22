@@ -1,14 +1,11 @@
-biopython
-semanticscholar
 PyPDF2
 sentence-transformers
-# en_core_web_sm
 spacy
 bs4
 cartesia
 openai
 pydub
-google-generativeai # previously had -p -U flag
+google-generativeai
 boto3
 pandas
 psycopg2-binary
