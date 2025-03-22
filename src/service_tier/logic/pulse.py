@@ -153,7 +153,6 @@ class Sem(ArticleResource):
 class Gov(ArticleResource):
     def __init__(self, user_topics_output):
         super().__init__(user_topics_output)
-        # In production, this should be moved to environment variables
         self.api_key = os.environ.get('GOVINFO_API_KEY', "TqAJxayfmxCsJTFehykSs4agaZzrVFd7N0UJWBMc")
         self.search_url = f"https://api.govinfo.gov/search?api_key={self.api_key}"
         self.headers = {"Content-Type": "application/json"}

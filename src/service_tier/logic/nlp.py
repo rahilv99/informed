@@ -130,6 +130,7 @@ def academic_segment(text, title, plan = 'free'):
         * Present and explain opinions expressed by specific individuals.
         * Analyze and explain the potential implications of the document's contents.
         * Be sure to include any metrics like money or deadlines.
+        * Limit repeated thoughts
 
         **SPEECH TIPS:**
 
@@ -198,6 +199,7 @@ def make_script(texts, titles, name, plan = 'free'):
     TASK
     - Merge the components, ensure the format is consistent (as above)
     - Refine the content to be more engaging
+    - Allow each segment and equal amount of time
     - CLOSE WITH: 'Thanks for listening, stay tuned for more episodes.'
     SPEECH TIPS
     - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, complex sentences/phrases, or acronyms.
