@@ -81,6 +81,53 @@ function calculateSimilarity(str1: string, str2: string): number {
   return wordMatchCount * 3 + charMatchCount
 }
 
+// Keyword component from keywords.tsx with original styling
+function Keyword({ keyword, onRemove }: { keyword: string; onRemove: (keyword: string) => void }) {
+  return (
+    <div className="bg-black text-gray-300 px-3 py-1 rounded-full flex items-center">
+      <span className="mr-1">{keyword}</span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove(keyword)
+        }}
+        className="text-gray-500 hover:text-white"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  )
+}
+
+// AddKeyword component adapted from keywords.tsx with original styling
+function AddKeyword({
+  value,
+  onChange,
+  onKeyDown,
+  placeholder,
+  inputRef,
+}: {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown: (e: React.KeyboardEvent) => void
+  placeholder: string
+  inputRef: React.RefObject<HTMLInputElement>
+}) {
+  return (
+    <div className="relative">
+      <input
+        ref={inputRef}
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        className="bg-black text-gray-300 px-3 py-1 rounded-full pr-8 focus:outline-none focus:ring-2 focus:ring-gray-300"
+      />
+    </div>
+  )
+}
+
 export function Interests({ onComplete }: InterestsProps) {
   const [keywords, setKeywords] = useState<string[]>([])
   const router = useRouter()
@@ -110,7 +157,10 @@ export function Interests({ onComplete }: InterestsProps) {
     )
 
     // Sort by score (highest first) and return the top 5 suggestions
-    return scoredSuggestions.sort((a, b) => b.score - a.score).slice(0, 5).map((item) => item.suggestion)
+    return scoredSuggestions
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map((item) => item.suggestion)
   }, [keywords])
 
   // Handle outside clicks to close suggestions
@@ -210,76 +260,60 @@ export function Interests({ onComplete }: InterestsProps) {
 
   return (
     <main>
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-black sm:text-4xl">Tell us about your interests</h1>
-              <p className="mt-4 text-base text-gray-700">
-                Add 5-10 interests that describe your research, projects, or work.
-              </p>
-            </div>
-          </div>
+      <section className="py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-black sm:text-4xl">Tell us about your interests</h1>
+          <p className="mt-4 text-base text-gray-700">
+          Add 5-10 interests that describe your research, projects, or work.
+          </p>
         </div>
+        </div>
+      </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
-        {/* Tag display area - reduced top margin by using mt-2 */}
-        <div
-          className="w-full min-h-24 text-black bg-black bg-opacity-10 rounded-xl p-6 backdrop-filter backdrop-blur-lg border-none flex flex-wrap gap-2 items-start content-start"
-          onClick={() => inputRef.current?.focus()}
-        >
-          {keywords.map((interest) => (
-            <div
-              key={interest}
-              className="px-3 py-2 text-sm bg-white bg-opacity-30 hover:bg-opacity-40 text-black rounded-full flex items-center"
-            >
-              {interest}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  removeInterest(interest)
-                }}
-                className="ml-2 text-black hover:text-gray-700"
-                aria-label={`Remove ${interest}`}
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ))}
+      {/* Container with keywords.tsx styling */}
+      <div className="w-full max-w-7xl rounded-lg shadow-md p-6 bg-black bg-opacity-10 rounded-xl backdrop-filter backdrop-blur-lg ml-0 h-64">
+      <h1 className="text-2xl font-semibold text-black mb-4">I want my podcast to be about...</h1>
+        <div className="flex flex-wrap gap-2 mb-4">
+            {keywords.map((interest) => (
+              <Keyword key={interest} keyword={interest} onRemove={removeInterest} />
+            ))}
+          </div>
 
-          <div className="relative flex-grow min-w-[200px]">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder={
-                keywords.length === 0
-                  ? "Examples: Racial Justice Movements, Gender Equality, Tariffs..."
-                  : "Add another interest..."
-              }
+          <div className="flex items-center">
+            <AddKeyword
               value={inputValue}
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
-              className="w-full border-none bg-transparent text-black placeholder:text-gray-500 focus:outline-none p-0"
+              placeholder={keywords.length === 0 ? "Add interest..." : "Add another interest..."}
+              inputRef={inputRef}
             />
-
-            {suggestions.length > 0 && (
-              <div
-                ref={suggestionsRef}
-                className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-md max-h-60 overflow-auto"
-              >
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-black"
-                    onClick={() => addInterest(suggestion)}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            )}
+            <button
+              onClick={() => addInterest(inputValue)}
+              className="ml-2 text-gray-500 hover:text-white"
+              disabled={!inputValue.trim()}
+            >
+              <Plus size={14} />
+            </button>
           </div>
+
+          {/* Suggestions dropdown */}
+          {suggestions.length > 0 && (
+            <div ref={suggestionsRef} className="mt-2 bg-white border rounded-md shadow-md max-h-60 overflow-auto">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-black"
+                  onClick={() => addInterest(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -289,7 +323,7 @@ export function Interests({ onComplete }: InterestsProps) {
           {keywords.length > 0 ? "Related interests" : "Suggested interests"}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {dynamicSuggestions.slice(0,10).map(
+          {dynamicSuggestions.slice(0, 10).map(
             (interest) =>
               !keywords.includes(interest) && (
                 <button
