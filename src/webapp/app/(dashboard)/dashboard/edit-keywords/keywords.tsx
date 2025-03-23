@@ -46,7 +46,7 @@ export function EditKeywords({ name, interests }: { name: string; interests: str
       <div className="max-w-lg w-full space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-black tracking-tight sm:text-5xl">
-            Hello {name}
+            Hello, {name}
           </h1>
           <p className="mt-3 text-lg text-gray-700">
             Your interests help us personalize your experience.
