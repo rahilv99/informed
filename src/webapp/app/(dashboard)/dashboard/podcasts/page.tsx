@@ -22,6 +22,10 @@ export default async function Page() {
       redirect('/identity');
     } 
 
+    if (!isActive) {
+      redirect('/keywords');
+    }
+
     const userPodcasts = await fetchUserPodcasts(user.id);
 
     const formattedPodcasts = userPodcasts.map(podcast => ({

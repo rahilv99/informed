@@ -21,12 +21,8 @@ export default async function SettingsPage() {
   const currentKeywords: string[] = await getKeywords();
 
   if (!isActive && currentKeywords.length === 0) {
-        redirect('/identity');
-      } 
-  
-      if (!isActive) {
-        redirect('/day');
-      }
+    redirect('/identity');
+  } 
   
   const email = user?.email || "email"
 
