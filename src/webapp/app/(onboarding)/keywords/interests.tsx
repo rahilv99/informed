@@ -1,13 +1,13 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import type React from "react"
-
 import { useState, useRef, useEffect, useMemo } from "react"
 import { submitInterests } from "@/lib/actions"
 import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useOnboarding } from "../context/OnboardingContext"
 import { X, Plus } from "lucide-react"
+import Fuse from "fuse.js"
 
 // Define the props interface for the component
 interface InterestsProps {
@@ -147,6 +147,9 @@ export function Interests({ onComplete }: InterestsProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
+  // Initialize Fuse.js with stronger fuzziness
+  const fuse = useMemo(() => new Fuse(SUGGESTED_INTERESTS, { threshold: 0.4, distance: 100 }), [])
+
   // Get dynamic suggestions based on current interests
   const dynamicSuggestions = useMemo(() => {
     if (keywords.length === 0) {
@@ -195,8 +198,8 @@ export function Interests({ onComplete }: InterestsProps) {
     const value = e.target.value
     setInputValue(value)
     if (value.trim()) {
-      const filtered = dynamicSuggestions.filter(
-        (interest) => interest.toLowerCase().includes(value.toLowerCase()) && !keywords.includes(interest),
+      const filtered = fuse.search(value).map(result => result.item).filter(
+        (interest) => !keywords.includes(interest)
       )
       setSuggestions(filtered)
     } else {
