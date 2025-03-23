@@ -25,6 +25,10 @@ export default async function Page() {
       redirect('/identity');
     } 
 
+    if (!isActive) {
+      redirect('/keywords');
+    }
+
     return (
       <div>
         <PulsePage keywords = {currentKeywords} day = {currentDay} deliveryStatus = {delivered} accountStatus = {isActive}/>

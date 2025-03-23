@@ -420,7 +420,11 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     setSession(foundUser)
   ]);
 
-  redirect(redirectUrl || '/dashboard/podcasts');
+  if (!foundUser.active) {
+    redirect('/keywords');
+  } else {
+    redirect(redirectUrl || '/dashboard/podcasts');
+  }
 });
 
 
