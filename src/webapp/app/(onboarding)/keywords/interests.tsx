@@ -192,7 +192,8 @@ const SUGGESTED_INTERESTS = [
   "Agricultural Policy",
   "Border Security",
   "Coastal Management",
-  "Decolonization"
+  "Decolonization",
+  "Cryptocurrency"
 ];
 
 // Function to calculate similarity between two strings

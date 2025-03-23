@@ -200,12 +200,12 @@ class Gov(ArticleResource):
                             url = None
                             
                             # Prioritize text content over PDF for easier processing
-                            if 'txtLink' in links:
-                                url = links['txtLink']
-                                doc_type = 'txt'
-                            elif 'pdfLink' in links:
+                            if 'pdfLink' in links:
                                 url = links['pdfLink']
                                 doc_type = 'pdf'
+                            elif 'txtLink' in links:
+                                url = links['txtLink']
+                                doc_type = 'txt'
                             elif 'modsLink' in links:
                                 url = links['modsLink']
                                 doc_type = 'mods'
@@ -222,7 +222,7 @@ class Gov(ArticleResource):
                             results.append({
                                 "title": item.get("title", ""),
                                 "text": full_text,
-                                "url": url
+                                "url": f"{url}?api_key={self.api_key}"
                             })
                     else:
                         self.logger.error(f"API request failed with status code: {response.status_code}")
