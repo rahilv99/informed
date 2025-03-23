@@ -12,11 +12,10 @@ export default function Features() {
             </div>
           <div className="mt-5">
             <h2 className="text-lg font-medium text-black">
-              Premium Data
+              Primary Data Sources
             </h2>
             <p className="mt-2 text-base text-gray-700">
-              Auxiom tracks the latest breakthroughs, publications, and major events in your field,
-              keeping you informed.
+              Auxiom analyzes legislative documents, finanical data, and research papers to find things that are actually happening.
             </p>
           </div>
         </div>

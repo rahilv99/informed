@@ -17,7 +17,6 @@ export default async function Page() {
     }
 
     if (!user.verified) {
-      
       redirect('/sign-in');
     }
 
@@ -31,7 +30,7 @@ export default async function Page() {
 
     return (
       <div>
-        <PulsePage keywords = {currentKeywords} day = {currentDay} deliveryStatus = {delivered} accountStatus = {isActive}/>
+        <PulsePage keywords = {currentKeywords} day = {currentDay} deliveryStatus = {delivered} />
       </div>
     );
 }

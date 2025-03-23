@@ -13,16 +13,14 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Switch } from "@/components/ui/switch";
 import { CarouselApi } from "@/components/ui/carousel";
-import { submitDay, setAccountStatus } from "@/lib/actions";
+import { submitDay } from "@/lib/actions";
 import React from "react";
 
-export default function PulsePage({ keywords, day, deliveryStatus, accountStatus }: {
+export default function PulsePage({ keywords, day, deliveryStatus }: {
   keywords: string[];
   day: number;
   deliveryStatus: boolean;
-  accountStatus: boolean;
 }) {
   const currentKeywords: string[] = keywords;
   const currentDay: number = day;
@@ -30,8 +28,6 @@ export default function PulsePage({ keywords, day, deliveryStatus, accountStatus
 
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(currentDay);
-
-  const [isPaused, setIsPaused] = React.useState(accountStatus);
 
   // get today's day
   const date = new Date();
@@ -81,23 +77,11 @@ export default function PulsePage({ keywords, day, deliveryStatus, accountStatus
     });
   };
 
-  const handlePauseToggle = async (checked: boolean) => {
-    setIsPaused(checked);
-    await setAccountStatus(checked);
-    toast({
-      title: checked ? "Podcasts Resumed" : "Podcasts Paused",
-      description: checked
-        ? "Your podcasts will resume as scheduled."
-        : "Your podcasts have been temporarily paused.",
-    });
-  };
-
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight text-black">Pulse</h1>
       <p className="text-black">
-        A personalized weekly podcast summarizing the latest updates in your
-        field. All content includes citations to academic sources.
+        A personalized weekly podcast summarizing the latest updates on topics that are important to you. All content includes citations to primary data sources.
       </p>
       <Separator className="my-6" />
       <Card className="bg-black bg-opacity-10 border-none p-2 sm:p-6">
@@ -175,19 +159,6 @@ export default function PulsePage({ keywords, day, deliveryStatus, accountStatus
               >
                 <Check className="mr-2 h-4 w-4" /> Save Changes
               </Button>
-            </div>
-            <div>
-              <h3 className="mb-2 font-medium text-black">Activity</h3>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="pause-mode"
-                  checked={isPaused}
-                  onCheckedChange={handlePauseToggle}
-                />
-                <label htmlFor="pause-mode" className="text-sm text-black">
-                  {isPaused ? "Podcasts are active" : "Podcasts are paused"}
-                </label>
-              </div>
             </div>
           </div>
         </CardContent>

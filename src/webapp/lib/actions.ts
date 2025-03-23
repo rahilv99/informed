@@ -705,11 +705,7 @@ export async function addToNewsletter(formData: { email: string }) {
   // Add to email table
   const res = await addEmailToNewsletter(email);
 
-  if (res.length === 0) {
-    return { error: 'Email already exists in newsletter.' };
-  } else {
-    return { success: 'Added to newsletter successfully.' };
-  }
+  return { success: 'Added to newsletter successfully.' };
 }
 
 export async function getCurrentPlan(): Promise<string> {
