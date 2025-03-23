@@ -174,93 +174,109 @@ export default function LearningProgress({
         <Separator className="my-6" />
 
         <div className="space-y-6">
-          {sortedPodcasts.map((podcast, index) => (
-            <Card
-              key={podcast.id}
-              className="backdrop-blur-lg bg-black bg-opacity-10 border-none overflow-hidden shadow-md"
-            >
-              <CardContent className="p-0">
-                <div
-                  className="p-6 cursor-pointer transition-all duration-300"
-                  onClick={() => togglePodcast(podcast.id)}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
-                    <div className="flex flex-col items-start">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="text-sm font-semibold text-gray-500 bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded-full inline-block whitespace-nowrap">
-                          Episode {podcast.episodeNumber}
-                        </span>
-                        <h2 className={`text-xl font-normal text-gray-800 break-words`}>
-                          {podcast.title}
-                          {listenedPodcasts[podcast.id] && (
-                            <span className="inline-flex items-center ml-2 text-green-600">
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              <span className="text-xs">Listened</span>
-                            </span>
-                          )}
-                        </h2>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <p className="text-sm text-gray-500">
-                          {new Date(podcast.date).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 self-end sm:self-center mt-2 sm:mt-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full hover:bg-gray-200 hover:bg-opacity-50"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handlePlayPodcast(podcast)
-                        }}
-                      >
-                        <PlayCircle className="h-6 w-6 text-gray-800" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {expandedPodcast === podcast.id && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="px-6 py-4 border-t border-gray-100">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
-                          <BookOpen className="h-5 w-5 mr-2" />
-                          Related Articles
-                        </h3>
-                        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-                          {podcast.articles.map((article, index) => (
-                            <div key={index} className="flex flex-col items-start gap-2">
-                              <a
-                                href={article.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-800 hover:underline font-bold"
-                              >
-                                {article.title}
-                              </a>
-                              <p className="text-gray-500 text-sm">{article.description}</p>
-                            </div>
-                          ))}
+          {sortedPodcasts.length > 0 ? (
+            sortedPodcasts.map((podcast, index) => (
+              <Card
+                key={podcast.id}
+                className="backdrop-blur-lg bg-black bg-opacity-10 border-none overflow-hidden shadow-md"
+              >
+                <CardContent className="p-0">
+                  <div
+                    className="p-6 cursor-pointer transition-all duration-300"
+                    onClick={() => togglePodcast(podcast.id)}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
+                      <div className="flex flex-col items-start">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-gray-500 bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded-full inline-block whitespace-nowrap">
+                            Episode {podcast.episodeNumber}
+                          </span>
+                          <h2 className={`text-xl font-normal text-gray-800 break-words`}>
+                            {podcast.title}
+                            {listenedPodcasts[podcast.id] && (
+                              <span className="inline-flex items-center ml-2 text-green-600">
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                <span className="text-xs">Listened</span>
+                              </span>
+                            )}
+                          </h2>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <p className="text-sm text-gray-500">
+                            {new Date(podcast.date).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <div className="flex items-center gap-2 self-end sm:self-center mt-2 sm:mt-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-full hover:bg-gray-200 hover:bg-opacity-50"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handlePlayPodcast(podcast)
+                          }}
+                        >
+                          <PlayCircle className="h-6 w-6 text-gray-800" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {expandedPodcast === podcast.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 py-4 border-t border-gray-100">
+                          <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
+                            <BookOpen className="h-5 w-5 mr-2" />
+                            Related Articles
+                          </h3>
+                          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+                            {podcast.articles.map((article, index) => (
+                              <div key={index} className="flex flex-col items-start gap-2">
+                                <a
+                                  href={article.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-gray-800 hover:underline font-bold"
+                                >
+                                  {article.title}
+                                </a>
+                                <p className="text-gray-500 text-sm">{article.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card className="backdrop-blur-lg bg-black bg-opacity-10 border-none overflow-hidden shadow-md">
+              <CardContent className="p-6 text-center">
+                <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                  <div className="rounded-full bg-gray-200 p-4">
+                    <PlayCircle className="h-10 w-10 text-gray-500" />
+                  </div>
+                  <h3 className="text-xl font-medium text-gray-800">No podcasts yet</h3>
+                  <p className="text-gray-600 max-w-md">
+                    Your podcasts will appear here once you start listening. Check back soon for new content!
+                  </p>
+                </div>
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
       </div>
 
