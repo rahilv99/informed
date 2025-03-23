@@ -30,6 +30,10 @@ def get_emails():
             conn.close()
 
 def send_email(RECIPIENTS):
+    BODY_HTML = ''
+    with open('index.html', 'r') as file:
+        BODY_HTML = file.read()
+
     # Create a multipart/mixed parent container
     msg = MIMEMultipart('mixed')
     msg['Subject'] = 'Big things are coming...'
@@ -68,7 +72,8 @@ def send_email(RECIPIENTS):
 
 # Main Execution
 def handler(payload):
-    emails = get_emails()
+    #emails = get_emails()
+    emails = ['rahilv99@gmail.com']
 
     send_email(emails)
 

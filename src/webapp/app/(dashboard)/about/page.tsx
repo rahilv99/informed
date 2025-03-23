@@ -47,8 +47,8 @@ export default function AboutPage() {
             <h2 className="text-3xl font-bold">Our Motivation</h2>
           </div>
           <p className="text-xl">
-            We believe that education is a fundamental human right. Auxiom aims to be accessible to all by
-            transforming complex academic content into engaging audio experiences.
+            We believe increasingly polarizing media is society's biggest issue. Auxiom aims to present 
+            objective, verified, and accessible news from primary data sources to help you make informed decisions.
           </p>
         </CardContent>
           </Card>

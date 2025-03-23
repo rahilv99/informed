@@ -83,7 +83,7 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
     # Create a multipart/mixed parent container
     msg = MIMEMultipart('mixed')
     msg['Subject'] = SUBJECT
-    msg['From'] = "delivery@auxiomai.com"
+    msg['From'] = "Auxiom <Auxiom@auxiomai.com>"
     msg['To'] = RECIPIENT
 
     # Add the HTML body to the email

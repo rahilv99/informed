@@ -6,7 +6,7 @@ import { getUser } from '@/lib/db/queries';
 
 export const metadata: Metadata = {
   title: 'Auxiom',
-  description: 'More learning. Less time.'
+  description: 'Your Personalized AI Journalist.'
 };
 
 export const viewport: Viewport = {
