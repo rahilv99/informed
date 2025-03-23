@@ -15,13 +15,7 @@ export function Footer() {
       const res = await addToNewsletter({ email })
       if (!res) {
         throw new Error('Error adding email to newsletter')
-      } else if (res.error) {
-        toast({
-          title: "Error",
-          description: "Email already exists in newsletter.",
-          variant: "destructive",
-        })
-      } else if (res.success) {
+      } else {
         toast({
           title: "Added to Newsletter",
           description: "Thank you for staying in touch!",
