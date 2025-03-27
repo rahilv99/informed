@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/hooks/use-toast"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,18 +52,10 @@ export function DeleteAccountForm() {
   async function onSubmit(data: DeleteAccountFormValues) {
     try {
       await deleteAccount()
-      toast({
-        title: "Account Deleted",
-        description: "Your account has been permanently deleted.",
-      })
       setIsDialogOpen(false)
       router.push('/')
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "There was a problem deleting your account.",
-        variant: "destructive",
-      })
+      console.error(error)
     }
   }
 

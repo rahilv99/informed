@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/hooks/use-toast"
 import {  AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -28,9 +27,6 @@ import {  AlertDialog,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { signOut, deleteAccount } from '@/lib/actions';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/lib/auth';
-
 
 
 const deleteAccountFormSchema = z.object({
@@ -42,12 +38,6 @@ const deleteAccountFormSchema = z.object({
 type DeleteAccountFormValues = z.infer<typeof deleteAccountFormSchema>
 
 export function DeleteAccountForm() {
-  const { user, setUser } = useUser();
-
-  async function handleSignOut() {
-    setUser(null);
-    await signOut();
-  }
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -61,17 +51,10 @@ export function DeleteAccountForm() {
   async function onSubmit(data: DeleteAccountFormValues) {
     try {
       await deleteAccount()
-      toast({
-        title: "Account Deleted",
-        description: "Your account has been permanently deleted.",
-      })
       setIsDialogOpen(false)
+      await signOut()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "There was a problem deleting your account.",
-        variant: "destructive",
-      })
+      console.error(error)
     }
   }
 
@@ -118,7 +101,6 @@ export function DeleteAccountForm() {
         </Form>
       </AlertDialogContent>
     </AlertDialog>
-    <Button onClick={handleSignOut}>Sign Out</Button>
     </div>
   )
 }

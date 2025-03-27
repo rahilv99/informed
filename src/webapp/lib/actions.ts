@@ -8,6 +8,7 @@ import {
   users,
   type NewUser,
   podcasts,
+  emails
 } from '@/lib/db/schema';
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
@@ -518,6 +519,8 @@ export async function deleteAccount() {
   }
 
   await db.delete(users).where(eq(users.id, user.id));
+  await db.delete(emails).where(eq(emails.email, user.email));
+  await db.delete(podcasts).where(eq(podcasts.user_id, user.id));
 
   await signOut();
 }

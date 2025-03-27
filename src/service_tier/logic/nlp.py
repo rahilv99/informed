@@ -20,6 +20,7 @@ import common.s3
 
 TEMP_BASE = "/tmp"
 
+# carteisa is expensive, TTS account is currently: CLOSED
 cartesia = False
 
 GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
@@ -28,68 +29,7 @@ genai.configure(api_key=GOOGLE_API_KEY)
 summary_model = genai.GenerativeModel('gemini-1.5-flash') # 15 RPM, $0.030 /million output tokens for higher RPM
 script_model = genai.GenerativeModel('gemini-2.0-flash') # 2 RPM, $5 /million output tokens for higher RPM
 
-# implement counters to ensure we are below rate limits
-# Global rate-limit counters and locks
-summary_model_counter = 0
-summary_model_lock = Lock()
-script_model_counter = 0
-script_model_lock = Lock()
-
-# Timestamps to track last reset
-time_last_reset_summary_model = time.time()
-time_last_reset_script_model = time.time()
-
-# Rate limit configurations
-SUMMARY_MODEL_RPM_LIMIT = 15
-SCRIPT_MODEL_RPM_LIMIT = 2
-
-# Function to enforce rate limits
-def enforce_rate_limit(model_name):
-    global summary_model_counter, script_model_counter
-    global time_last_reset_summary_model, time_last_reset_script_model
-
-    current_time = time.time()
-
-    if model_name == "summary_model":
-        with summary_model_lock:
-            elapsed_time = current_time - time_last_reset_summary_model
-
-            if elapsed_time >= 60:  # Reset every minute
-                summary_model_counter = 0
-                time_last_reset_summary_model = current_time
-
-            if summary_model_counter >= SUMMARY_MODEL_RPM_LIMIT:
-                wait_time = 60 - elapsed_time
-                print(f"Rate limit reached for summary_model. Waiting for {wait_time:.2f} seconds.")
-                time.sleep(wait_time)
-                summary_model_counter = 0
-                time_last_reset_summary_model = time.time()
-
-            summary_model_counter += 1
-
-    elif model_name == "script_model":
-        with script_model_lock:
-            elapsed_time = current_time - time_last_reset_script_model
-
-            if elapsed_time >= 60:  # Reset every minute
-                script_model_counter = 0
-                time_last_reset_script_model = current_time
-
-            if script_model_counter >= SCRIPT_MODEL_RPM_LIMIT:
-                wait_time = 60 - elapsed_time
-                print(f"Rate limit reached for script_model. Waiting for {wait_time:.2f} seconds.")
-                time.sleep(wait_time)
-                script_model_counter = 0
-                time_last_reset_script_model = time.time()
-
-            script_model_counter += 1
-
 def summarize(title, text, use = 'summary'):
-    if use == 'email' or 'title':
-        tokens = 100 # email title / summaries
-    else: # pulse summaries (depracated)
-        tokens = 500
-        
     if use == 'title':
         prompt = f"Create a title for the podcast based on the title of the academic articles discussed. The title should be attention-grabbing, professional, and informative.\
                     Only include the generated title itself; avoid any introductions, explanations, or meta-comments. This generated title will be in an email newsletter.\
@@ -100,10 +40,9 @@ def summarize(title, text, use = 'summary'):
             avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
             Text: {text}"
     
-    enforce_rate_limit("summary_model")
     response = summary_model.generate_content(prompt,
                                                 generation_config = genai.GenerationConfig(
-                                            max_output_tokens=tokens,
+                                            max_output_tokens=100,
                                             temperature=0.25))
     return response.text
 
@@ -111,9 +50,9 @@ def summarize(title, text, use = 'summary'):
 ### Single article podcast segment
 def academic_segment(text, title, plan = 'free'):
     if plan == 'free':
-        tokens = 220
+        tokens = 150
     else: # premium
-        tokens = 250
+        tokens = 200
 
     system_prompt =f"""
         You are a professional podcast script writer for "Auxiom," a podcast that breaks down complex government documents from the last week. Your task is to write a single, engaging segment of a script for a text-to-speech model. This segment will feature a dialogue between **HOST 1** and **HOST 2**, discussing the key takeaways from the provided document.
@@ -171,7 +110,7 @@ def review_script(script, tokens):
         Script: {script}"
 
     response = script_model.generate_content(prompt, generation_config = genai.GenerationConfig(
-                                        max_output_tokens=int(tokens*1.5),
+                                        max_output_tokens=tokens*2,
                                         temperature=0.10))
     return response.text
 
@@ -180,7 +119,7 @@ def make_script(texts, titles, name, plan = 'free'):
         tokens = 1500
         summaries = summaries
     else: # free
-        tokens = 1000
+        tokens = 900
         texts = texts[:3]
 
     segments = []
@@ -226,7 +165,7 @@ Articles: """
        
     response = script_model.generate_content(system_prompt, 
                                       generation_config = genai.GenerationConfig(
-                                        max_output_tokens=int(tokens*1.5),
+                                        max_output_tokens=tokens*2,
                                         temperature=0.25))
     
     ret = review_script(response.text, tokens)
