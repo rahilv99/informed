@@ -19,17 +19,14 @@ export default async function PricingPage() {
   } catch {
     plan = 'free';
   }
-
   
   const plusPlan = products.find((product) => product.name === 'Plus');
-  const proPlan = products.find((product) => product.name === 'Pro');
 
   const plusPrice = prices.find((price) => price.productId === plusPlan?.id);
-  const proPrice = prices.find((price) => price.productId === proPlan?.id);
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-4 lg:px-6 py-8">
-      <div className="grid md:grid-cols-3 gap-8 w-full mx-auto">
+      <div className="grid md:grid-cols-2 gap-8 w-full mx-auto">
         <PricingCard
           name={'Base'}
           price={0}
@@ -50,28 +47,12 @@ export default async function PricingPage() {
           features={[
         'Get the full Auxiom experience',
         '8-10 minute pulse podcast',
-        'Access to proprietary sources',
+        'Access to premium sources',
           ]}
           priceId={plusPrice?.id}
           currentPlan={plan === 'plus' || plan === 'Plus'}
           action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
         />
-        { 
-        <PricingCard
-          name={proPlan?.name || 'Pro'}
-          price={proPrice?.unitAmount || 900}
-          interval={proPrice?.interval || 'month'}
-          trialDays={7}
-          features={[
-        'Everything in Plus',
-        'Access to your daily notes episode',
-        'Early access to new features',
-          ]}
-          priceId={proPrice?.id}
-          currentPlan={plan === 'pro' || plan === 'Pro'}
-          action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
-        />
-        }
       </div>
     </main>
   );
