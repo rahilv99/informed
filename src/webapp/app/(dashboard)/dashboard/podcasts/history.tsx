@@ -164,6 +164,95 @@ export default function LearningProgress({
     }
   }, [playbackSpeed])
 
+  // Setup Media Session API for background playback
+  useEffect(() => {
+    // Check if Media Session API is supported
+    if ("mediaSession" in navigator && currentPodcast) {
+      // Set metadata for the currently playing podcast
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentPodcast.title,
+        artist: `Episode ${currentPodcast.episodeNumber}`,
+        album: "Auxiom",
+        artwork: [
+          { src: "/logo.svg", sizes: "96x96", type: "image/svg+xml" },
+          { src: "/logo.svg", sizes: "128x128", type: "image/svg+xml" },
+          { src: "/logo.svg", sizes: "192x192", type: "image/svg+xml" },
+          { src: "/logo.svg", sizes: "256x256", type: "image/svg+xml" },
+          { src: "/logo.svg", sizes: "384x384", type: "image/svg+xml" },
+          { src: "/logo.svg", sizes: "512x512", type: "image/svg+xml" },
+        ],
+      })
+
+      // Set action handlers for media controls
+      navigator.mediaSession.setActionHandler("play", () => {
+        if (audioRef.current) {
+          audioRef.current.play()
+          setIsPlaying(true)
+        }
+      })
+
+      navigator.mediaSession.setActionHandler("pause", () => {
+        if (audioRef.current) {
+          audioRef.current.pause()
+          setIsPlaying(false)
+        }
+      })
+
+      navigator.mediaSession.setActionHandler("seekbackward", () => {
+        handleSkipBackward()
+      })
+
+      navigator.mediaSession.setActionHandler("seekforward", () => {
+        handleSkipForward()
+      })
+
+      navigator.mediaSession.setActionHandler("seekto", (details) => {
+        if (details.seekTime && audioRef.current) {
+          audioRef.current.currentTime = details.seekTime
+          setCurrentTime(details.seekTime)
+        }
+      })
+
+      // Update playback state
+      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused"
+    }
+
+    // Cleanup function
+    return () => {
+      if ("mediaSession" in navigator) {
+        // Clear action handlers when component unmounts
+        navigator.mediaSession.setActionHandler("play", null)
+        navigator.mediaSession.setActionHandler("pause", null)
+        navigator.mediaSession.setActionHandler("seekbackward", null)
+        navigator.mediaSession.setActionHandler("seekforward", null)
+        navigator.mediaSession.setActionHandler("seekto", null)
+      }
+    }
+  }, [currentPodcast, isPlaying])
+
+  // Update media session playback state when isPlaying changes
+  useEffect(() => {
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused"
+    }
+  }, [isPlaying])
+
+  // Update position state for the media session
+  useEffect(() => {
+    if (
+      "mediaSession" in navigator &&
+      "setPositionState" in navigator.mediaSession &&
+      !isNaN(duration) &&
+      duration > 0
+    ) {
+      navigator.mediaSession.setPositionState({
+        duration: duration,
+        playbackRate: playbackSpeed,
+        position: currentTime,
+      })
+    }
+  }, [currentTime, duration, playbackSpeed])
+
   return (
     <div className="min-h-screen py-6 sm:py-12 px-2 sm:px-4">
       <div className="container mx-auto max-w-4xl">
