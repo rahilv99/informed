@@ -1,4 +1,3 @@
-
 # set up environment variables for API keys in terminal e.g export GOOGLE_API_KEY=your_key, export OPENAI_API_KEY=your_key
 
 import pandas as pd
@@ -38,6 +37,7 @@ def summarize(title, text, use = 'summary'):
         prompt = f"Provide a succinct TLDR summary about the academic article titled '{title}'.\
             Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
             avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
+            Keep it less than 100 tokens.\
             Text: {text}"
     
     response = summary_model.generate_content(prompt,
@@ -90,7 +90,7 @@ def academic_segment(text, title, plan = 'free'):
         **HOST 2:** Sounds like it will be a big step for ...
         **HOST 1:** - This impacts all the countries in ...
 
-        Remember: This segment must be at least {tokens} tokens long. Do not produce fewer.
+        Remember: This segment must be exactly {tokens} tokens long. Produce approximately {tokens} tokens.
 
         Article: {title}
         Text: {text}"""
@@ -157,7 +157,7 @@ def make_script(texts, titles, name, plan = 'free'):
     ...
     **HOST 1**: We hope you have a great day, stay tuned for more episodes.
 
-    Remember: This script must be {tokens} tokens long. Do not produce fewer.
+    Remember: This segment must be exactly {tokens} tokens long. Produce approximately {tokens} tokens.
 
 Articles: """
     for i in range(len(segments)):
@@ -248,7 +248,7 @@ def create_conversational_podcast(all_data, name, plan='free'):
             else:
               voice = 'onyx'
 
-        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}_{chunk}.wav"
+        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}_{chunk}.mp3"
 
         # Ensure the output directory exists
         output_dir = os.path.dirname(output_file)
@@ -272,16 +272,12 @@ def create_conversational_podcast(all_data, name, plan='free'):
                     model="tts-1",
                     voice=voice,
                     input=line,
-                    response_format='wav'
+                    response_format='mp3'
                 )
                 response.stream_to_file(output_file)
 
         except Exception as e:
             print(f"An error occurred while generating TTS: {e}")
-        
-        if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
-            raise ValueError(f"Failed to create audio file: {output_file}")
-
 
     # Instantiates a client
     script = generate_script(all_data, name, plan=plan)
@@ -304,15 +300,15 @@ def create_conversational_podcast(all_data, name, plan='free'):
             for chunk_index, chunk in enumerate(chunks):
                 _create_line(client, host, chunk, index, chunk_index)
 
-            chunk_files = [f"{TEMP_BASE}/conversation/{host}/line_{index}_{i}.wav" for i in range(len(chunks))]
+            chunk_files = [f"{TEMP_BASE}/conversation/{host}/line_{index}_{i}.mp3" for i in range(len(chunks))]
             combined_audio = AudioSegment.empty()
             for file in chunk_files:
-                audio_segment = AudioSegment.from_wav(file)
+                audio_segment = AudioSegment.from_mp3(file)
                 combined_audio += audio_segment
 
             print(f"Combined chunked audio for line {index}")
-            combined_output_file = f"{TEMP_BASE}/conversation/{host}/line_{index}_0.wav"
-            combined_audio.export(combined_output_file, format="wav")
+            combined_output_file = f"{TEMP_BASE}/conversation/{host}/line_{index}_0.mp3"
+            combined_audio.export(combined_output_file, format="mp3")
 
             # Clean up individual chunk files
             for file in chunk_files:
@@ -324,29 +320,28 @@ def create_conversational_podcast(all_data, name, plan='free'):
 
 def write_to_s3(num_turns, user_id, episode_number):
     # merge audio files
-    # Create a new AudioSegment object
     print("Merging audio files...")
 
-    final_audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/1/line_0_0.wav")
+    final_audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/1/line_0_0.mp3")
     for i in range(1, num_turns):
 
-        audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.wav")
+        audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
 
         final_audio = final_audio.append(audio)
 
     print("Audio files merged.")
     # add intro music
     # Load the intro music from s3
-    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.wav")
+    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
 
-    intro_music = AudioSegment.from_file(f"{TEMP_BASE}/intro_music.wav")
+    intro_music = AudioSegment.from_mp3(f"{TEMP_BASE}/intro_music.mp3")
     final_audio = intro_music.append(final_audio, crossfade=1000)
 
     print("Intro music added.")
-    final_audio.export(f"{TEMP_BASE}/podcast.wav", format="wav")
-    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.wav")
+    final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
+    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.mp3")
     # Export the final audio
-    common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.wav")
+    common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
 
     print("Audio file uploaded to S3.")
 

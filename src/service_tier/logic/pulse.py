@@ -56,18 +56,44 @@ class ArticleResource:
         }, inplace=True)
         self.articles_df.drop_duplicates(subset=['title'], inplace=True)
 
-    def rank_data(self, scoring_column='text'):
+    def rank_data(self, scoring_column='title'):
         if self.articles_df.empty:
             return
 
-        # Fill NaN or None values in the scoring column with empty strings
-        self.articles_df[scoring_column] = self.articles_df[scoring_column].fillna("")
+        # Extract entities if available, otherwise use lowercase titles
+        titles = self.articles_df[scoring_column].apply(lambda x: x.lower())
 
-        entities = self.articles_df[scoring_column].apply(self._extract_entities)
-        entities_list = entities.tolist()  # Convert Series to list
-        embeddings = MODEL.encode(entities_list, convert_to_tensor=True)
+        # Convert to list and encode
+        titles = entities.tolist()
+        article_embeddings = MODEL.encode(titles, convert_to_tensor=True)
         
-        self.articles_df['score'] = util.cos_sim(self.user_embeddings, embeddings).flatten().numpy() 
+        # Get user keyword embeddings (assuming user_input contains keywords and user_embeddings is aggregated)
+        user_keywords = self.user_input
+        
+        # If user_input is a list of keywords, encode each one
+        user_keyword_embeddings = MODEL.encode(user_keywords, convert_to_tensor=True)
+        
+        # Calculate cosine similarity between each article and each user keyword
+        max_scores = []
+        for i in range(len(titles)):
+            # Get article embedding
+            article_emb = article_embeddings[i].unsqueeze(0)  # Add batch dimension
+            
+            # Calculate similarity with each keyword
+            similarities = util.cos_sim(article_emb, user_keyword_embeddings).flatten().numpy()
+            
+            # Get maximum similarity (nearest keyword)
+            max_score = similarities.max()
+            max_scores.append(max_score)
+        
+        # Create a scores Series with the same index as the original DataFrame
+        scores = pd.Series(index=self.articles_df.index)
+        scores = max_scores
+        
+        # Assign scores to the DataFrame
+        self.articles_df['score'] = scores
+
+        # Sort by score and keep top 5
         self.articles_df.sort_values(by='score', ascending=False, inplace=True)
         self.articles_df = self.articles_df.head(5)
 
@@ -161,10 +187,11 @@ class Gov(ArticleResource):
     def get_articles(self):
         try:
             results = []
+            seen = set() # first defense for repeated articles
             for topic in self.user_input:
                 # Create payload for API request with date range for last week
                 payload = {
-                    "query": f"{topic} publishdate:range({self.time_constraint.strftime('%Y-%m-%d')},{self.today.strftime('%Y-%m-%d')})",
+                    "query": f"{topic} publishdate:range({self.time_constraint.strftime('%Y-%m-%d')},{self.today.strftime('%Y-%m-%d')}) AND collection:(BUDGET OR CPD OR BILLS OR CPRT OR CDOC OR CHRG OR CRPT OR ECONI OR ERP)",
                     "pageSize": 10,
                     "offsetMark": "*",
                     "sorts": [
@@ -212,13 +239,19 @@ class Gov(ArticleResource):
                             else:
                                 continue
                                 
-                            # Get full text content for better relevance scoring
+                            # Trash articles recognizing some BS - makeshift filter
+                            if 'recognizing' in item.get('title','').lower():
+                                continue
+                            if item.get('title','').lower() in seen:
+                                continue
+
                             self.logger.info(f"Retrieving document: {item.get('title', '')} ({doc_type})")
                             full_text = self.get_document_text(url)
 
-                            if len(full_text) < 1000:
+                            if len(full_text) < 5000:
                                 continue
-                            
+
+                            seen.add(item.get("title", ""))
                             results.append({
                                 "title": item.get("title", ""),
                                 "text": full_text,

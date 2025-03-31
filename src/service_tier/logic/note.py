@@ -245,7 +245,7 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
             # male
             voice = '729651dc-c6c3-4ee5-97fa-350da1f88600'
 
-        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}.wav"
+        output_file = f"{TEMP_BASE}/conversation/{host}/line_{num}.mp3"
 
          # Ensure the output directory exists
         output_dir = os.path.dirname(output_file)
@@ -258,7 +258,7 @@ def create_conversational_podcast(all_data, name, plan='free', ep_type='pulse'):
                 voice_id=voice,
                 language="en",
                 output_format={
-                    "container": "wav",
+                    "container": "mp3",
                     "sample_rate": 44100,
                     "encoding": "pcm_s16le", 
                 },
@@ -296,26 +296,26 @@ def write_to_s3(num_turns, user_id, episode_number):
     # Create a new AudioSegment object
     print("Merging audio files...")
 
-    final_audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/1/line_0.wav")
+    final_audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/1/line_0.mp3")
     for i in range(1, num_turns):
 
-        audio = AudioSegment.from_wav(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}.wav")
+        audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}.mp3")
 
         final_audio = final_audio.append(audio)
 
     print("Audio files merged.")
     # add intro music
     # Load the intro music from s3
-    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.wav")
+    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
 
-    intro_music = AudioSegment.from_file(f"{TEMP_BASE}/intro_music.wav")
+    intro_music = AudioSegment.from_mp3(f"{TEMP_BASE}/intro_music.mp3")
     final_audio = intro_music.append(final_audio, crossfade=1000)
 
     print("Intro music added.")
-    final_audio.export(f"{TEMP_BASE}/podcast.wav", format="wav")
-    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.wav")
+    final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
+    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.mp3")
     # Export the final audio
-    common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.wav")
+    common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
 
     print("Audio file uploaded to S3.")
 
