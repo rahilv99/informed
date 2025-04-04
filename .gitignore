@@ -48,6 +48,7 @@ saved_model/
 
 # venv
 auxiom_env
+venv
 
 # pycache
 __pycache__cdk.out

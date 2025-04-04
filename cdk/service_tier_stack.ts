@@ -5,6 +5,7 @@ import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import { CoreStack } from "./core_stack";
 import * as dotenv from 'dotenv';
+import * as ecr from 'aws-cdk-lib/aws-ecr'; 
 
 dotenv.config();
 
@@ -20,9 +21,17 @@ export class ServiceTierLambdaStack extends cdk.Stack {
       logGroupName: "ServiceTierLogGroup"
     })
 
+    // Update if changing requirements.txt
+    const imageTag = '7542ecd2965e6f1be4b7bfbaca263c73d2886c5aa238cb122097c289a993d4b1'
+    const repo_name = 'cdk-hnb659fds-container-assets-905418457861-us-east-1'
+
+    const ecrRepo = ecr.Repository.fromRepositoryName(this, 'FunctionEcrRepo', repo_name);
+
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
-      //code: lambda.DockerImageCode.fromImageAsset('.', {file:'./src/service_tier/Dockerfile'}),
-      code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
+      //code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
+      code: lambda.DockerImageCode.fromEcr(ecrRepo, {
+        tagOrDigest: imageTag,
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2*1024,
       environment: {
