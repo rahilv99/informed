@@ -9,3 +9,10 @@ google-generativeai
 boto3
 pandas
 psycopg2-binary
+gnews
+feedparser
+#selenium
+#webdriver_manager
+fuzzywuzzy
+python-Levenshtein
+numpy
