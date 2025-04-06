@@ -10,6 +10,8 @@ import os
 import re
 import asyncio
 import json
+import pickle
+import boto3
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -22,14 +24,17 @@ import io
 from pydub import AudioSegment
 from dotenv import load_dotenv
 
+# Add the parent directory to the Python module search path
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 # Load environment variables from .env file
 load_dotenv()
 
 # Import your existing modules
-# Assuming these are available in your environment
-# from logic.pulse_output import PulseOutput
-# import common.sqs
-# import common.s3
+from logic.pulse_output import PulseOutput
+import common.sqs
+import common.s3
 
 # Initialize FastAPI app
 app = FastAPI(title="Podcast Streaming Server")
@@ -45,7 +50,10 @@ app.add_middleware(
 
 # Configure API keys
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
-OPENAI_API_KEY =  os.environ.get('OPENAI_API_KEY')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+# Temporary directory for audio files
+TEMP_BASE = "/tmp"
 
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
@@ -76,6 +84,11 @@ class ConnectionManager:
         if podcast_id in self.active_connections:
             for connection in self.active_connections[podcast_id]:
                 await connection.send_bytes(chunk)
+                
+    async def send_text(self, message: str, podcast_id: str):
+        if podcast_id in self.active_connections:
+            for connection in self.active_connections[podcast_id]:
+                await connection.send_text(message)
 
 manager = ConnectionManager()
 
@@ -266,12 +279,16 @@ Articles: """
     return ret
 
 def generate_script(all_data, name, plan='free'):
+    # Using the original implementation that iterates through all_data
+    for index, row in all_data.iterrows():
+        title = row['title']
+        text = row['text']
+
     # Generate script
     texts = all_data['text'].tolist()
     titles = all_data['title'].tolist()
     script = make_script(texts, titles, name, plan)
-    print(script[0:400])
-    return (script[0:400])
+    return script
 
 def generate_email_headers(all_data):
     def _clean_summary_text(text):
@@ -280,7 +297,7 @@ def generate_email_headers(all_data):
 
     podcast_description = all_data[['title', 'url', 'text']].copy()
 
-    # Ensure this remains a DataFrame
+    # Using the original implementation
     podcast_description['description'] = podcast_description.apply(
         lambda row: _clean_summary_text(summarize(row['title'], row['text'], use='email')),
         axis=1
@@ -293,6 +310,29 @@ def generate_email_headers(all_data):
 
     return podcast_description, episode_title
 
+def fetch_and_deserialize_script_from_s3(bucket_name: str, key: str) -> str:
+    """
+    Fetch and deserialize a script from an S3 bucket.
+
+    Args:
+        bucket_name (str): The name of the S3 bucket.
+        key (str): The key (path) of the file in the S3 bucket.
+
+    Returns:
+        str: The deserialized script content.
+
+    Raises:
+        Exception: If the file cannot be fetched or deserialized.
+    """
+    s3 = boto3.client('s3')
+    try:
+        response = s3.get_object(Bucket=bucket_name, Key=key)
+        serialized_data = response['Body'].read()
+        script_content = pickle.loads(serialized_data)  # Deserialize the script
+        return script_content
+    except Exception as e:
+        raise Exception(f"Error fetching or deserializing script from S3: {str(e)}")
+
 # API Endpoints
 @app.post("/api/podcasts/generate")
 async def generate_podcast(request: PodcastRequest):
@@ -301,23 +341,15 @@ async def generate_podcast(request: PodcastRequest):
     This endpoint doesn't generate audio yet, just prepares the script.
     """
     try:
-        # In a real implementation, you would retrieve data from your database
-        # For now, we'll create dummy data
-        all_data = pd.DataFrame({
-            'title': ['Sample Article 1', 'Sample Article 2', 'Sample Article 3'],
-            'url': ['http://example.com/1', 'http://example.com/2', 'http://example.com/3'],
-            'text': [
-                'This is sample text for article 1. It contains important information.',
-                'This is sample text for article 2. It discusses key findings.',
-                'This is sample text for article 3. It presents conclusions and recommendations.'
-            ]
-        })
+        # Use PulseOutput to get actual data like in the original implementation
+        pulse = PulseOutput(request.user_id, request.episode)
+        all_data = pulse.all_data
         
         if request.plan == 'free':
             all_data = all_data.head(3)
         
         # Generate script
-        script = generate_script(all_data, "User", plan=request.plan)
+        script = generate_script(all_data, request.user_id, plan=request.plan)
         
         # Store script for later streaming
         podcast_id = f"{request.user_id}_{request.episode}"
@@ -357,10 +389,125 @@ async def get_podcast_metadata(podcast_id: str):
     
     return podcast_metadata[podcast_id]
 
-@app.websocket("/ws/podcast/{podcast_id}")
-async def stream_podcast(websocket: WebSocket, podcast_id: str):
+@app.websocket("/ws/podcast/{user_id}/{episode}")
+async def stream_podcast(websocket: WebSocket, user_id: str, episode: str):
     """
-    Stream a podcast to the client when they connect.
+    Stream a podcast to the client using WebSockets.
+    """
+    podcast_id = f"{user_id}_{episode}"
+    await manager.connect(websocket, podcast_id)
+
+    try:
+        # Check if podcast script exists in memory
+        if podcast_id not in podcast_scripts:
+            # Fetch and deserialize the script from S3
+            bucket_name = os.environ.get('AWS_S3_BUCKET_NAME')
+            s3_key = f"user/{user_id}/pickle_script/serialized_data.pkl"  # Adjust the key format as needed
+            try:
+                script = fetch_and_deserialize_script_from_s3(bucket_name, s3_key)
+                podcast_scripts[podcast_id] = script
+            except Exception as e:
+                await websocket.send_text(json.dumps({
+                    "type": "error",
+                    "content": f"Error fetching podcast script: {str(e)}"
+                }))
+                await websocket.close()
+                return
+
+        # Get the script
+        script = podcast_scripts[podcast_id]
+
+        # Clean the script for TTS
+        #turns = clean_text_for_conversational_tts(script)
+        turns = script #MARK: already generated turns
+        if not turns:
+            await websocket.send_text(json.dumps({
+                "type": "error",
+                "content": "Script is empty or invalid for TTS."
+            }))
+            await websocket.close()
+            return
+
+        # Initialize OpenAI client
+        client = OpenAI(api_key=OPENAI_API_KEY)
+
+        # Send metadata
+        metadata = {
+            "type": "metadata",
+            "content": {
+                "title": podcast_metadata.get(podcast_id, {}).get("title", "Untitled Podcast"),
+                "description": podcast_metadata.get(podcast_id, {}).get("description", ""),
+                "episode": episode,
+                "hosts": {
+                    "host1": {"name": "Host 1", "voice": "nova"},
+                    "host2": {"name": "Host 2", "voice": "onyx"}
+                }
+            }
+        }
+        await websocket.send_text(json.dumps(metadata))
+
+        # Stream each turn
+        for index, sentence in enumerate(turns):
+            host = 1 if index % 2 == 0 else 2
+            voice = 'nova' if host == 1 else 'onyx'
+
+            # Send transcript update
+            await websocket.send_text(json.dumps({
+                "type": "transcript",
+                "content": {
+                    "host": host,
+                    "text": sentence
+                }
+            }))
+
+            try:
+                # Generate audio
+                print(f"Generating audio for turn {index}: {sentence[:100]}")  # Log first 100 characters
+                response = client.audio.speech.create(
+                    model="tts-1",
+                    voice=voice,
+                    input=sentence,
+                    response_format='mp3'
+                )
+                print(f"Audio generated for turn {index}")
+
+                # Stream chunks to client
+                for chunk in response.iter_bytes(chunk_size=4096):
+                    await websocket.send_bytes(chunk)
+                    await asyncio.sleep(0.05)  # Control flow rate
+
+            except Exception as e:
+                print(f"Error generating audio for turn {index}: {str(e)}")
+                await websocket.send_text(json.dumps({
+                    "type": "error",
+                    "content": f"Error generating audio: {str(e)}"
+                }))
+
+        # Send completion message
+        await websocket.send_text(json.dumps({
+            "type": "complete",
+            "content": "Podcast streaming completed"
+        }))
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, podcast_id)
+        print(f"Client disconnected: {podcast_id}")
+    except Exception as e:
+        print(f"Error streaming podcast: {str(e)}")
+        try:
+            await websocket.send_text(json.dumps({
+                "type": "error",
+                "content": f"Error streaming podcast: {str(e)}"
+            }))
+        except:
+            pass
+        manager.disconnect(websocket, podcast_id)
+
+# Keep the original endpoint for backward compatibility
+@app.websocket("/ws/podcast/{podcast_id}")
+async def stream_podcast_legacy(websocket: WebSocket, podcast_id: str):
+    """
+    Legacy endpoint for backward compatibility.
     """
     await manager.connect(websocket, podcast_id)
     

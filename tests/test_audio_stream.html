@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Audio Test</title>
+</head>
+<body>
+  <h1>WebSocket Audio Test</h1>
+  <button id="connectButton">Connect to WebSocket</button>
+  <p id="status">Status: Not connected</p>
+  <audio id="audioPlayer" controls></audio>
+
+  <script>
+    const connectButton = document.getElementById("connectButton");
+    const statusElement = document.getElementById("status");
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    connectButton.addEventListener("click", () => {
+      const userId = "33"; // Replace with your user ID
+      const episode = "pickle_script"; // Replace with your episode
+      const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${userId}/${episode}`;
+      const socket = new WebSocket(wsUrl);
+
+      let audioChunks = [];
+
+      socket.onopen = () => {
+        statusElement.textContent = "Status: Connected";
+        console.log("WebSocket connection established");
+      };
+
+      socket.onmessage = (event) => {
+        if (event.data instanceof Blob) {
+          console.log("Received audio chunk");
+          audioChunks.push(event.data);
+        } else {
+          console.log("Received message:", event.data);
+        }
+      };
+
+      socket.onclose = () => {
+        statusElement.textContent = "Status: Disconnected";
+        console.log("WebSocket connection closed");
+
+        // Combine audio chunks and play the audio
+        if (audioChunks.length > 0) {
+          const audioBlob = new Blob(audioChunks, { type: "audio/mp3" });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          audioPlayer.src = audioUrl;
+          audioPlayer.play();
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        statusElement.textContent = "Status: Error";
+      };
+    });
+  </script>
+</body>
+</html>
