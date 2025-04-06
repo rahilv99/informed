@@ -20,6 +20,7 @@
     "@aws-cdk/aws-lambda-python-alpha": "^2.173.2-alpha.0",
     "aws-cdk-lib": "^2.173.2",
     "constructs": "^10.4.2",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "ws": "^8.18.1"
   }
 }
