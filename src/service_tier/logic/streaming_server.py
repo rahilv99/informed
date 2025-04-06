@@ -20,6 +20,10 @@ import google.generativeai as genai
 from openai import OpenAI
 import io
 from pydub import AudioSegment
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Import your existing modules
 # Assuming these are available in your environment
@@ -40,8 +44,8 @@ app.add_middleware(
 )
 
 # Configure API keys
-GOOGLE_API_KEY = 'AIzaSyAVXbH_jtqfbzKrL3vwmdxvgMylijtkOjs'
-OPENAI_API_KEY = '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'
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+OPENAI_API_KEY =  os.environ.get('OPENAI_API_KEY')
 
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
@@ -266,7 +270,8 @@ def generate_script(all_data, name, plan='free'):
     texts = all_data['text'].tolist()
     titles = all_data['title'].tolist()
     script = make_script(texts, titles, name, plan)
-    return script
+    print(script[0:400])
+    return (script[0:400])
 
 def generate_email_headers(all_data):
     def _clean_summary_text(text):
@@ -372,7 +377,7 @@ async def stream_podcast(websocket: WebSocket, podcast_id: str):
         turns = clean_text_for_conversational_tts(script)
         
         # Initialize OpenAI client
-        client = OpenAI(api_key=OPENAI_API_KEY)
+        client = OpenAI(api_key='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')
         
         # Send metadata
         await websocket.send_json({
