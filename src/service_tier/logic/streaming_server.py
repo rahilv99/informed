@@ -377,7 +377,7 @@ async def stream_podcast(websocket: WebSocket, podcast_id: str):
         turns = clean_text_for_conversational_tts(script)
         
         # Initialize OpenAI client
-        client = OpenAI(api_key='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')
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         
         # Send metadata
         await websocket.send_json({
