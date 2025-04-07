@@ -9,7 +9,7 @@
   <h1>WebSocket Audio Test</h1>
   <button id="connectButton">Connect to WebSocket</button>
   <p id="status">Status: Not connected</p>
-  <audio id="audioPlayer" controls></audio>
+  <audio id="audioPlayer" controls autoplay></audio>
 
   <script>
     const connectButton = document.getElementById("connectButton");
@@ -22,17 +22,53 @@
       const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${userId}/${episode}`;
       const socket = new WebSocket(wsUrl);
 
-      let audioChunks = [];
+      const mediaSource = new MediaSource();
+      audioPlayer.src = URL.createObjectURL(mediaSource);
+      let sourceBuffer;
+      const audioQueue = [];
+      const bufferThreshold = 20; // Keep a buffer to ensure smoother playback
+
+      mediaSource.addEventListener("sourceopen", () => {
+        // Replace with the actual MIME type of your audio stream
+        sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+        sourceBuffer.mode = "sequence";
+
+        sourceBuffer.addEventListener("updateend", () => {
+          if (audioQueue.length > 0 && !sourceBuffer.updating) {
+            const nextChunk = audioQueue.shift();
+            sourceBuffer.appendBuffer(nextChunk);
+          } else if (audioQueue.length === 0 && mediaSource.readyState === "open") {
+            // Optionally signal the end of stream if the server indicates it
+            // mediaSource.endOfStream();
+          }
+        });
+
+        sourceBuffer.addEventListener("error", (error) => {
+          console.error("SourceBuffer error:", error);
+          statusElement.textContent = "Status: Playback Error";
+        });
+      });
+
+      mediaSource.addEventListener("sourceclose", () => {
+        console.log("MediaSource closed");
+      });
 
       socket.onopen = () => {
         statusElement.textContent = "Status: Connected";
         console.log("WebSocket connection established");
       };
 
-      socket.onmessage = (event) => {
+      socket.onmessage = async (event) => {
         if (event.data instanceof Blob) {
           console.log("Received audio chunk");
-          audioChunks.push(event.data);
+          const arrayBuffer = await event.data.arrayBuffer();
+          audioQueue.push(arrayBuffer);
+
+          // Append to the source buffer if it's not updating and we have data
+          if (sourceBuffer && !sourceBuffer.updating && audioQueue.length > 0) {
+            const nextChunk = audioQueue.shift();
+            sourceBuffer.appendBuffer(nextChunk);
+          }
         } else {
           console.log("Received message:", event.data);
         }
@@ -41,19 +77,17 @@
       socket.onclose = () => {
         statusElement.textContent = "Status: Disconnected";
         console.log("WebSocket connection closed");
-
-        // Combine audio chunks and play the audio
-        if (audioChunks.length > 0) {
-          const audioBlob = new Blob(audioChunks, { type: "audio/mp3" });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          audioPlayer.src = audioUrl;
-          audioPlayer.play();
+        if (mediaSource.readyState === "open") {
+          mediaSource.endOfStream();
         }
       };
 
       socket.onerror = (error) => {
         console.error("WebSocket error:", error);
         statusElement.textContent = "Status: Error";
+        if (mediaSource.readyState === "open") {
+          mediaSource.endOfStream("network");
+        }
       };
     });
   </script>
