@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Google News RSS scraping functionality to get article metadata
 """

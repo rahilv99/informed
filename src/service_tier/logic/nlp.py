@@ -402,25 +402,25 @@ def generate_email_headers(research_notes):
         # Collect titles for cluster title generation
         cluster_title_parts = []
         cluster_description_parts = []
-        urls = []
-        articles = []
+        gov = []
+        news = []
 
         primary_doc = cluster_notes['primary_doc']
         cluster_title_parts.append(primary_doc['title'])
         cluster_description_parts.append( f"Primary Document: {primary_doc['title']}\nNotes: {primary_doc['notes'][:2000]}")
-        urls.append( primary_doc['url'])
+        gov.append((primary_doc['title'], primary_doc['url']))
 
         # Add secondary document titles
         for doc in cluster_notes['secondary_docs']:
             cluster_title_parts.append(doc['title'])
             cluster_description_parts.append(f"Secondary Document: {doc['title']}\nNotes: {doc['notes'][:1000]}")
-            urls.append(doc['url'])
+            gov.append((doc['title'], doc['url']))
         
         # Add news article titles
         for article in cluster_notes['news_articles']:
             cluster_title_parts.append(article['title'])
             cluster_description_parts.append(f"News Article: {article['title']} by {article['publisher']}\nNotes: {article['notes'][:1000]}")
-            urls.append((article['publisher'], article['url']))
+            news.append((article['title'], article['publisher'], article['url']))
 
         # Create cluster title
         cluster_title_text = ", ".join(cluster_title_parts)
@@ -435,8 +435,8 @@ def generate_email_headers(research_notes):
         cluster_descriptions.append({
             'title': cluster_title,
             'description': cluster_description,
-            'urls' : urls,
-            'articles': articles
+            'gov' : gov,
+            'news': news
         })
 
     # Generate episode title from cluster titles
@@ -479,7 +479,7 @@ def clean_text_for_conversational_tts(input_text):
     return output_text
 
 
-def create_conversational_podcast(cluster_dfs, plan='free'):
+def create_conversational_podcast(cluster_dfs, plan='free', testing = False):
     """
     Creates a conversational podcast from cluster dataframes.
     
@@ -497,6 +497,9 @@ def create_conversational_podcast(cluster_dfs, plan='free'):
     # Clean the script for TTS
     turns = clean_text_for_conversational_tts(script)
     
+    if testing:
+        return turns, notes
+
     # Create audio files for each turn
     if cartesia:
         client = Cartesia(api_key=os.environ.get('CARTESIA_API_KEY'))
@@ -640,10 +643,7 @@ def handler(payload):
     ep_type = payload.get("ep_type")
 
     pulse = PulseOutput(user_id, episode)
-    all_data = pulse.all_data
-
-    all_data = all_data[:3]
-    
+    all_data = pulse.all_data    
 
     num_turns, notes = create_conversational_podcast(all_data, plan = plan)
 
@@ -673,3 +673,31 @@ def handler(payload):
         print(f"Sent message to SQS for next action {next_event['action']}")
     except Exception as e:
         print(f"Exception when sending message to SQS {e}")
+
+if __name__ == "__main__":
+    import pickle as pkl
+    all_data = pkl.loads(open("/tmp/cluster_dfs.pkl", "rb").read())
+
+    all_data = all_data[:3]
+
+    num_turns, notes = create_conversational_podcast(all_data, plan = 'free', testing = True)
+
+    topics, episode_title = generate_email_headers(notes)
+
+    print("---- NOTES ----")
+    for note in notes:
+        print(f"Primary Document: {note['primary_doc']['title']}")
+        print(note['primary_doc']['notes'])
+        for sec in note['secondary_docs']:
+            print(f"Secondary Document: {sec['title']} - {sec['url']}")
+            print(sec['notes'])
+    
+    print(f"Episode Title: {episode_title}")
+
+    for topic in topics:
+        print(f"Title: {topic['title']}")
+        print(f"Description: {topic['description']}\n")
+        for gov in topic['gov']:
+            print(f"Gov Document: {gov[0]} - {gov[1]}")
+        for news in topic['news']:
+            print(f"News Article: {news[0]} by {news[1]} - {news[2]}")

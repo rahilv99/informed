@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Article clustering functionality using sentence transformers and document-based
 clustering
@@ -8,6 +7,8 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import logging
 import spacy
+
+import common
 
 #from article_scraper import ArticleScraper
 from legal_scraper import Gov
@@ -457,4 +458,33 @@ def handler(payload):
         # Notify user via email if no clusters generated
 
 if __name__ == "__main__":
-    handler(None)
+    import pickle as pkl
+    keywords = [ 'climate change', 'tariffs', 'research grants', 'education', 'ukraine']
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    Gnews = GoogleNewsScraper(keywords)
+    gnews_df = Gnews.get_articles()
+
+    gov = Gov(keywords)
+    gov.get_articles()  # Get government articles
+
+    gov_df = gov.articles_df
+
+    # Create clusterer and run clustering
+    clusterer = ArticleClusterer()
+    dfs = clusterer.cluster_articles(gnews_df, gov_df)
+
+    # save to tmp
+    if len(dfs) > 0:
+        pkl.dump(dfs, open("/tmp/cluster_dfs.pkl", "wb"))
+        for i, df in enumerate(dfs):
+            print(f"Saved cluster {i+1} to /tmp/cluster_{i+1}.csv")
+            print( f"Cluster {i+1} DataFrame ({len(df)}):")
+            print( df.head(2))
+    else:
+        logging.error("No clusters generated.")
+

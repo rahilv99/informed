@@ -22,7 +22,7 @@ export default function LearningProgress({
     duration: string
     audioFileUrl: string
     listened: boolean
-    articles: { title: string; description: string; url: string }[]
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[]
   }>
 }) {
   const [expandedPodcast, setExpandedPodcast] = useState<number | null>(null)
@@ -39,7 +39,7 @@ export default function LearningProgress({
     duration: string
     audioFileUrl: string
     listened: boolean
-    articles: { title: string; description: string; url: string }[]
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[]
   } | null>(null)
   const [listenedPodcasts, setListenedPodcasts] = useState<Record<number, boolean>>(() => {
     const initialState: Record<number, boolean> = {}
@@ -73,7 +73,7 @@ export default function LearningProgress({
     duration: string
     audioFileUrl: string
     listened: boolean
-    articles: { title: string; description: string; url: string }[]
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[]
   }) => {
     setCurrentPodcast(podcast)
     setPlayerOpen(true)
@@ -329,18 +329,54 @@ export default function LearningProgress({
                             <BookOpen className="h-5 w-5 mr-2" />
                             Related Articles
                           </h3>
-                          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-                            {podcast.articles.map((article, index) => (
-                              <div key={index} className="flex flex-col items-start gap-2">
-                                <a
-                                  href={article.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-gray-800 hover:underline font-bold"
-                                >
-                                  {article.title}
-                                </a>
-                                <p className="text-gray-500 text-sm">{article.description}</p>
+                          <div className="space-y-6">
+                            {podcast.clusters.map((cluster, clusterIndex) => (
+                              <div key={clusterIndex} className="space-y-3">
+                                <h4 className="text-md font-medium text-gray-800">{cluster.title}</h4>
+                                <p className="text-gray-600 text-sm">{cluster.description}</p>
+                                
+                                {/* Government Documents */}
+                                {cluster.gov && cluster.gov.length > 0 && (
+                                  <div className="mt-3">
+                                    <h5 className="text-sm font-medium text-gray-700 mb-2">Government Documents</h5>
+                                    <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+                                      {cluster.gov.map((govDoc, govIndex) => (
+                                        <div key={govIndex} className="flex flex-col items-start gap-1">
+                                          <a
+                                            href={govDoc[1]} // URL is the second element in the tuple
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-gray-800 hover:underline font-medium"
+                                          >
+                                            {govDoc[0]} {/* Title is the first element in the tuple */}
+                                          </a>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* News Articles */}
+                                {cluster.news && cluster.news.length > 0 && (
+                                  <div className="mt-3">
+                                    <h5 className="text-sm font-medium text-gray-700 mb-2">News Articles</h5>
+                                    <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+                                      {cluster.news.map((newsArticle, newsIndex) => (
+                                        <div key={newsIndex} className="flex flex-col items-start gap-1">
+                                          <a
+                                            href={newsArticle[2]} // URL is the third element in the tuple
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-gray-800 hover:underline font-medium"
+                                          >
+                                            {newsArticle[0]} {/* Title is the first element in the tuple */}
+                                          </a>
+                                          <span className="text-gray-500 text-xs">{newsArticle[1]}</span> {/* Publisher is the second element in the tuple */}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>

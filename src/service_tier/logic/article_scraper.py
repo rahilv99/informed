@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Web scraping functionality to extract full article text from URLs
 """

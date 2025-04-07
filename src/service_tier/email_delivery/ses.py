@@ -1,8 +1,6 @@
 import boto3
-from botocore.exceptions import ClientError
 import os          
 from string import Template
-import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -10,7 +8,6 @@ from email import encoders
 import psycopg2 
 import json
 from datetime import datetime
-from pydub import AudioSegment
 from email_delivery.email_output import EmailOutput
 import common.s3
 
@@ -60,7 +57,7 @@ def generate_html(episode_title, topics, episode):
         articles_html = ''
         for topic in topics:
             articles_template = _load_template('email_delivery/article.html')
-            articles_html += articles_template.substitute(title=topic['title'], description=topic['description'], url=topic['urls'][0])
+            articles_html += articles_template.substitute(title=topic['title'], description=topic['description'], url=topic['gov'][0][1])
         return articles_html
 
     template = _load_template('email_delivery/index.html')
