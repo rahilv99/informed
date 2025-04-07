@@ -397,6 +397,7 @@ def generate_email_headers(research_notes):
     
     # Create a DataFrame with primary government documents
     cluster_descriptions = []
+    titles = []
     
     for i, cluster_notes in enumerate(research_notes):
         # Collect titles for cluster title generation
@@ -438,10 +439,10 @@ def generate_email_headers(research_notes):
             'gov' : gov,
             'news': news
         })
+        titles.append(cluster_title)
 
     # Generate episode title from cluster titles
-    cluster_titles = list(cluster_descriptions.keys())
-    cluster_titles_text = ", ".join(cluster_titles)
+    cluster_titles_text = ", ".join(titles)
     episode_title = summarize("", cluster_titles_text, use='title')
     episode_title = _clean_summary_text(episode_title)
 

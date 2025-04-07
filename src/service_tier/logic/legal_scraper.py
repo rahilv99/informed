@@ -29,7 +29,7 @@ class Gov(ArticleResource):
                 # Create payload for API request with date range for last week
                 payload = {
                     "query": f"{topic} publishdate:range({self.time_constraint.strftime('%Y-%m-%d')},{self.today.strftime('%Y-%m-%d')})",
-                    "pageSize": 30,
+                    "pageSize": 20,
                     "offsetMark": "*",
                     "sorts": [
                         {

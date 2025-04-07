@@ -28,10 +28,10 @@ export class ServiceTierLambdaStack extends cdk.Stack {
     const ecrRepo = ecr.Repository.fromRepositoryName(this, 'FunctionEcrRepo', repo_name);
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
-      //code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
-      code: lambda.DockerImageCode.fromEcr(ecrRepo, {
-        tagOrDigest: imageTag,
-      }),
+      code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
+      //code: lambda.DockerImageCode.fromEcr(ecrRepo, {
+      //  tagOrDigest: imageTag,
+      //}),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2*1024,
       environment: {

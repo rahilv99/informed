@@ -26,10 +26,10 @@ export class CronStack extends cdk.Stack {
     const ecrRepo = ecr.Repository.fromRepositoryName(this, 'FunctionEcrRepo', repo_name);
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'CronFunction', {
-      //code: lambda.DockerImageCode.fromImageAsset('src/cron'),
-      code: lambda.DockerImageCode.fromEcr(ecrRepo, {
-        tagOrDigest: imageTag,
-      }),
+      code: lambda.DockerImageCode.fromImageAsset('src/cron'),
+      //code: lambda.DockerImageCode.fromEcr(ecrRepo, {
+      //  tagOrDigest: imageTag,
+      //}),
       timeout: cdk.Duration.minutes(15),
       memorySize: 1*1024,
       environment: {

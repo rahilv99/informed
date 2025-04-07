@@ -2,17 +2,19 @@
 Article clustering functionality using sentence transformers and document-based
 clustering
 """
+
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 import logging
 import spacy
 
-import common
+import common.sqs
+import common.s3
 
 #from article_scraper import ArticleScraper
 from legal_scraper import Gov
-from google_news_scraper import GoogleNewsScraper
+from google_scraper import GoogleNewsScraper
 
 
 class ArticleClusterer:
@@ -349,11 +351,6 @@ class ArticleClusterer:
             except Exception as e:
                 self.logger.error(f"Error closing WebDriver: {e}")
         '''
-        # print information about dfs
-        print("----- Cluster DataFrames -----")
-        for i, df in enumerate(cluster_dfs):
-            print(f"Cluster {i + 1}: {df.shape[0]} rows")
-            print(df.head(2))
     
         return cluster_dfs
 
@@ -392,11 +389,7 @@ class ArticleClusterer:
             clusters = self.merge_similar_clusters(clusters)
 
             self.logger.info(f"Final number of clusters: {len(clusters)}")
-            
-            # Generate report
-            self.generate_report(clusters, gnews_df, gov_df, output_file)
-            self.logger.info(f"Report saved to {output_file}")
-            
+                        
             # Create dataframes
             dfs = self.create_cluster_dataframes(clusters, gnews_df, gov_df)
             
@@ -432,7 +425,7 @@ def handler(payload):
     clusterer = ArticleClusterer()
     dfs = clusterer.cluster_articles(gnews_df, gov_df)
 
-    if len(dfs) > 0:
+    if dfs and len(dfs) > 0:
         common.s3.save_serialized(user_id, episode, "PULSE", {
                 "cluster_dfs": dfs,
         })
@@ -459,6 +452,7 @@ def handler(payload):
 
 if __name__ == "__main__":
     import pickle as pkl
+    
     keywords = [ 'climate change', 'tariffs', 'research grants', 'education', 'ukraine']
 
     logging.basicConfig(
@@ -479,10 +473,11 @@ if __name__ == "__main__":
     dfs = clusterer.cluster_articles(gnews_df, gov_df)
 
     # save to tmp
-    if len(dfs) > 0:
-        pkl.dump(dfs, open("/tmp/cluster_dfs.pkl", "wb"))
+    if dfs and len(dfs) > 0:
+        with open ('tmp/cluster_dfs.pkl', 'wb') as f:
+            pkl.dump(dfs, f)
+
         for i, df in enumerate(dfs):
-            print(f"Saved cluster {i+1} to /tmp/cluster_{i+1}.csv")
             print( f"Cluster {i+1} DataFrame ({len(df)}):")
             print( df.head(2))
     else:
