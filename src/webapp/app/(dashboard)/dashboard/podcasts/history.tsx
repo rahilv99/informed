@@ -7,9 +7,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
-import { PlayCircle, PauseCircle, BookOpen, SkipBack, SkipForward, CheckCircle, Gauge } from "lucide-react"
+import { PlayCircle, PauseCircle, BookOpen, SkipBack, SkipForward, CheckCircle, Gauge, Radio } from "lucide-react"
 import Image from "next/image"
 import { setListened } from "@/lib/actions"
+import { Toast } from "@/components/ui/toast"
 
 export default function LearningProgress({
   podcasts,
@@ -20,9 +21,9 @@ export default function LearningProgress({
     episodeNumber: number
     date: string
     duration: string
-    audioFileUrl: string
     listened: boolean
     articles: { title: string; description: string; url: string }[]
+    script: { text: string }[] // Include the script column here
   }>
 }) {
   const [expandedPodcast, setExpandedPodcast] = useState<number | null>(null)
@@ -37,18 +38,25 @@ export default function LearningProgress({
     episodeNumber: number
     date: string
     duration: string
-    audioFileUrl: string
     listened: boolean
     articles: { title: string; description: string; url: string }[]
+    script: { text: string }[] // Include the script column here
   } | null>(null)
   const [listenedPodcasts, setListenedPodcasts] = useState<Record<number, boolean>>(() => {
     const initialState: Record<number, boolean> = {}
     podcasts.forEach((podcast) => {
-      initialState[podcast.id] = podcast.listened // Use podcast.id for unique keys
+      initialState[podcast.id] = podcast.listened
     })
     return initialState
   })
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const websocketRef = useRef<WebSocket | null>(null)
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null)
+  const mediaSourceRef = useRef<MediaSource | null>(null)
+  const sourceBufferRef = useRef<SourceBuffer | null>(null)
+  const audioQueueRef = useRef<ArrayBuffer[]>([])
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [currentTranscript, setCurrentTranscript] = useState("")
+  const [currentHost, setCurrentHost] = useState(1)
 
   const sortedPodcasts = useMemo(() => {
     return [...podcasts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -65,193 +73,477 @@ export default function LearningProgress({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`
   }
 
-  const handlePlayPodcast = async (podcast: {
-    id: number
-    title: string
-    episodeNumber: number
-    date: string
-    duration: string
-    audioFileUrl: string
-    listened: boolean
-    articles: { title: string; description: string; url: string }[]
-  }) => {
-    setCurrentPodcast(podcast)
-    setPlayerOpen(true)
-    setIsPlaying(true)
+  const streamPodcast = (script: string) => {
+    console.log("Connecting to WebSocket with script");
 
-    // Mark as listened after 5 seconds of playback
+    // Clean up existing connections and media sources
+    if (websocketRef.current) {
+      websocketRef.current.close();
+    }
+
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      if (audioPlayerRef.current.src) {
+        URL.revokeObjectURL(audioPlayerRef.current.src);
+      }
+    }
+
+    // Create a new MediaSource
+    mediaSourceRef.current = new MediaSource();
+    sourceBufferRef.current = null;
+    audioQueueRef.current = [];
+
+    // Set up audio player with new media source
+    if (audioPlayerRef.current) {
+      const mediaSourceUrl = URL.createObjectURL(mediaSourceRef.current);
+      audioPlayerRef.current.src = mediaSourceUrl;
+      console.log("Created new MediaSource URL:", mediaSourceUrl);
+    }
+
+    // Set up MediaSource open event handler BEFORE connecting WebSocket
+    mediaSourceRef.current.addEventListener("sourceopen", () => {
+      console.log("MediaSource opened, readyState:", mediaSourceRef.current?.readyState);
+
+      try {
+        const mimeType = "audio/mpeg"; // Adjust MIME type if needed
+
+        if (!MediaSource.isTypeSupported(mimeType)) {
+          console.error(`MIME type ${mimeType} is not supported`);
+          return;
+        }
+
+        // Only create source buffer if it doesn't exist yet
+        if (!sourceBufferRef.current && mediaSourceRef.current) {
+          const sourceBuffer = mediaSourceRef.current.addSourceBuffer(mimeType);
+          sourceBufferRef.current = sourceBuffer || null;
+
+          console.log("SourceBuffer created successfully");
+
+          // Set up event handlers for the source buffer
+          sourceBuffer.addEventListener("updateend", () => {
+            if (audioQueueRef.current.length > 0 && !sourceBuffer.updating) {
+              const nextChunk = audioQueueRef.current.shift();
+              if (nextChunk) {
+                try {
+                  console.log("Appending queued audio chunk");
+                  sourceBuffer.appendBuffer(nextChunk);
+                } catch (error) {
+                  console.error("Error appending buffer:", error);
+                }
+              }
+            } else if (
+              audioQueueRef.current.length === 0 &&
+              mediaSourceRef.current?.readyState === "open" &&
+              !isStreaming && // Only end stream if we're no longer streaming
+              sourceBuffer.buffered.length > 0 // Make sure we have some data before ending
+            ) {
+              console.log("All audio chunks appended, signaling end of stream");
+              try {
+                mediaSourceRef.current.endOfStream();
+              } catch (error) {
+                console.error("Error ending stream:", error);
+              }
+            }
+          });
+
+          sourceBuffer.addEventListener("error", (error) => {
+            console.error("SourceBuffer error:", error);
+          });
+
+          // Pre-buffer audio data before starting playback
+          let initialBuffering = true;
+          const checkBuffer = setInterval(() => {
+            if (
+              audioPlayerRef.current &&
+              sourceBuffer.buffered.length > 0 &&
+              sourceBuffer.buffered.end(0) > 2 // Ensure at least 2 seconds of buffered data
+            ) {
+              console.log("Sufficient data buffered, starting playback");
+              audioPlayerRef.current.play().catch((err) => {
+                console.error("Error starting playback:", err);
+              });
+              clearInterval(checkBuffer);
+              initialBuffering = false;
+            }
+          }, 100);
+
+          // Now that the source buffer is ready, connect to WebSocket
+          connectToWebSocket(script);
+        } else {
+          console.log("SourceBuffer already exists or MediaSource is not ready");
+          // Connect anyway in case the source buffer setup failed
+          connectToWebSocket(script);
+        }
+      } catch (error) {
+        console.error("Error setting up MediaSource:", error);
+        // Try to connect anyway
+        connectToWebSocket(script);
+      }
+    });
+
+    // Function to connect to WebSocket after MediaSource is set up
+    const connectToWebSocket = (podcastId: string) => {
+      const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${[podcastId]}`;
+      websocketRef.current = new WebSocket(wsUrl);
+
+      websocketRef.current.binaryType = "arraybuffer";
+
+      websocketRef.current.onopen = () => {
+        console.log("WebSocket connection established");
+        websocketRef.current?.send(JSON.stringify({ type: "script", content: podcastId }));
+      };
+
+      websocketRef.current.onmessage = (event) => {
+        if (event.data instanceof ArrayBuffer) {
+          console.log(`Received audio data: ${event.data.byteLength} bytes`);
+
+          if (!sourceBufferRef.current) {
+            console.warn("No SourceBuffer available, queuing chunk");
+            audioQueueRef.current.push(event.data);
+            return;
+          }
+
+          if (sourceBufferRef.current.updating) {
+            audioQueueRef.current.push(event.data);
+          } else {
+            try {
+              sourceBufferRef.current.appendBuffer(event.data);
+              console.log(`Appended chunk of size: ${event.data.byteLength}`);
+            } catch (error) {
+              console.error("Error appending buffer:", error);
+              audioQueueRef.current.push(event.data);
+            }
+          }
+        } else {
+          try {
+            const message = JSON.parse(event.data as string);
+            switch (message.type) {
+              case "transcript":
+                console.log(`Received transcript: ${message.content.text} (Host ${message.content.host})`);
+                setCurrentTranscript(message.content.text);
+                setCurrentHost(message.content.host);
+                break;
+              case "complete":
+                console.log("Podcast streaming completed");
+                setIsStreaming(false);
+                break;
+              case "error":
+                console.error("Error:", message.content);
+                setIsStreaming(false);
+                setIsPlaying(false);
+                break;
+              default:
+                console.log("Received WebSocket message:", message);
+            }
+          } catch (error) {
+            console.error("Error parsing WebSocket message:", error);
+          }
+        }
+      };
+
+      websocketRef.current.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setIsStreaming(false);
+        setIsPlaying(false);
+      };
+
+      websocketRef.current.onclose = () => {
+        console.log("WebSocket connection closed");
+        setIsStreaming(false);
+      };
+    };
+
+    return websocketRef.current;
+  };
+
+  const handlePlayPodcast = async (podcast: {
+    id: number;
+    title: string;
+    episodeNumber: number;
+    date: string;
+    duration: string;
+    listened: boolean;
+    articles: { title: string; description: string; url: string }[];
+    script: { text: string }[];
+  }) => {
+    console.log("Starting podcast playback:", podcast.title);
+    setCurrentPodcast(podcast);
+    setPlayerOpen(true);
+  
+    // Clean up existing MediaSource and related references for a new podcast
+    if (mediaSourceRef.current) {
+      URL.revokeObjectURL(audioPlayerRef.current?.src || "");
+      mediaSourceRef.current = null;
+      sourceBufferRef.current = null;
+      audioQueueRef.current = [];
+    }
+  
+    // Create a new MediaSource object
+    mediaSourceRef.current = new MediaSource();
+    const mediaSourceUrl = URL.createObjectURL(mediaSourceRef.current);
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.src = mediaSourceUrl;
+    }
+  
+    mediaSourceRef.current.addEventListener("sourceopen", () => {
+      console.log("MediaSource opened");
+      const mimeType = "audio/mpeg"; // Consider making this configurable
+  
+      if (!MediaSource.isTypeSupported(mimeType)) {
+        console.error(`MIME type "${mimeType}" is not supported`);
+        return;
+      }
+  
+      const sourceBuffer = mediaSourceRef.current?.addSourceBuffer(mimeType);
+      sourceBufferRef.current = sourceBuffer || null;
+  
+      sourceBuffer?.addEventListener("updateend", () => {
+        if (audioQueueRef.current.length > 0 && !sourceBuffer.updating) {
+          const nextChunk = audioQueueRef.current.shift();
+          if (nextChunk) {
+            try {
+              sourceBuffer.appendBuffer(nextChunk);
+            } catch (error) {
+              console.error("Error appending buffer:", error);
+            }
+          }
+        }
+      });
+    });
+
+    // WebSocket connection
+    const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${podcast.id}`;
+    console.log("Connecting to WebSocket with URL:", wsUrl); // Debugging log
+    websocketRef.current = new WebSocket(wsUrl);
+
+    websocketRef.current.binaryType = "arraybuffer";
+
+    websocketRef.current.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    websocketRef.current.onmessage = async (event) => {
+      if (event.data instanceof Blob) {
+        console.log("Received audio chunk");
+        const arrayBuffer = await event.data.arrayBuffer();
+        audioQueueRef.current.push(arrayBuffer);
+
+        if (sourceBufferRef.current && !sourceBufferRef.current.updating) {
+          const nextChunk = audioQueueRef.current.shift();
+          if (nextChunk) {
+            try {
+              sourceBufferRef.current.appendBuffer(nextChunk);
+            } catch (error) {
+              console.error("Error appending buffer:", error);
+            }
+          }
+        }
+      } else {
+        console.log("Received message:", event.data);
+      }
+    };
+
+    websocketRef.current.onclose = (event) => {
+      console.log("WebSocket connection closed", event);
+      setIsStreaming(false);
+    };
+
+    websocketRef.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      console.error("WebSocket URL:", wsUrl); // Log the URL for debugging
+      setIsStreaming(false);
+    };
+
+    // Mark as listened after a delay
     setTimeout(() => {
       setListenedPodcasts((prev) => ({
         ...prev,
         [podcast.id]: true,
-      }))
-    }, 5000)
+      }));
+    }, 5000);
 
-    // Mark as listened in the database
-    const res = await setListened(podcast.id)
-    if (res.error) {
-      console.error("Failed to mark podcast as listened:", res.error)
-    } else {
-      console.log("Podcast marked as listened successfully")
+    try {
+      const res = await setListened(podcast.id);
+      if (res.error) {
+        console.error("Failed to mark podcast as listened:", res.error);
+      } else {
+        console.log("Podcast marked as listened successfully");
+      }
+    } catch (error) {
+      console.error("Error marking podcast as listened:", error);
     }
-  }
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime)
-    }
-  }
-
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration)
-
-      // Set the playback rate when audio loads
-      audioRef.current.playbackRate = playbackSpeed
-    }
-  }
-
-  const handleSeek = (value: number[]) => {
-    const newTime = value[0]
-    setCurrentTime(newTime)
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime
-    }
-  }
-
-  const handleSpeedChange = (value: number[]) => {
-    const newSpeed = value[0]
-    setPlaybackSpeed(newSpeed)
-    if (audioRef.current) {
-      audioRef.current.playbackRate = newSpeed
-    }
-  }
-
-  const setPlaybackSpeedPreset = (speed: number) => {
-    setPlaybackSpeed(speed)
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed
-    }
-  }
+  };
 
   const togglePlayPause = () => {
-    if (audioRef.current) {
+    if (audioPlayerRef.current) {
       if (isPlaying) {
-        audioRef.current.pause()
+        audioPlayerRef.current.pause()
       } else {
-        audioRef.current.play()
+        audioPlayerRef.current.play().catch((err) => {
+          console.error("Error starting playback:", err)
+        })
       }
       setIsPlaying(!isPlaying)
     }
   }
 
   const handleSkipForward = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioRef.current.duration)
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.currentTime = Math.min(
+        audioPlayerRef.current.currentTime + 10,
+        duration || audioPlayerRef.current.duration || 0,
+      )
+      setCurrentTime(audioPlayerRef.current.currentTime)
     }
   }
 
   const handleSkipBackward = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0)
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.currentTime = Math.max(audioPlayerRef.current.currentTime - 10, 0)
+      setCurrentTime(audioPlayerRef.current.currentTime)
     }
   }
 
-  // Update playback rate when speed changes
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = playbackSpeed
+    // Create audio element
+    audioPlayerRef.current = new Audio();
+    audioPlayerRef.current.controls = true; // Make the audio player visible for debugging
+    audioPlayerRef.current.autoplay = false; // Important: don't autoplay until we're ready
+
+    // Append the audio player to the DOM for debugging
+    const audioContainer = document.getElementById("audio-debug-container");
+    if (audioContainer && audioPlayerRef.current) {
+      audioContainer.appendChild(audioPlayerRef.current);
     }
-  }, [playbackSpeed])
 
-  // Setup Media Session API for background playback
+    // Add debug listeners
+    const handleCanPlay = () => {
+      console.log("Audio can play now");
+      if (isPlaying && audioPlayerRef.current && audioPlayerRef.current.src) {
+        console.log("Attempting to play on canplay event");
+        audioPlayerRef.current.play().catch((err) => {
+          console.error("Error starting playback on canplay:", err);
+          // Consider handling specific errors like autoplay prevention
+          if (err.name === "NotAllowedError") {
+            console.log("Autoplay prevented by browser.");
+            // You might want to show a message to the user to interact with the player
+          }
+        });
+      }
+    };
+
+    const handlePlaying = () => console.log("Audio is playing");
+    const handlePause = () => console.log("Audio is paused");
+    const handleWaiting = () => console.log("Audio waiting for more data");
+    const handleStalled = () => console.log("Audio playback has stalled");
+    const handleError = (e: Event & { target: HTMLAudioElement }) => console.error("Audio error:", e.target.error);
+
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.addEventListener("canplay", handleCanPlay);
+      audioPlayerRef.current.addEventListener("playing", handlePlaying);
+      audioPlayerRef.current.addEventListener("pause", handlePause);
+      audioPlayerRef.current.addEventListener("waiting", handleWaiting);
+      audioPlayerRef.current.addEventListener("stalled", handleStalled);
+      audioPlayerRef.current.addEventListener("error", handleError);
+    }
+
+    // Cleanup logic
+    return () => {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.removeEventListener("canplay", handleCanPlay);
+        audioPlayerRef.current.removeEventListener("playing", handlePlaying);
+        audioPlayerRef.current.removeEventListener("pause", handlePause);
+        audioPlayerRef.current.removeEventListener("waiting", handleWaiting);
+        audioPlayerRef.current.removeEventListener("stalled", handleStalled);
+        audioPlayerRef.current.removeEventListener("error", handleError);
+        audioPlayerRef.current.pause();
+        audioPlayerRef.current.src = "";
+        audioPlayerRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
-    // Check if Media Session API is supported
-    if ("mediaSession" in navigator && currentPodcast) {
-      // Set metadata for the currently playing podcast
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentPodcast.title,
-        artist: `Episode ${currentPodcast.episodeNumber}`,
-        album: "Auxiom",
-        artwork: [
-          { src: "/logo.svg", sizes: "96x96", type: "image/svg+xml" },
-          { src: "/logo.svg", sizes: "128x128", type: "image/svg+xml" },
-          { src: "/logo.svg", sizes: "192x192", type: "image/svg+xml" },
-          { src: "/logo.svg", sizes: "256x256", type: "image/svg+xml" },
-          { src: "/logo.svg", sizes: "384x384", type: "image/svg+xml" },
-          { src: "/logo.svg", sizes: "512x512", type: "image/svg+xml" },
-        ],
-      })
-
-      // Set action handlers for media controls
-      navigator.mediaSession.setActionHandler("play", () => {
-        if (audioRef.current) {
-          audioRef.current.play()
-          setIsPlaying(true)
-        }
-      })
-
-      navigator.mediaSession.setActionHandler("pause", () => {
-        if (audioRef.current) {
-          audioRef.current.pause()
+    if (audioPlayerRef.current) {
+      if (isPlaying) {
+        // Only try to play if we have a valid source
+        if (audioPlayerRef.current.src) {
+          console.log("Attempting to play audio")
+          const playPromise = audioPlayerRef.current.play()
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.error("Failed to start playback:", err)
+              // If autoplay is prevented, we need to wait for user interaction
+              if (err.name === "NotAllowedError") {
+                console.log("Autoplay prevented. Waiting for user interaction.")
+                setIsPlaying(false)
+              }
+            })
+          }
+        } else {
+          console.log("Cannot play - no audio source available")
           setIsPlaying(false)
         }
-      })
-
-      navigator.mediaSession.setActionHandler("seekbackward", () => {
-        handleSkipBackward()
-      })
-
-      navigator.mediaSession.setActionHandler("seekforward", () => {
-        handleSkipForward()
-      })
-
-      navigator.mediaSession.setActionHandler("seekto", (details) => {
-        if (details.seekTime && audioRef.current) {
-          audioRef.current.currentTime = details.seekTime
-          setCurrentTime(details.seekTime)
-        }
-      })
-
-      // Update playback state
-      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused"
-    }
-
-    // Cleanup function
-    return () => {
-      if ("mediaSession" in navigator) {
-        // Clear action handlers when component unmounts
-        navigator.mediaSession.setActionHandler("play", null)
-        navigator.mediaSession.setActionHandler("pause", null)
-        navigator.mediaSession.setActionHandler("seekbackward", null)
-        navigator.mediaSession.setActionHandler("seekforward", null)
-        navigator.mediaSession.setActionHandler("seekto", null)
+      } else {
+        audioPlayerRef.current.pause()
       }
-    }
-  }, [currentPodcast, isPlaying])
-
-  // Update media session playback state when isPlaying changes
-  useEffect(() => {
-    if ("mediaSession" in navigator) {
-      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused"
     }
   }, [isPlaying])
 
-  // Update position state for the media session
   useEffect(() => {
-    if (
-      "mediaSession" in navigator &&
-      "setPositionState" in navigator.mediaSession &&
-      !isNaN(duration) &&
-      duration > 0
-    ) {
-      navigator.mediaSession.setPositionState({
-        duration: duration,
-        playbackRate: playbackSpeed,
-        position: currentTime,
-      })
+    if (playerOpen && currentPodcast?.script) {
+      // WebSocket connection is handled in handlePlayPodcast
+    } else {
+      // Clean up if player is closed or no podcast is selected
+      if (websocketRef.current) {
+        websocketRef.current.close()
+        websocketRef.current = null
+      }
+      if (mediaSourceRef.current && mediaSourceRef.current.readyState === "open") {
+        mediaSourceRef.current.endOfStream()
+        URL.revokeObjectURL(audioPlayerRef.current?.src || "")
+        mediaSourceRef.current = null
+        sourceBufferRef.current = null
+        audioQueueRef.current = []
+        if (audioPlayerRef.current) {
+          audioPlayerRef.current.src = ""
+          audioPlayerRef.current.load()
+        }
+      }
+      setIsStreaming(false)
+      setIsPlaying(false)
     }
-  }, [currentTime, duration, playbackSpeed])
+  }, [playerOpen, currentPodcast?.script])
+
+  useEffect(() => {
+    const updateTime = () => {
+      if (audioPlayerRef.current) {
+        setCurrentTime(audioPlayerRef.current.currentTime)
+        setDuration(audioPlayerRef.current.duration)
+      }
+    }
+
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.addEventListener("timeupdate", updateTime)
+      audioPlayerRef.current.addEventListener("loadedmetadata", updateTime) // Get initial duration
+
+      // Set playback speed when the audio is ready
+      audioPlayerRef.current.playbackRate = playbackSpeed
+    }
+
+    return () => {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.removeEventListener("timeupdate", updateTime)
+        audioPlayerRef.current.removeEventListener("loadedmetadata", updateTime)
+      }
+    }
+  }, [playbackSpeed])
+
+  useEffect(() => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.playbackRate = playbackSpeed
+    }
+  }, [playbackSpeed])
 
   return (
     <div className="min-h-screen py-6 sm:py-12 px-2 sm:px-4">
@@ -397,6 +689,17 @@ export default function LearningProgress({
               </div>
             </div>
 
+            {/* Transcript display for streaming */}
+            {isStreaming && currentTranscript && (
+              <div className="bg-gray-800/50 p-3 rounded-md mb-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Radio className="h-4 w-4 text-amber-200" />
+                  <span className="text-sm font-medium text-amber-200">Host {currentHost}</span>
+                </div>
+                <p className="text-sm text-gray-200 italic">{currentTranscript}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-gray-300">
                 <span>{formatTime(currentTime)}</span>
@@ -406,8 +709,13 @@ export default function LearningProgress({
                 value={[currentTime]}
                 max={duration || 100}
                 step={0.1}
-                onValueChange={handleSeek}
                 className="cursor-pointer bg-gray-500/50"
+                onValueChange={(value) => {
+                  if (audioPlayerRef.current && !isNaN(value[0])) {
+                    audioPlayerRef.current.currentTime = value[0]
+                    setCurrentTime(value[0])
+                  }
+                }}
               />
             </div>
 
@@ -439,76 +747,37 @@ export default function LearningProgress({
             </div>
 
             {/* Playback Speed Control */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Gauge className="h-4 w-4 text-amber-200" />
-                <span className="text-sm text-gray-200 font-medium">Playback Speed: {playbackSpeed.toFixed(1)}x</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Gauge className="h-4 w-4 text-gray-300" />
+                <span className="text-sm text-gray-300">Speed</span>
               </div>
-              <Slider
-                value={[playbackSpeed]}
-                min={0.5}
-                max={2.5}
-                step={0.1}
-                onValueChange={handleSpeedChange}
-                className="cursor-pointer"
-              />
-              <div className="grid grid-cols-4 gap-1 mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs px-1 sm:px-2 py-1 h-auto border-gray-700 text-gray-800 ${
-                    playbackSpeed === 0.5 ? "bg-amber-100 hover:bg-amber-100/30" : "bg-gray-400 hover:bg-gray-400/70"
-                  }`}
-                  onClick={() => setPlaybackSpeedPreset(0.5)}
-                >
-                  0.5x
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs px-1 sm:px-2 py-1 h-auto border-gray-700 text-gray-800 ${
-                    playbackSpeed === 1.0 ? "bg-amber-100 hover:bg-amber-100/30" : "bg-gray-400 hover:bg-gray-400/70"
-                  }`}
-                  onClick={() => setPlaybackSpeedPreset(1.0)}
-                >
-                  1.0x
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs px-1 sm:px-2 py-1 h-auto border-gray-700 text-gray-800 ${
-                    playbackSpeed === 1.5 ? "bg-amber-100 hover:bg-amber-100/30" : "bg-gray-400 hover:bg-gray-400/70"
-                  }`}
-                  onClick={() => setPlaybackSpeedPreset(1.5)}
-                >
-                  1.5x
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs px-1 sm:px-2 py-1 h-auto border-gray-700 text-gray-800 ${
-                    playbackSpeed === 2.0 ? "bg-amber-100 hover:bg-amber-100/30" : "bg-gray-400 hover:bg-gray-400/70"
-                  }`}
-                  onClick={() => setPlaybackSpeedPreset(2.0)}
-                >
-                  2.0x
-                </Button>
+              <div className="flex gap-2">
+                {[0.5, 1, 1.5, 2].map((speed) => (
+                  <Button
+                    key={speed}
+                    variant={playbackSpeed === speed ? "default" : "outline"}
+                    size="sm"
+                    className={`px-2 py-1 text-xs ${playbackSpeed === speed ? "bg-amber-100 text-black" : "text-gray-300"}`}
+                    onClick={() => setPlaybackSpeed(speed)}
+                  >
+                    {speed}x
+                  </Button>
+                ))}
               </div>
             </div>
-          </div>
 
-          <audio
-            ref={audioRef}
-            src={currentPodcast?.audioFileUrl}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            onEnded={() => setIsPlaying(false)}
-            autoPlay
-            className="hidden"
-          />
+            {/* Streaming indicator */}
+            {isStreaming && (
+              <div className="flex items-center gap-2 text-amber-200 text-sm">
+                <Radio className="h-4 w-4 animate-pulse" />
+                <span>Streaming audio in real-time</span>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
+      <div id="audio-debug-container" className="hidden"></div>
     </div>
   )
 }
-

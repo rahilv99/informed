@@ -22,36 +22,33 @@
       const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${userId}/${episode}`;
       const socket = new WebSocket(wsUrl);
 
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioQueue = [];
+      const bufferThreshold = 20; // Increase the buffer threshold to 20 chunks
+      let isPlaying = false;
+
       const mediaSource = new MediaSource();
       audioPlayer.src = URL.createObjectURL(mediaSource);
-      let sourceBuffer;
-      const audioQueue = [];
-      const bufferThreshold = 20; // Keep a buffer to ensure smoother playback
 
       mediaSource.addEventListener("sourceopen", () => {
-        // Replace with the actual MIME type of your audio stream
-        sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+        const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg"); // Adjust MIME type if needed
         sourceBuffer.mode = "sequence";
 
         sourceBuffer.addEventListener("updateend", () => {
-          if (audioQueue.length > 0 && !sourceBuffer.updating) {
-            const nextChunk = audioQueue.shift();
-            sourceBuffer.appendBuffer(nextChunk);
-          } else if (audioQueue.length === 0 && mediaSource.readyState === "open") {
-            // Optionally signal the end of stream if the server indicates it
-            // mediaSource.endOfStream();
+          if (audioQueue.length > 0) {
+            appendNextChunk();
           }
         });
-
-        sourceBuffer.addEventListener("error", (error) => {
-          console.error("SourceBuffer error:", error);
-          statusElement.textContent = "Status: Playback Error";
-        });
       });
 
-      mediaSource.addEventListener("sourceclose", () => {
-        console.log("MediaSource closed");
-      });
+      function appendNextChunk() {
+        if (audioQueue.length === 0 || !sourceBuffer || sourceBuffer.updating) {
+          return;
+        }
+
+        const chunk = audioQueue.shift();
+        sourceBuffer.appendBuffer(chunk);
+      }
 
       socket.onopen = () => {
         statusElement.textContent = "Status: Connected";
@@ -64,10 +61,9 @@
           const arrayBuffer = await event.data.arrayBuffer();
           audioQueue.push(arrayBuffer);
 
-          // Append to the source buffer if it's not updating and we have data
-          if (sourceBuffer && !sourceBuffer.updating && audioQueue.length > 0) {
-            const nextChunk = audioQueue.shift();
-            sourceBuffer.appendBuffer(nextChunk);
+          // Start playback only when the buffer reaches the threshold
+          if (!isPlaying && audioQueue.length >= bufferThreshold) {
+            playAudioChunks();
           }
         } else {
           console.log("Received message:", event.data);
@@ -77,18 +73,37 @@
       socket.onclose = () => {
         statusElement.textContent = "Status: Disconnected";
         console.log("WebSocket connection closed");
-        if (mediaSource.readyState === "open") {
-          mediaSource.endOfStream();
-        }
       };
 
       socket.onerror = (error) => {
         console.error("WebSocket error:", error);
         statusElement.textContent = "Status: Error";
-        if (mediaSource.readyState === "open") {
-          mediaSource.endOfStream("network");
-        }
       };
+
+      async function playAudioChunks() {
+        if (audioQueue.length === 0) {
+          isPlaying = false;
+          return;
+        }
+
+        isPlaying = true;
+        const chunk = audioQueue.shift();
+
+        try {
+          const audioBuffer = await audioContext.decodeAudioData(chunk);
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioContext.destination);
+          source.start();
+
+          source.onended = () => {
+            playAudioChunks(); // Play the next chunk
+          };
+        } catch (error) {
+          console.error("Error decoding audio chunk:", error);
+          playAudioChunks(); // Skip to the next chunk
+        }
+      }
     });
   </script>
 </body>

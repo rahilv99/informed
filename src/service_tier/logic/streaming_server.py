@@ -333,6 +333,29 @@ def fetch_and_deserialize_script_from_s3(bucket_name: str, key: str) -> str:
     except Exception as e:
         raise Exception(f"Error fetching or deserializing script from S3: {str(e)}")
 
+def validate_token(token: str) -> bool:
+    """
+    Validate the provided token.
+    """
+    print(f"Validating token: {token}")  # Debugging log
+    if not token:
+        print("Token is missing")
+        return False
+
+    # Add your token validation logic here
+    # For example, decode the token and verify its signature
+    try:
+        # Example: Replace with actual validation logic
+        if token == "valid_token_example":
+            print("Token is valid")
+            return True
+        else:
+            print("Token is invalid")
+            return False
+    except Exception as e:
+        print(f"Error validating token: {e}")
+        return False
+
 # API Endpoints
 @app.post("/api/podcasts/generate")
 async def generate_podcast(request: PodcastRequest):
@@ -389,37 +412,56 @@ async def get_podcast_metadata(podcast_id: str):
     
     return podcast_metadata[podcast_id]
 
-@app.websocket("/ws/podcast/{user_id}/{episode}")
-async def stream_podcast(websocket: WebSocket, user_id: str, episode: str):
+def write_to_s3(num_turns, user_id, episode_number):
+    # merge audio files
+    print("Merging audio files...")
+
+    final_audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/1/line_0_0.mp3")
+    for i in range(1, num_turns):
+
+        audio = AudioSegment.from_mp3(f"{TEMP_BASE}/conversation/{1 if i % 2 == 0 else 2}/line_{i}_0.mp3")
+
+        final_audio = final_audio.append(audio)
+
+    print("Audio files merged.")
+    # add intro music
+    # Load the intro music from s3
+    common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
+
+    intro_music = AudioSegment.from_mp3(f"{TEMP_BASE}/intro_music.mp3")
+    final_audio = intro_music.append(final_audio, crossfade=1000)
+
+    print("Intro music added.")
+    final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
+    print(f"Conversation audio file saved as {TEMP_BASE}/podcast.mp3")
+    # Export the final audio
+    common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
+
+    print("Audio file uploaded to S3.")
+
+@app.websocket("/ws/podcast/{podcast_id}")
+async def stream_podcast(websocket: WebSocket, podcast_id: str):
     """
     Stream a podcast to the client using WebSockets.
     """
-    podcast_id = f"{user_id}_{episode}"
-    await manager.connect(websocket, podcast_id)
+
+
+    # Authenticate the WebSocket connection
 
     try:
-        # Check if podcast script exists in memory
-        if podcast_id not in podcast_scripts:
-            # Fetch and deserialize the script from S3
-            bucket_name = os.environ.get('AWS_S3_BUCKET_NAME')
-            s3_key = f"user/{user_id}/pickle_script/serialized_data.pkl"  # Adjust the key format as needed
-            try:
-                script = fetch_and_deserialize_script_from_s3(bucket_name, s3_key)
-                podcast_scripts[podcast_id] = script
-            except Exception as e:
-                await websocket.send_text(json.dumps({
-                    "type": "error",
-                    "content": f"Error fetching podcast script: {str(e)}"
-                }))
-                await websocket.close()
-                return
+        print("CONNECTED")
 
-        # Get the script
-        script = podcast_scripts[podcast_id]
+        # Hardcoded script
+        script = """
+        **HOST 1:** Welcome to this week's episode of Auxiom.
+        **HOST 2:** Today, we're diving into the latest developments in climate policy.
+        **HOST 1:** That's right. A new bill has been introduced to reduce carbon emissions by 50% by 2030.
+        **HOST 2:** It's a bold move, but it has sparked debates across the political spectrum.
+        **HOST 1:** We'll break it all down for you. Stay tuned.
+        """
 
-        # Clean the script for TTS
-        #turns = clean_text_for_conversational_tts(script)
-        turns = script #MARK: already generated turns
+        # Process and stream the script
+        turns = clean_text_for_conversational_tts(script)
         if not turns:
             await websocket.send_text(json.dumps({
                 "type": "error",
@@ -430,21 +472,6 @@ async def stream_podcast(websocket: WebSocket, user_id: str, episode: str):
 
         # Initialize OpenAI client
         client = OpenAI(api_key=OPENAI_API_KEY)
-
-        # Send metadata
-        metadata = {
-            "type": "metadata",
-            "content": {
-                "title": podcast_metadata.get(podcast_id, {}).get("title", "Untitled Podcast"),
-                "description": podcast_metadata.get(podcast_id, {}).get("description", ""),
-                "episode": episode,
-                "hosts": {
-                    "host1": {"name": "Host 1", "voice": "nova"},
-                    "host2": {"name": "Host 2", "voice": "onyx"}
-                }
-            }
-        }
-        await websocket.send_text(json.dumps(metadata))
 
         # Stream each turn
         for index, sentence in enumerate(turns):
@@ -490,118 +517,10 @@ async def stream_podcast(websocket: WebSocket, user_id: str, episode: str):
         }))
 
     except WebSocketDisconnect:
-        manager.disconnect(websocket, podcast_id)
-        print(f"Client disconnected: {podcast_id}")
+        manager.disconnect(websocket, f"{podcast_id}")
     except Exception as e:
-        print(f"Error streaming podcast: {str(e)}")
-        try:
-            await websocket.send_text(json.dumps({
-                "type": "error",
-                "content": f"Error streaming podcast: {str(e)}"
-            }))
-        except:
-            pass
-        manager.disconnect(websocket, podcast_id)
-
-# Keep the original endpoint for backward compatibility
-@app.websocket("/ws/podcast/{podcast_id}")
-async def stream_podcast_legacy(websocket: WebSocket, podcast_id: str):
-    """
-    Legacy endpoint for backward compatibility.
-    """
-    await manager.connect(websocket, podcast_id)
-    
-    try:
-        if podcast_id not in podcast_scripts:
-            await websocket.send_json({"error": "Podcast not found"})
-            await websocket.close()
-            return
-        
-        # Get the script
-        script = podcast_scripts[podcast_id]
-        
-        # Clean the script for TTS
-        turns = clean_text_for_conversational_tts(script)
-        
-        # Initialize OpenAI client
-        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-        
-        # Send metadata
-        await websocket.send_json({
-            "type": "metadata",
-            "turns": len(turns),
-            "title": podcast_metadata.get(podcast_id, {}).get("title", "Untitled Podcast")
-        })
-        
-        # Stream intro message
-        await websocket.send_json({
-            "type": "status",
-            "message": "Starting podcast streaming..."
-        })
-        
-        # Stream each turn
-        for index, sentence in enumerate(turns):
-            host = 1 if index % 2 == 0 else 2
-            voice = 'nova' if host == 1 else 'onyx'
-            
-            # Send status update
-            await websocket.send_json({
-                "type": "status",
-                "message": f"Generating audio for turn {index+1}/{len(turns)}",
-                "progress": (index / len(turns)) * 100
-            })
-            
-            try:
-                # Generate audio
-                response = client.audio.speech.create(
-                    model="tts-1",
-                    voice=voice,
-                    input=sentence,
-                    response_format='mp3'
-                )
-                
-                # Send host information
-                await websocket.send_json({
-                    "type": "host",
-                    "host": host
-                })
-                
-                # Stream chunks to client
-                for chunk in response.iter_bytes(chunk_size=4096):
-                    await websocket.send_bytes(chunk)
-                    await asyncio.sleep(0.05)  # Control flow rate
-                
-                # Send end of segment marker
-                await websocket.send_json({
-                    "type": "segment_end",
-                    "turn": index
-                })
-                
-            except Exception as e:
-                print(f"Error generating audio for turn {index}: {str(e)}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": f"Error generating audio: {str(e)}"
-                })
-        
-        # Send completion message
-        await websocket.send_json({
-            "type": "complete",
-            "message": "Podcast streaming completed"
-        })
-        
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, podcast_id)
-    except Exception as e:
-        print(f"Error streaming podcast: {str(e)}")
-        try:
-            await websocket.send_json({
-                "type": "error",
-                "message": f"Error streaming podcast: {str(e)}"
-            })
-        except:
-            pass
-        manager.disconnect(websocket, podcast_id)
+        print("ERROR")
+        manager.disconnect(websocket, f"{podcast_id}")
 
 # Run the server
 if __name__ == "__main__":

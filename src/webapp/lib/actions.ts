@@ -719,7 +719,7 @@ export async function getCurrentPlan(): Promise<string> {
 
   return user.plan;
 }
-
+//WRAPPER FUNCTION FOR UPDATE LISTENED
 export async function setListened(podcastId: number) {
   
   const res = await updateListened(podcastId);
@@ -730,3 +730,4 @@ export async function setListened(podcastId: number) {
     return { success: 'Podcast marked as listened.' };
   }
 }
+//MARK: THIS IS WHERE YOU WRITE SERVER SIDE QUERIES
