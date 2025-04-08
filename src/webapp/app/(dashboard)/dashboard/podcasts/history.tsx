@@ -181,78 +181,6 @@ export default function LearningProgress({
       }
     });
 
-    // Function to connect to WebSocket after MediaSource is set up
-    const connectToWebSocket = (podcastId: string) => {
-      const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${[podcastId]}`;
-      websocketRef.current = new WebSocket(wsUrl);
-
-      websocketRef.current.binaryType = "arraybuffer";
-
-      websocketRef.current.onopen = () => {
-        console.log("WebSocket connection established");
-        websocketRef.current?.send(JSON.stringify({ type: "script", content: podcastId }));
-      };
-
-      websocketRef.current.onmessage = (event) => {
-        if (event.data instanceof ArrayBuffer) {
-          console.log(`Received audio data: ${event.data.byteLength} bytes`);
-
-          if (!sourceBufferRef.current) {
-            console.warn("No SourceBuffer available, queuing chunk");
-            audioQueueRef.current.push(event.data);
-            return;
-          }
-
-          if (sourceBufferRef.current.updating) {
-            audioQueueRef.current.push(event.data);
-          } else {
-            try {
-              sourceBufferRef.current.appendBuffer(event.data);
-              console.log(`Appended chunk of size: ${event.data.byteLength}`);
-            } catch (error) {
-              console.error("Error appending buffer:", error);
-              audioQueueRef.current.push(event.data);
-            }
-          }
-        } else {
-          try {
-            const message = JSON.parse(event.data as string);
-            switch (message.type) {
-              case "transcript":
-                console.log(`Received transcript: ${message.content.text} (Host ${message.content.host})`);
-                setCurrentTranscript(message.content.text);
-                setCurrentHost(message.content.host);
-                break;
-              case "complete":
-                console.log("Podcast streaming completed");
-                setIsStreaming(false);
-                break;
-              case "error":
-                console.error("Error:", message.content);
-                setIsStreaming(false);
-                setIsPlaying(false);
-                break;
-              default:
-                console.log("Received WebSocket message:", message);
-            }
-          } catch (error) {
-            console.error("Error parsing WebSocket message:", error);
-          }
-        }
-      };
-
-      websocketRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setIsStreaming(false);
-        setIsPlaying(false);
-      };
-
-      websocketRef.current.onclose = () => {
-        console.log("WebSocket connection closed");
-        setIsStreaming(false);
-      };
-    };
-
     return websocketRef.current;
   };
 
@@ -269,7 +197,7 @@ export default function LearningProgress({
     console.log("Starting podcast playback:", podcast.title);
     setCurrentPodcast(podcast);
     setPlayerOpen(true);
-  
+    
     // Clean up existing MediaSource and related references for a new podcast
     if (mediaSourceRef.current) {
       URL.revokeObjectURL(audioPlayerRef.current?.src || "");
@@ -277,26 +205,26 @@ export default function LearningProgress({
       sourceBufferRef.current = null;
       audioQueueRef.current = [];
     }
-  
+
     // Create a new MediaSource object
     mediaSourceRef.current = new MediaSource();
     const mediaSourceUrl = URL.createObjectURL(mediaSourceRef.current);
     if (audioPlayerRef.current) {
       audioPlayerRef.current.src = mediaSourceUrl;
     }
-  
+
     mediaSourceRef.current.addEventListener("sourceopen", () => {
       console.log("MediaSource opened");
       const mimeType = "audio/mpeg"; // Consider making this configurable
-  
+
       if (!MediaSource.isTypeSupported(mimeType)) {
         console.error(`MIME type "${mimeType}" is not supported`);
         return;
       }
-  
+
       const sourceBuffer = mediaSourceRef.current?.addSourceBuffer(mimeType);
       sourceBufferRef.current = sourceBuffer || null;
-  
+
       sourceBuffer?.addEventListener("updateend", () => {
         if (audioQueueRef.current.length > 0 && !sourceBuffer.updating) {
           const nextChunk = audioQueueRef.current.shift();
@@ -311,67 +239,82 @@ export default function LearningProgress({
       });
     });
 
-    // WebSocket connection
-    const wsUrl = `ws://127.0.0.1:8000/ws/podcast/${podcast.id}`;
-    console.log("Connecting to WebSocket with URL:", wsUrl); // Debugging log
+    // Connect to WebSocket
+    console.log("TRYING to connect")
+    connectToWebSocket();
+  };
+
+  const connectToWebSocket = () => {
+    const wsUrl = `ws://127.0.0.1:8000/ws/podcast`; // Removed podcast_id from URL
     websocketRef.current = new WebSocket(wsUrl);
 
     websocketRef.current.binaryType = "arraybuffer";
 
     websocketRef.current.onopen = () => {
       console.log("WebSocket connection established");
+      websocketRef.current?.send(JSON.stringify({ type: "script" })); // Adjusted message if needed
     };
 
-    websocketRef.current.onmessage = async (event) => {
-      if (event.data instanceof Blob) {
-        console.log("Received audio chunk");
-        const arrayBuffer = await event.data.arrayBuffer();
-        audioQueueRef.current.push(arrayBuffer);
+    websocketRef.current.onmessage = (event) => {
+      if (event.data instanceof ArrayBuffer) {
+        console.log(`Received audio data: ${event.data.byteLength} bytes`);
 
-        if (sourceBufferRef.current && !sourceBufferRef.current.updating) {
-          const nextChunk = audioQueueRef.current.shift();
-          if (nextChunk) {
-            try {
-              sourceBufferRef.current.appendBuffer(nextChunk);
-            } catch (error) {
-              console.error("Error appending buffer:", error);
-            }
+        if (!sourceBufferRef.current) {
+          console.warn("No SourceBuffer available, queuing chunk");
+          audioQueueRef.current.push(event.data);
+          return;
+        }
+
+        if (sourceBufferRef.current.updating) {
+          audioQueueRef.current.push(event.data);
+        } else {
+          try {
+            sourceBufferRef.current.appendBuffer(event.data);
+            console.log(`Appended chunk of size: ${event.data.byteLength}`);
+          } catch (error) {
+            console.error("Error appending buffer:", error);
+            audioQueueRef.current.push(event.data);
           }
         }
       } else {
-        console.log("Received message:", event.data);
+        try {
+          const message = JSON.parse(event.data as string);
+          switch (message.type) {
+            case "transcript":
+              console.log(`Received transcript: ${message.content.text} (Host ${message.content.host})`);
+              setCurrentTranscript(message.content.text);
+              setCurrentHost(message.content.host);
+              break;
+            case "complete":
+              console.log("Podcast streaming completed");
+              setIsStreaming(false);
+              break;
+            case "error":
+              console.error("Error:", message.content);
+              setIsStreaming(false);
+              setIsPlaying(false);
+              break;
+            default:
+              console.log("Received WebSocket message:", message);
+          }
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
       }
-    };
-
-    websocketRef.current.onclose = (event) => {
-      console.log("WebSocket connection closed", event);
-      setIsStreaming(false);
     };
 
     websocketRef.current.onerror = (error) => {
       console.error("WebSocket error:", error);
-      console.error("WebSocket URL:", wsUrl); // Log the URL for debugging
       setIsStreaming(false);
+      setIsPlaying(false);
     };
 
-    // Mark as listened after a delay
-    setTimeout(() => {
-      setListenedPodcasts((prev) => ({
-        ...prev,
-        [podcast.id]: true,
-      }));
-    }, 5000);
-
-    try {
-      const res = await setListened(podcast.id);
-      if (res.error) {
-        console.error("Failed to mark podcast as listened:", res.error);
-      } else {
-        console.log("Podcast marked as listened successfully");
-      }
-    } catch (error) {
-      console.error("Error marking podcast as listened:", error);
-    }
+    websocketRef.current.onclose = () => {
+      console.log("WebSocket connection closed");
+      setIsStreaming(false);
+      setIsPlaying(false);
+      websocketRef.current = null; // Ensure no further messages are sent
+    };
   };
 
   const togglePlayPause = () => {

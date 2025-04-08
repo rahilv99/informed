@@ -16,6 +16,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from starlette.websockets import WebSocketState
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
@@ -65,30 +66,23 @@ script_model = genai.GenerativeModel('gemini-2.0-flash')
 # Connection manager for WebSockets
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: Dict[str, List[WebSocket]] = {}
+        self.active_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, podcast_id: str):
+    async def connect(self, websocket: WebSocket):
         await websocket.accept()
-        if podcast_id not in self.active_connections:
-            self.active_connections[podcast_id] = []
-        self.active_connections[podcast_id].append(websocket)
+        self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket, podcast_id: str):
-        if podcast_id in self.active_connections:
-            if websocket in self.active_connections[podcast_id]:
-                self.active_connections[podcast_id].remove(websocket)
-            if not self.active_connections[podcast_id]:
-                del self.active_connections[podcast_id]
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
-    async def send_audio_chunk(self, chunk: bytes, podcast_id: str):
-        if podcast_id in self.active_connections:
-            for connection in self.active_connections[podcast_id]:
-                await connection.send_bytes(chunk)
-                
-    async def send_text(self, message: str, podcast_id: str):
-        if podcast_id in self.active_connections:
-            for connection in self.active_connections[podcast_id]:
-                await connection.send_text(message)
+    async def send_audio_chunk(self, chunk: bytes):
+        for connection in self.active_connections:
+            await connection.send_bytes(chunk)
+
+    async def send_text(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
 
 manager = ConnectionManager()
 
@@ -402,16 +396,6 @@ async def generate_podcast(request: PodcastRequest):
         print(f"Error generating podcast: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating podcast: {str(e)}")
 
-@app.get("/api/podcasts/{podcast_id}")
-async def get_podcast_metadata(podcast_id: str):
-    """
-    Get metadata for a podcast.
-    """
-    if podcast_id not in podcast_metadata:
-        raise HTTPException(status_code=404, detail="Podcast not found")
-    
-    return podcast_metadata[podcast_id]
-
 def write_to_s3(num_turns, user_id, episode_number):
     # merge audio files
     print("Merging audio files...")
@@ -439,89 +423,69 @@ def write_to_s3(num_turns, user_id, episode_number):
 
     print("Audio file uploaded to S3.")
 
-@app.websocket("/ws/podcast/{podcast_id}")
-async def stream_podcast(websocket: WebSocket, podcast_id: str):
-    """
-    Stream a podcast to the client using WebSockets.
-    """
-
-
-    # Authenticate the WebSocket connection
-
+@app.websocket("/ws/podcast")
+async def stream_podcast(websocket: WebSocket):
+    await websocket.accept()
     try:
         print("CONNECTED")
 
-        # Hardcoded script
-        script = """
-        **HOST 1:** Welcome to this week's episode of Auxiom.
-        **HOST 2:** Today, we're diving into the latest developments in climate policy.
-        **HOST 1:** That's right. A new bill has been introduced to reduce carbon emissions by 50% by 2030.
-        **HOST 2:** It's a bold move, but it has sparked debates across the political spectrum.
-        **HOST 1:** We'll break it all down for you. Stay tuned.
-        """
+        script = """**HOST 1**: Welcome back to Auxiom! This past week there has been ...
+    **HOST 2 **: That's right. Recently a bill came up for...
+    **HOST 1:** I read that Senator Jones said a lot about...
+    **HOST 2:** Right, I mean he is a big proponent of ... 
+    **HOST 1:** Sounds like it will be a big step for ...
+    **HOST 2:** - This impacts all the countries in ..."""  # Your script here
 
-        # Process and stream the script
         turns = clean_text_for_conversational_tts(script)
         if not turns:
-            await websocket.send_text(json.dumps({
-                "type": "error",
-                "content": "Script is empty or invalid for TTS."
-            }))
-            await websocket.close()
+            await websocket.send_json({"type": "error", "content": "Invalid script"})
             return
 
-        # Initialize OpenAI client
         client = OpenAI(api_key=OPENAI_API_KEY)
 
-        # Stream each turn
         for index, sentence in enumerate(turns):
             host = 1 if index % 2 == 0 else 2
             voice = 'nova' if host == 1 else 'onyx'
 
-            # Send transcript update
-            await websocket.send_text(json.dumps({
+            # Send transcript
+            await websocket.send_json({
                 "type": "transcript",
-                "content": {
-                    "host": host,
-                    "text": sentence
-                }
-            }))
+                "turn": index,
+                "host": host,
+                "text": sentence
+            })
 
+            # Generate and stream audio
             try:
-                # Generate audio
-                print(f"Generating audio for turn {index}: {sentence[:100]}")  # Log first 100 characters
                 response = client.audio.speech.create(
                     model="tts-1",
                     voice=voice,
                     input=sentence,
                     response_format='mp3'
                 )
-                print(f"Audio generated for turn {index}")
 
-                # Stream chunks to client
+                # Use regular for loop with iter_bytes()
                 for chunk in response.iter_bytes(chunk_size=4096):
                     await websocket.send_bytes(chunk)
-                    await asyncio.sleep(0.05)  # Control flow rate
+                    await asyncio.sleep(0.01)  # Small delay to prevent overwhelming
 
             except Exception as e:
-                print(f"Error generating audio for turn {index}: {str(e)}")
-                await websocket.send_text(json.dumps({
+                print(f"Error in turn {index}: {str(e)}")
+                await websocket.send_json({
                     "type": "error",
-                    "content": f"Error generating audio: {str(e)}"
-                }))
+                    "turn": index,
+                    "message": str(e)
+                })
+                break
 
-        # Send completion message
-        await websocket.send_text(json.dumps({
-            "type": "complete",
-            "content": "Podcast streaming completed"
-        }))
+        await websocket.send_json({"type": "complete"})
 
     except WebSocketDisconnect:
-        manager.disconnect(websocket, f"{podcast_id}")
+        print("Client disconnected normally")
     except Exception as e:
-        print("ERROR")
-        manager.disconnect(websocket, f"{podcast_id}")
-
+        print(f"Unexpected error: {str(e)}")
+    finally:
+        await websocket.close()
 # Run the server
 if __name__ == "__main__":
     import uvicorn
