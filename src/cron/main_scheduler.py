@@ -9,7 +9,7 @@ sqs = boto3.client('sqs')
 ASTRA_QUEUE_URL = os.getenv("ASTRA_QUEUE_URL")
 print(f"Astra Queue URL is {ASTRA_QUEUE_URL}")
 
-db_access_url = "postgresql://auxiompostgres:astrapodcast!@auxiom-db.cvoqq0ms6fsc.us-east-1.rds.amazonaws.com:5432/postgres"
+db_access_url = os.environ.get('DB_ACCESS_URL')
 
 def _handler(event, context):
     print("Cron lambda Invoked")
@@ -24,7 +24,7 @@ def _handler(event, context):
     user_records = db_getusers(today_weekday)
     print(f"Got {len(user_records)} records from DB")
     for user in user_records:
-        user_id, email, plan, last_delivered_ts, episode, keywords = user
+        user_id, email, name, plan, last_delivered_ts, episode, keywords = user
 
         if not skip_delivery(last_delivered_ts.timestamp()):
             pulse_customers.append(user_id)
@@ -37,7 +37,8 @@ def _handler(event, context):
                         "user_email": email,
                         "plan": plan,
                         "episode": episode,
-                        "keywords": keywords
+                        "keywords": keywords,
+                        "user_name": name
                     }
                 }
             )
@@ -52,7 +53,7 @@ def db_getusers(today_weekday):
         cursor = conn.cursor()
 
         query = """
-            SELECT id, email, plan, delivered as last_delivered_ts, episode, keywords
+            SELECT id, email, name, plan, delivered as last_delivered_ts, episode, keywords
             FROM users
             WHERE active = %s AND delivery_day = %s
             """

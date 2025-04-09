@@ -33,7 +33,8 @@ export class CronStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(15),
       memorySize: 1*1024,
       environment: {
-        ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl
+        ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl,
+        DB_ACCESS_URL: process.env.DB_ACCESS_URL!
       },
       role: props.coreStack.astraLambdaRole,
       logGroup: logGroup

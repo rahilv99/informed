@@ -18,52 +18,11 @@ import {
   validatedAction,
 } from '@/lib/auth/middleware';
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize the SQS client
-const sqs = new SQSClient({
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: process.env.ACCESS_KEY!,
-    secretAccessKey: process.env.SECRET_KEY!
-  }
-});
-
-export async function sendToSQS(keywords: string[]) {
-
-  const user = await getUser();
-  if (!user) {
-    redirect('/sign-in');
-  }
-
-  if (keywords.length === 0) {
-    return { error: 'Keywords passed to SQS incorrectly' };
-  }
-
-  const params = {
-    QueueUrl: process.env.SQS_QUEUE_URL,
-    MessageBody: JSON.stringify({
-      "action": "e_user_topics",
-      "payload": {
-        "user_id": user.id,
-        "user_input": keywords
-      }
-    })
-  };
-
-  try {
-    const command = new SendMessageCommand(params);
-    await sqs.send(command);
-
-    return { success: 'Message sent successfully to SQS' };
-  } catch (error) {
-    return { error: 'Failed to send message to SQS' };
-  }
-}
 
 async function sendVerificationEmail(email: string, userId: number) {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '1d' });
@@ -574,12 +533,7 @@ export async function submitInterests(user_input: string) {
   }
   // Update the user's keywords in the database
   await updateUser(user.id, { keywords: keys });
-  const res = await sendToSQS(keys);
 
-  if (res.error) {
-    console.log(res.error)
-    return { error: "Error setting interests. Please try again later." };
-  }
 
   return { success: true, message: 'Interests set successfully' };
 }
@@ -592,12 +546,6 @@ export async function updateInterests(keywords: string[]) {
 
   // Update the user's keywords in the database
   await updateUser(user.id, { keywords: keywords });
-  const res = await sendToSQS(keywords);
-
-  if (res.error) {
-    console.log(res.error)
-    return { error: 'Interests updated successfully' };
-  }
 
   return { success: true, message: 'Interests updated successfully' };
 }

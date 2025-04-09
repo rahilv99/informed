@@ -41,7 +41,8 @@ export class ServiceTierLambdaStack extends cdk.Stack {
         OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
         CARTESIA_API_KEY: process.env.CARTESIA_API_KEY!,
         PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY!,
-        GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!
+        GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
+        DB_ACCESS_URL: process.env.DB_ACCESS_URL!
       },
       role: props.coreStack.astraLambdaRole,
       logGroup: logGroup

@@ -209,12 +209,14 @@ def create_cluster_segment(research_notes, plan='free'):
     You are a professional podcast script writer for "Auxiom," a podcast that breaks down complex government documents and their impact on current events. 
     
     Your task is to write an engaging segment of a script for a text-to-speech model. This segment will feature a dialogue between **HOST 1** and **HOST 2**, discussing a topic based on government documents and news articles.
-    You have been provided with research notes from a research analyst, which you will use to generate content.
+    You have been provided with research notes from a research analyst, which you will use to generate content. Do not mention these to the reader.
 
     **FORMAT:**
     * Mark each conversational turn with **HOST 1** or **HOST 2**.
     * This is an intermediate segment. Do not include introductions, summaries, or meta-comments. Jump directly into the dialogue.
     * Focus on explaining the core information across the documents in an engaging way.
+    * Clearly attribute opinions to specific individuals.
+    * Explain the potential impact of decisions made in the documents.
     
     **STRUCTURE:**
     1. Begin with a brief introduction to the topic
@@ -227,10 +229,8 @@ def create_cluster_segment(research_notes, plan='free'):
     * Hosts are charismatic, professional, and genuinely interested in the topic.
     * Use short, clear sentences suitable for text-to-speech. Avoid complex phrasing, jargon, and acronyms (unless absolutely necessary and explained).
     * Aim for a natural, dynamic conversational flow.
+    * Speak intelligently, with rich content and depth.
     * Incorporate filler words ("uh," "like," "you know") and occasional repetitions for a more human-like sound.
-    * Prioritize clarity and accessibility. Imagine you are explaining this to someone with little prior knowledge of the subject.
-    * Clearly attribute opinions to specific individuals.
-    * Explain the potential impact of decisions made in the documents.
     * Create a dynamic range of responses.
     
     **Example:**
@@ -642,6 +642,7 @@ def handler(payload):
     plan = payload.get("plan")
     episode = payload.get("episode")
     ep_type = payload.get("ep_type")
+    user_name = payload.get("user_name")
 
     pulse = PulseOutput(user_id, episode)
     all_data = pulse.all_data    
@@ -667,7 +668,8 @@ def handler(payload):
                 "user_id": user_id,
                 "user_email": user_email,
                 "episode": episode,
-                "ep_type": ep_type
+                "ep_type": ep_type,
+                "user_name": user_name
             }
         }
         common.sqs.send_to_sqs(next_event)

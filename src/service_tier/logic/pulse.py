@@ -404,6 +404,7 @@ def handler(payload):
     plan = payload.get("plan")
     episode = payload.get("episode")
     keywords = payload.get("keywords", [])
+    user_name = payload.get("user_name")
 
     logging.basicConfig(
         level=logging.INFO,
@@ -437,6 +438,7 @@ def handler(payload):
                 "payload": { 
                 "user_id": user_id,
                 "user_email": user_email,
+                "user_name": user_name,
                 "plan": plan,
                 "episode": episode,
                 "ep_type": "pulse"
@@ -449,6 +451,20 @@ def handler(payload):
     else:
         logging.error("No clusters generated, notifying user.")
         # Notify user via email if no clusters generated
+        try:
+            next_event = {
+                "action": "e_notify",
+                "payload": { 
+                "user_id": user_id,
+                "user_email": user_email,
+                "user_name": user_name,
+                "keywords": keywords
+                }
+            }
+            common.sqs.send_to_sqs(next_event)
+            print(f"Sent message to SQS for next action {next_event['action']}")
+        except Exception as e:
+            print(f"Exception when sending message to SQS {e}")
 
 if __name__ == "__main__":
     import pickle as pkl

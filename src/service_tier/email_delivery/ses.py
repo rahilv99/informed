@@ -11,7 +11,7 @@ from datetime import datetime
 from email_delivery.email_output import EmailOutput
 import common.s3
 
-db_access_url = "postgresql://auxiompostgres:astrapodcast!@auxiom-db.cvoqq0ms6fsc.us-east-1.rds.amazonaws.com:5432/postgres"
+db_access_url = os.environ.get('DB_ACCESS_URL')
 
 def update_db(user_id, episode_title, topics, episode_number, episode_type, mp3_file_url):
     try:
@@ -46,7 +46,7 @@ def update_db(user_id, episode_title, topics, episode_number, episode_type, mp3_
         if conn:
             conn.close()
 
-def generate_html(episode_title, topics, episode):
+def generate_html(episode_title, topics, episode, name):
     # Load the HTML template
     def _load_template(file_path):
         with open(file_path, 'r') as file:
@@ -65,10 +65,7 @@ def generate_html(episode_title, topics, episode):
     return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html)
 
 
-
-
 def send_email(RECIPIENT, SUBJECT, BODY_HTML):
-    FILE_PATH = '/tmp/podcast.mp3'
 
     # Create a multipart/mixed parent container
     msg = MIMEMultipart('mixed')
@@ -81,17 +78,6 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
     html_part = MIMEText(BODY_HTML, 'html', 'utf-8')
     msg_body.attach(html_part)
     msg.attach(msg_body)
-
-    # Add the attachment to the email
-    with open(FILE_PATH, 'rb') as attachment:
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(attachment.read())
-        encoders.encode_base64(part)
-        part.add_header(
-            'Content-Disposition',
-            f'attachment; filename="{SUBJECT}.mp3"'
-        )
-        msg.attach(part)
 
     # Send the email
     client = boto3.client('ses',
@@ -121,6 +107,7 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
 def handler(payload):
     user_id = payload.get("user_id")
     user_email = payload.get("user_email")
+    name = payload.get("user_name")
     episode = payload.get("episode")
     ep_type = payload.get("ep_type")
 
@@ -128,9 +115,12 @@ def handler(payload):
     topics = headers.topics
     episode_title = headers.episode_title
 
+    if len(name.split()) > 1:
+        name = name.split()[0]
+
     common.s3.restore(user_id, episode,"PODCAST", "/tmp/podcast.mp3")
 
-    html = generate_html(episode_title, topics, episode)
+    html = generate_html(episode_title, topics, episode, name)
 
     send_email(user_email, episode_title, html)
 

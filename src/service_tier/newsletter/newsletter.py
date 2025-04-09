@@ -1,14 +1,8 @@
 import boto3
-from botocore.exceptions import ClientError
 import os          
-from string import Template
-import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
 import psycopg2 
-import json
 
 db_access_url = "postgresql://auxiompostgres:astrapodcast!@auxiom-db.cvoqq0ms6fsc.us-east-1.rds.amazonaws.com:5432/postgres"
 
