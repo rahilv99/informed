@@ -197,7 +197,15 @@ export default function LearningProgress({
     console.log("Starting podcast playback:", podcast.title);
     setCurrentPodcast(podcast);
     setPlayerOpen(true);
-    
+
+    // Hardcoded test script for testing purposes
+    const testScript = `
+      **HOST 1:** Welcome to the test podcast! Today, we are testing the WebSocket connection.
+      **HOST 2:** That's right! This is a hardcoded script to verify the streaming functionality.
+      **HOST 1:** Let's see if the audio generation and streaming work as expected.
+      **HOST 2:** Absolutely! This is an exciting step in our development process.
+    `;
+
     // Clean up existing MediaSource and related references for a new podcast
     if (mediaSourceRef.current) {
       URL.revokeObjectURL(audioPlayerRef.current?.src || "");
@@ -239,20 +247,27 @@ export default function LearningProgress({
       });
     });
 
-    // Connect to WebSocket
-    console.log("TRYING to connect")
-    connectToWebSocket();
+    // Connect to WebSocket and pass the hardcoded test script
+    console.log("TRYING to connect");
+    connectToWebSocket(testScript);
   };
 
-  const connectToWebSocket = () => {
-    const wsUrl = `ws://127.0.0.1:8000/ws/podcast`; // Removed podcast_id from URL
+  const connectToWebSocket = (script: string) => {
+    const wsUrl = `ws://127.0.0.1:8000/ws/podcast`; // WebSocket server URL
     websocketRef.current = new WebSocket(wsUrl);
 
     websocketRef.current.binaryType = "arraybuffer";
 
     websocketRef.current.onopen = () => {
       console.log("WebSocket connection established");
-      websocketRef.current?.send(JSON.stringify({ type: "script" })); // Adjusted message if needed
+
+      // Send the script to the server
+      websocketRef.current?.send(
+        JSON.stringify({
+          type: "script",
+          script: script,
+        })
+      );
     };
 
     websocketRef.current.onmessage = (event) => {
@@ -281,16 +296,16 @@ export default function LearningProgress({
           const message = JSON.parse(event.data as string);
           switch (message.type) {
             case "transcript":
-              console.log(`Received transcript: ${message.content.text} (Host ${message.content.host})`);
-              setCurrentTranscript(message.content.text);
-              setCurrentHost(message.content.host);
+              console.log(`Received transcript: ${message.text} (Host ${message.host})`);
+              setCurrentTranscript(message.text);
+              setCurrentHost(message.host);
               break;
             case "complete":
               console.log("Podcast streaming completed");
               setIsStreaming(false);
               break;
             case "error":
-              console.error("Error:", message.content);
+              console.error("Error:", message.message);
               setIsStreaming(false);
               setIsPlaying(false);
               break;
