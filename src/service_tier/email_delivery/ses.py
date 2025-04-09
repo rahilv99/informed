@@ -3,48 +3,8 @@ import os
 from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
-import psycopg2 
-import json
-from datetime import datetime
 from email_delivery.email_output import EmailOutput
-import common.s3
 
-db_access_url = os.environ.get('DB_ACCESS_URL')
-
-def update_db(user_id, episode_title, topics, episode_number, episode_type, mp3_file_url):
-    try:
-        conn = psycopg2.connect(dsn=db_access_url)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, audio_file_url, date, completed)
-            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, (episode_title, user_id, json.dumps(topics), episode_number, episode_type, mp3_file_url, datetime.now(), False))
-        
-
-        # Update user's episode count and podcast status
-        cursor.execute("""
-            UPDATE users 
-            SET episode = episode + 1,
-                delivered = %s
-            WHERE id = %s
-        """, (datetime.now(), user_id))
-
-        conn.commit()
-        print(f"Successfully updated podcast and user tables for user {user_id}")
-
-    except psycopg2.Error as e:
-        print(f"Database error: {e}")
-        if conn:
-            conn.rollback()
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 def generate_html(episode_title, topics, episode, name):
     # Load the HTML template
@@ -62,7 +22,7 @@ def generate_html(episode_title, topics, episode, name):
 
     template = _load_template('email_delivery/index.html')
     articles_html = _generate_articles_html(topics)
-    return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html)
+    return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html, user=name)
 
 
 def send_email(RECIPIENT, SUBJECT, BODY_HTML):
@@ -109,7 +69,6 @@ def handler(payload):
     user_email = payload.get("user_email")
     name = payload.get("user_name")
     episode = payload.get("episode")
-    ep_type = payload.get("ep_type")
 
     headers = EmailOutput(user_id, episode)
     topics = headers.topics
@@ -118,15 +77,24 @@ def handler(payload):
     if len(name.split()) > 1:
         name = name.split()[0]
 
-    common.s3.restore(user_id, episode,"PODCAST", "/tmp/podcast.mp3")
 
     html = generate_html(episode_title, topics, episode, name)
 
     send_email(user_email, episode_title, html)
 
-    s3_url = common.s3.get_s3_url(user_id, episode, "PODCAST")
-    # Update podcast and user tables 
-    update_db(user_id, episode_title, topics, episode, ep_type, s3_url)
 
 if __name__ == "__main__":
-    handler(None)
+    user_id = '27'
+    user_email = 'rahilv99@gmail.com'
+    name = 'Rahil Verma'
+    episode = '10'
+
+    episode_title = 'The Future of AI in Healthcare'
+    topics = [{'title': 'AI in Healthcare', 'description': 'Exploring the impact of AI on healthcare.', 'gov': [['https://www.healthcareitnews.com/news/ai-healthcare-2023', 'Read more']]}]
+    
+    if len(name.split()) > 1:
+        name = name.split()[0]
+
+    html = generate_html(episode_title, topics, episode, name)
+
+    send_email(user_email, episode_title, html)

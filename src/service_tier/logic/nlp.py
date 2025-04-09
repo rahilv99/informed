@@ -7,10 +7,15 @@ import google.generativeai as genai
 from pydub import AudioSegment
 import os
 from openai import OpenAI
+import psycopg2 
+import json
+import datetime
 
 from logic.pulse_output import PulseOutput
 import common.sqs
 import common.s3
+
+db_access_url = os.environ.get('DB_ACCESS_URL')
 
 TEMP_BASE = "/tmp"
 
@@ -480,7 +485,7 @@ def clean_text_for_conversational_tts(input_text):
     return output_text
 
 
-def create_conversational_podcast(cluster_dfs, plan='free', testing = False):
+def create_conversational_podcast(cluster_dfs, plan='free'):
     """
     Creates a conversational podcast from cluster dataframes.
     
@@ -498,9 +503,8 @@ def create_conversational_podcast(cluster_dfs, plan='free', testing = False):
     # Clean the script for TTS
     turns = clean_text_for_conversational_tts(script)
     
-    if testing:
-        return turns, notes
-
+    return turns, notes
+'''
     # Create audio files for each turn
     if cartesia:
         client = Cartesia(api_key=os.environ.get('CARTESIA_API_KEY'))
@@ -627,7 +631,39 @@ def write_to_s3(num_turns, user_id, episode_number):
     common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
     
     print("Audio file uploaded to S3.")
+'''
+def update_db(user_id, episode_title, topics, episode_number, episode_type, script):
+    try:
+        conn = psycopg2.connect(dsn=db_access_url)
+        cursor = conn.cursor()
 
+        cursor.execute("""
+            INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, script, date, completed)
+            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, (episode_title, user_id, json.dumps(topics), episode_number, episode_type, script, datetime.now(), False))
+        
+
+        # Update user's episode count and podcast status
+        cursor.execute("""
+            UPDATE users 
+            SET episode = episode + 1,
+                delivered = %s
+            WHERE id = %s
+        """, (datetime.now(), user_id))
+
+        conn.commit()
+        print(f"Successfully updated podcast and user tables for user {user_id}")
+
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        if conn:
+            conn.rollback()
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 # Main Execution
 def handler(payload):
@@ -647,11 +683,13 @@ def handler(payload):
     pulse = PulseOutput(user_id, episode)
     all_data = pulse.all_data    
 
-    num_turns, notes = create_conversational_podcast(all_data, plan = plan)
+    script, notes = create_conversational_podcast(all_data, plan = plan)
 
-    write_to_s3(num_turns, user_id, episode)
+    #write_to_s3(num_turns, user_id, episode)
 
     topics, episode_title = generate_email_headers(notes)
+
+    update_db(user_id, episode_title, topics, episode, ep_type, script)
 
     # Save the email description to S3
     common.s3.save_serialized(user_id, episode, "EMAIL", {
@@ -668,7 +706,6 @@ def handler(payload):
                 "user_id": user_id,
                 "user_email": user_email,
                 "episode": episode,
-                "ep_type": ep_type,
                 "user_name": user_name
             }
         }
@@ -677,13 +714,16 @@ def handler(payload):
     except Exception as e:
         print(f"Exception when sending message to SQS {e}")
 
+
+
+
+
+
 if __name__ == "__main__":
     import pickle as pkl
     all_data = pkl.loads(open("/tmp/cluster_dfs.pkl", "rb").read())
 
-    all_data = all_data[:3]
-
-    num_turns, notes = create_conversational_podcast(all_data, plan = 'free', testing = True)
+    num_turns, notes = create_conversational_podcast(all_data, plan = 'free')
 
     topics, episode_title = generate_email_headers(notes)
 

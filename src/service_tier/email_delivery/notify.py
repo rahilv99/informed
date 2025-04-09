@@ -6,9 +6,6 @@ import os
 from string import Template
 
 
-db_access_url = 'postgresql://auxiompostgres:astrapodcast!@auxiom-db.cvoqq0ms6fsc.us-east-1.rds.amazonaws.com:5432/postgres' #os.environ.get('DB_ACCESS_URL')
-print(db_access_url)
-
 def generate_html(name, keywords):
     # Load the HTML template
     def _load_template(file_path):
@@ -58,7 +55,6 @@ def send_email(RECIPIENT, BODY_HTML):
 
 # Main Execution
 def handler(payload):
-    user_id = payload.get("user_id")
     user_email = payload.get("user_email")
     name = payload.get("user_name")
     keywords = payload.get("keywords")
