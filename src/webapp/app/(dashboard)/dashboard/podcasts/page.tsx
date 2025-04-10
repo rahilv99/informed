@@ -35,7 +35,7 @@ export default async function Page() {
     audioFileUrl: podcast.audioFileUrl ?? "",
     listened: podcast.completed,
     articles: podcast.articles as { title: string; description: string; url: string }[],
-    script: podcast.script as { text: string }[],
+    script: podcast.script as string[],
   }));
 
   return (

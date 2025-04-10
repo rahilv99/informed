@@ -23,7 +23,7 @@ export default function LearningProgress({
     duration: string
     listened: boolean
     articles: { title: string; description: string; url: string }[]
-    script: { text: string }[] // Include the script column here
+    script: string[] // Include the script column here
   }>
 }) {
   const [expandedPodcast, setExpandedPodcast] = useState<number | null>(null)
@@ -40,7 +40,7 @@ export default function LearningProgress({
     duration: string
     listened: boolean
     articles: { title: string; description: string; url: string }[]
-    script: { text: string }[] // Include the script column here
+    script: string[] // Include the script column here
   } | null>(null)
   const [listenedPodcasts, setListenedPodcasts] = useState<Record<number, boolean>>(() => {
     const initialState: Record<number, boolean> = {}
@@ -192,7 +192,7 @@ export default function LearningProgress({
     duration: string;
     listened: boolean;
     articles: { title: string; description: string; url: string }[];
-    script: { text: string }[];
+    script: string[];
   }) => {
     console.log("Starting podcast playback:", podcast.title);
     setCurrentPodcast(podcast);
@@ -402,7 +402,6 @@ export default function LearningProgress({
       audioPlayerRef.current.addEventListener("pause", handlePause);
       audioPlayerRef.current.addEventListener("waiting", handleWaiting);
       audioPlayerRef.current.addEventListener("stalled", handleStalled);
-      audioPlayerRef.current.addEventListener("error", handleError);
     }
 
     // Cleanup logic
@@ -413,7 +412,6 @@ export default function LearningProgress({
         audioPlayerRef.current.removeEventListener("pause", handlePause);
         audioPlayerRef.current.removeEventListener("waiting", handleWaiting);
         audioPlayerRef.current.removeEventListener("stalled", handleStalled);
-        audioPlayerRef.current.removeEventListener("error", handleError);
         audioPlayerRef.current.pause();
         audioPlayerRef.current.src = "";
         audioPlayerRef.current = null;
