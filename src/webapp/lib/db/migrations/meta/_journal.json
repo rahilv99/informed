@@ -134,6 +134,41 @@
       "when": 1742696413503,
       "tag": "0018_fine_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1743995046093,
+      "tag": "0019_normal_red_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1743995282729,
+      "tag": "0020_powerful_sprite",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1743995449443,
+      "tag": "0021_sturdy_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1743996115066,
+      "tag": "0022_fuzzy_pandemic",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1743996200277,
+      "tag": "0023_greedy_pet_avengers",
+      "breakpoints": true
     }
   ]
 }

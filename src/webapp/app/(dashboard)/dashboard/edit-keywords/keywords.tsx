@@ -27,10 +27,10 @@ export function EditKeywords({ name, interests }: { name: string; interests: str
 
   const handleSubmit = async () => {
     const ret = await updateInterests(keywords);
-    if (ret.error) {
+    if (ret.success === false) {
       return toast({
         title: "Error",
-        description: ret.error,
+        description: ret.message,
         variant: "destructive",
       });
     } else {
