@@ -23,7 +23,6 @@ RUN mv ${LAMBDA_TASK_ROOT}/extra_pkgs/ffmpeg-*-static/ffmpeg /usr/local/bin/ && 
     mv ${LAMBDA_TASK_ROOT}/extra_pkgs/ffmpeg-*-static/ffprobe /usr/local/bin/ && \
     rm -rf ${LAMBDA_TASK_ROOT}/extra_pkgs/ffmpeg-*-static
 
-# Set the HOME environment variable to somewhere writable for PubMed
 ENV HOME=/tmp
 # ENV TRANSFORMERS_CACHE=/tmp
 ENV HF_HOME=/tmp

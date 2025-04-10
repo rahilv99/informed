@@ -1,410 +1,501 @@
-from sentence_transformers import SentenceTransformer, util
+"""
+Article clustering functionality using sentence transformers and document-based
+clustering
+"""
+
 import numpy as np
 import pandas as pd
-import spacy
-import datetime
-import os
-import time
-import random
+from sentence_transformers import SentenceTransformer
 import logging
-import requests
-import io
-from bs4 import BeautifulSoup
-import PyPDF2
+import spacy
 
-from logic.user_topics_output import UserTopicsOutput
 import common.sqs
 import common.s3
 
+#from article_scraper import ArticleScraper
+from legal_scraper import Gov
+from google_scraper import GoogleNewsScraper
 
-# Constants
-DEFAULT_ARTICLE_AGE = 7
-MODEL = SentenceTransformer('./saved_model/all-MiniLM-L6-v2')
-MAX_RETRIES = 10
-BASE_DELAY = 0.33
-MAX_DELAY = 15
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('pulse')
-
-# Base ArticleResource class
-class ArticleResource:
-    def __init__(self, user_topics_output):
-        self.articles_df = pd.DataFrame()
-        self.today = datetime.date.today()
-        self.time_constraint = self.today - datetime.timedelta(days=DEFAULT_ARTICLE_AGE)
-        self.user_input = user_topics_output.user_input
-        self.user_embeddings = user_topics_output.user_embeddings
+class ArticleClusterer:
+    """Class for clustering news articles based on government documents"""
+    def __init__(self, similarity_threshold=0.35, merge_threshold=0.8):
+        self.logger = logging.getLogger('pulse.clustering')
+        self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.nlp = spacy.load("en_core_web_sm")
-
-    def _extract_entities(self, input_text):
+        self.similarity_threshold = similarity_threshold
+        self.merge_threshold = merge_threshold
+        #self.scraper = ArticleScraper()
+    
+    def extract_entities(self, input_text):
+        """Extract entities and nouns from text"""
         if not isinstance(input_text, str):
             return ""
-
+        
         input_text = input_text[:5000]
         doc = self.nlp(input_text)
-        entities = [ent.text for ent in doc.ents] + [token.text for token in doc if token.pos_ == "NOUN"]
-        return " ".join(entities)
-
-    def normalize_df(self):
-        self.articles_df.rename(columns={
-            'Article Text': 'text', 'Abstract': 'text', 'domain': 'journal',
-            'Title': 'title', 'Authors': 'author'
-        }, inplace=True)
-        self.articles_df.drop_duplicates(subset=['title'], inplace=True)
-
-    def rank_data(self, scoring_column='title'):
-        if self.articles_df.empty:
-            return
-
-        # Extract entities if available, otherwise use lowercase titles
-        titles = self.articles_df[scoring_column].apply(lambda x: x.lower())
-
-        # Convert to list and encode
-        titles = entities.tolist()
-        article_embeddings = MODEL.encode(titles, convert_to_tensor=True)
         
-        # Get user keyword embeddings (assuming user_input contains keywords and user_embeddings is aggregated)
-        user_keywords = self.user_input
-        
-        # If user_input is a list of keywords, encode each one
-        user_keyword_embeddings = MODEL.encode(user_keywords, convert_to_tensor=True)
-        
-        # Calculate cosine similarity between each article and each user keyword
-        max_scores = []
-        for i in range(len(titles)):
-            # Get article embedding
-            article_emb = article_embeddings[i].unsqueeze(0)  # Add batch dimension
+        entities = [ent.text.lower() for ent in doc.ents]
+        nouns = [token.text.lower() for token in doc if token.pos_ == "NOUN"]
+        return " ".join(entities + nouns)
+    
+    def calculate_cluster_overlap(self, cluster1, cluster2):
+        """Calculate overlap between two clusters based on similarity scores"""
+        if not cluster1['similarities'] or not cluster2['similarities']:
+            return 0
             
-            # Calculate similarity with each keyword
-            similarities = util.cos_sim(article_emb, user_keyword_embeddings).flatten().numpy()
+        # Get top 10 most similar articles for each cluster
+        cluster1_articles = set()
+        cluster2_articles = set()
+        
+        # Sort similarities by value in descending order and take top 10
+        sorted_similarities1 = sorted(
+            cluster1['similarities'].items(), 
+            key=lambda x: x[1], 
+            reverse=True
+        )[:10]
+        
+        sorted_similarities2 = sorted(
+            cluster2['similarities'].items(), 
+            key=lambda x: x[1], 
+            reverse=True
+        )[:10]
+        
+        # Extract just the article indices
+        cluster1_articles = {idx for idx, _ in sorted_similarities1}
+        cluster2_articles = {idx for idx, _ in sorted_similarities2}
+        
+        # Calculate overlap as percentage of articles that could belong to both clusters
+        overlap = len(cluster1_articles & cluster2_articles)
+        min_size = min(len(cluster1_articles), len(cluster2_articles))
+        return overlap / min_size if min_size > 0 else 0
+    
+    def merge_similar_clusters(self, clusters):
+        """Merge clusters that share more than threshold of their potential articles"""
+        merged = True
+        while merged:
+            merged = False
+            cluster_ids = list(clusters.keys())
             
-            # Get maximum similarity (nearest keyword)
-            max_score = similarities.max()
-            max_scores.append(max_score)
-        
-        # Create a scores Series with the same index as the original DataFrame
-        scores = pd.Series(index=self.articles_df.index)
-        scores = max_scores
-        
-        # Assign scores to the DataFrame
-        self.articles_df['score'] = scores
-
-        # Sort by score and keep top 5
-        self.articles_df.sort_values(by='score', ascending=False, inplace=True)
-        self.articles_df = self.articles_df.head(5)
-
-    @staticmethod
-    def finalize_df(resources):
-        combined_df = pd.concat([r.articles_df for r in resources])
-        combined_df.drop_duplicates(subset=['title'], inplace=True)
-        return combined_df.sort_values(by='score', ascending=False).head(5)
-
-    def fetch_with_retry(self, func, *args, **kwargs):
-        for attempt in range(MAX_RETRIES):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                if attempt == MAX_RETRIES - 1:
-                    raise e
-                time.sleep(min(BASE_DELAY * 2 ** attempt + random.uniform(0, 1), MAX_DELAY))
-'''
-# PubMed Integration
-class PubMed(ArticleResource):
-    def __init__(self, user_topics_output):
-        super().__init__(user_topics_output)
-        self.logger = logging.getLogger('pulse.pubmed')
-
-    def get_articles(self):
-        try:
-            self.logger.info(f"Searching for PubMed articles related to: {self.user_input}")
-            Entrez.email = 'rahil.verma@duke.com'
-            topics = self.user_input
-            query = f'{topics[0]} AND "{self.time_constraint}"[Date] : "{self.today}"[Date]'
-            for t in topics[1:]:
-                query += f' OR {t} AND "{self.time_constraint}"[Date] : "{self.today}"[Date]'
-            try:
-                handle = self.fetch_with_retry(Entrez.esearch, db='pubmed', term=query, sort='relevance', retmax='500', retmode='xml')
-                results = Entrez.read(handle)
-                id_list = results['IdList']
-            except Exception as e:
-                self.logger.error(f"Error fetching PubMed query: {e}")
-
-            try:
-                handle = self.fetch_with_retry(Entrez.efetch, db='pubmed', id=','.join(id_list), retmode='xml')
-                papers = Entrez.read(handle)
-                rows = []
-                for article in papers['PubmedArticle']:
-                    data = {
-                        'title': article['MedlineCitation']['Article'].get('ArticleTitle', 'N/A'),
-                        'text': ' '.join(article['MedlineCitation']['Article'].get('Abstract', {}).get('AbstractText', '')),
-                        'url': f"https://www.ncbi.nlm.nih.gov/pubmed/{article['MedlineCitation']['PMID']}"
-                    }
-                    rows.append(data)
-                self.articles_df = pd.DataFrame(rows)
-                self.normalize_df()
-            except Exception as e:
-                self.logger.error(f"Error fetching PubMed articles: {e}")
-        except Exception as e:
-            self.logger.error(f"Error in PubMed integration: {e}")
-
-
-# Semantic Scholar Integration
-class Sem(ArticleResource):
-    def __init__(self, user_topics_output):
-        super().__init__(user_topics_output)
-        self.sch = SemanticScholar(timeout = 7, api_key = os.environ.get('SEMANTIC_SCHOLAR_API_KEY'))
-        self.logger = logging.getLogger('pulse.sem')
-
-    def get_articles(self):
-        self.logger.info(f"Searching for Semantic Scholar articles related to: {self.user_input}")
-        try:
-            results = []
-            for k in self.user_input:
-                try:
-                    response = self.fetch_with_retry(self.sch.search_paper, query=k, publication_date_or_year=f'{self.time_constraint.strftime("%Y-%m-%d")}:{self.today.strftime("%Y-%m-%d")}')
-                    results += response.items
-                except Exception as e:
-                    self.logger.error(f"Error fetching Semantic Scholar query for {k}: {e}")
-
-            rows = [{'title': r.title, 'text': r.abstract, 'url': r.url} for r in results]
-            self.articles_df = pd.DataFrame(rows)
-            self.normalize_df()
-        except Exception as e:
-            self.logger.error(f"Error in Semantic Scholar integration: {e}")
-'''
-class Gov(ArticleResource):
-    def __init__(self, user_topics_output):
-        super().__init__(user_topics_output)
-        self.api_key = os.environ.get('GOVINFO_API_KEY', "TqAJxayfmxCsJTFehykSs4agaZzrVFd7N0UJWBMc")
-        self.search_url = f"https://api.govinfo.gov/search?api_key={self.api_key}"
-        self.headers = {"Content-Type": "application/json"}
-        self.logger = logging.getLogger('pulse.gov')
-
-    def get_articles(self):
-        try:
-            results = []
-            seen = set() # first defense for repeated articles
-            for topic in self.user_input:
-                # Create payload for API request with date range for last week
-                payload = {
-                    "query": f"{topic} publishdate:range({self.time_constraint.strftime('%Y-%m-%d')},{self.today.strftime('%Y-%m-%d')}) AND collection:(BUDGET OR CPD OR BILLS OR CPRT OR CDOC OR CHRG OR CRPT OR ECONI OR ERP)",
-                    "pageSize": 10,
-                    "offsetMark": "*",
-                    "sorts": [
-                        {
-                            "field": "score",
-                            "sortOrder": "DESC"
-                        }
-                    ],
-                    "historical": True,
-                    "resultLevel": "default"
-                }
-                
-                # Make API request with retry mechanism for resilience
-                try:
-                    self.logger.info(f"Searching for government documents related to: {topic}")
-                    response = self.fetch_with_retry(
-                        requests.post, 
-                        self.search_url, 
-                        json=payload, 
-                        headers=self.headers
+            for i in range(len(cluster_ids)):
+                for j in range(i + 1, len(cluster_ids)):
+                    
+                    c1_id, c2_id = cluster_ids[i], cluster_ids[j]
+                    
+                    if c1_id not in clusters or c2_id not in clusters:
+                        continue
+                    
+                    overlap = self.calculate_cluster_overlap(
+                        clusters[c1_id],
+                        clusters[c2_id]
                     )
+                    
+                    if overlap >= self.merge_threshold:
+                        try:
+                            if len(clusters[c1_id]['articles']) >= len(
+                                clusters[c2_id]['articles']
+                            ):
+                                self.logger.info(f"Merging cluster {c2_id} into {c1_id}")
+                                # Add subdocument before merging
+                                if 'subdocuments' not in clusters[c1_id]:
+                                    clusters[c1_id]['subdocuments'] = []
+                                clusters[c1_id]['subdocuments'].append(
+                                    (clusters[c2_id]['doc_index'], 
+                                     len(clusters[c2_id]['articles']))
+                                )
 
-                    if response.status_code == 200:
-                        data = response.json()
-                        self.logger.info(f"Found {len(data.get('results', []))} documents for topic: {topic}")
-                        
-                        if len(data.get('results', [])) == 0:
-                            self.logger.warning(f"No documents found for topic: {topic}")
-                            continue
-
-                        for item in data.get("results", []):
-                            links = item.get("download", {})
-                            url = None
-                            
-                            # Prioritize text content over PDF for easier processing
-                            if 'pdfLink' in links:
-                                url = links['pdfLink']
-                                doc_type = 'pdf'
-                            elif 'txtLink' in links:
-                                url = links['txtLink']
-                                doc_type = 'txt'
-                            elif 'modsLink' in links:
-                                url = links['modsLink']
-                                doc_type = 'mods'
-                            else:
-                                continue
+                                if 'subdocuments' in clusters[c2_id]:
+                                    clusters[c1_id]['subdocuments'].extend(
+                                        clusters[c2_id]['subdocuments']
+                                    )
+                                # Merge similarities
+                                for idx, sim in clusters[c2_id]['similarities'].items():
+                                    if idx not in clusters[c1_id]['similarities'] or \
+                                    sim > clusters[c1_id]['similarities'][idx]:
+                                        clusters[c1_id]['similarities'][idx] = sim
                                 
-                            # Trash articles recognizing some BS - makeshift filter
-                            if 'recognizing' in item.get('title','').lower():
-                                continue
-                            if item.get('title','').lower() in seen:
-                                continue
+                                clusters[c1_id]['articles'].extend(
+                                    clusters[c2_id]['articles']
+                                )
+                                clusters[c1_id]['articles'] = list(
+                                    set(clusters[c1_id]['articles'])
+                                )
+                                del clusters[c2_id]
 
-                            self.logger.info(f"Retrieving document: {item.get('title', '')} ({doc_type})")
-                            full_text = self.get_document_text(url)
+                                self.logger.info(f"New cluster has {len(clusters[c1_id]['articles'])} articles")
+                            else:
+                                self.logger.info(f"Merging cluster {c1_id} into {c2_id}")
+                                # Add subdocument before merging
+                                if 'subdocuments' not in clusters[c2_id]:
+                                    clusters[c2_id]['subdocuments'] = []
+                                clusters[c2_id]['subdocuments'].append(
+                                    (clusters[c1_id]['doc_index'], 
+                                     len(clusters[c1_id]['articles']))
+                                )
 
-                            if len(full_text) < 5000:
-                                continue
+                                if 'subdocuments' in clusters[c1_id]:
+                                    clusters[c2_id]['subdocuments'].extend(
+                                        clusters[c1_id]['subdocuments']
+                                    )
+                                
+                                # Merge similarities
+                                for idx, sim in clusters[c1_id]['similarities'].items():
+                                    if idx not in clusters[c2_id]['similarities'] or \
+                                    sim > clusters[c2_id]['similarities'][idx]:
+                                        clusters[c2_id]['similarities'][idx] = sim
+                                
+                                clusters[c2_id]['articles'].extend(
+                                    clusters[c1_id]['articles']
+                                )
+                                clusters[c2_id]['articles'] = list(
+                                    set(clusters[c2_id]['articles'])
+                                )
+                                del clusters[c1_id]
 
-                            seen.add(item.get("title", ""))
-                            results.append({
-                                "title": item.get("title", ""),
-                                "text": full_text,
-                                "url": f"{url}?api_key={self.api_key}"
-                            })
-                    else:
-                        self.logger.error(f"API request failed with status code: {response.status_code}")
-                except Exception as e:
-                    self.logger.error(f"Error processing GovInfo query for {topic}: {e}")
-                
-            # Create DataFrame and normalize to match expected format
-            if results:
-                self.logger.info(f"Retrieved {len(results)} government documents in total")
-                self.articles_df = pd.DataFrame(results)
-                self.normalize_df()
-            else:
-                self.logger.warning("No government documents found matching the search criteria")
-                
-        except Exception as e:
-            self.logger.error(f"Error in Gov integration: {e}")
-            
-    def get_document_text(self, url):
-        try:
-            url_with_key = f"{url}?api_key={self.api_key}"
-            response = self.fetch_with_retry(requests.get, url_with_key)
-            
-            if response.status_code == 200:
-                # For HTML content
-                if url.endswith('htm') or url.endswith('html'):
-                    return self._extract_text_from_html(response.text)
-                # For PDF content
-                elif url.endswith('pdf'):
-                    return self._extract_text_from_pdf(response.content)
-                else:
-                    return response.text
-            else:
-                self.logger.error(f"Failed to retrieve document: {response.status_code}")
-                return f"Failed to retrieve document: {response.status_code}"
-                
-        except Exception as e:
-            self.logger.error(f"Error retrieving document: {e}")
-            return f"Error retrieving document: {e}"
+                                self.logger.info(f"New cluster has {len(clusters[c2_id]['articles'])} articles")
+                            merged = True
+                            break
+                        except Exception as e:
+                            self.logger.error(f"Error merging clusters {c1_id} and {c2_id}: {e}")
+                if merged:
+                    break
+        
+        return clusters
     
-    def _extract_text_from_html(self, html_content):
+    def create_initial_clusters(self, gov_embeddings, gnews_embeddings):
+        """Create initial clusters based on government documents"""
+        clusters = {}
+        used_articles = set()
+        
+        # First pass: Create clusters and find all potential article matches
+        for i, doc_embedding in enumerate(gov_embeddings):
+            cluster_articles = []
+            for j, news_embedding in enumerate(gnews_embeddings):
+                similarity = np.dot(doc_embedding, news_embedding) / (
+                    np.linalg.norm(doc_embedding) * np.linalg.norm(news_embedding)
+                )
+                if similarity >= self.similarity_threshold:
+                    cluster_articles.append((j, similarity))
+            
+            if cluster_articles:
+                clusters[i] = {
+                    'doc_index': i,
+                    'articles': [],
+                    'similarities': {}
+                }
+                for article_idx, similarity in cluster_articles:
+                    clusters[i]['similarities'][article_idx] = similarity
+        
+        self.logger.info(f"Created {len(clusters)} initial clusters")
+        # Second pass: Assign articles to clusters based on highest similarity
+        for article_idx in range(len(gnews_embeddings)):
+            max_similarity = -1
+            best_cluster = None
+            
+            for cluster_id, cluster_data in clusters.items():
+                if article_idx in cluster_data['similarities']:
+                    similarity = cluster_data['similarities'][article_idx]
+                    if similarity > max_similarity:
+                        max_similarity = similarity
+                        best_cluster = cluster_id
+            
+            if best_cluster is not None and article_idx not in used_articles:
+                clusters[best_cluster]['articles'].append(article_idx)
+                used_articles.add(article_idx)
+        
+        self.logger.info(f"Assigned {len(used_articles)} articles to clusters")
+        
+        return clusters
+    
+    def calculate_cluster_score(self, cluster):
+        """Calculate cluster score based on average similarity, merged gov docs, and article count"""
+        if not cluster['articles']:
+            return 0
+            
+        # Get top 3 articles by similarity
+        sorted_articles = sorted(
+            cluster['articles'],
+            key=lambda x: cluster['similarities'][x],
+            reverse=True
+        )[:3]
+        
+        # Calculate average similarity of top 3 articles
+        avg_similarity = sum(
+            cluster['similarities'][idx] for idx in sorted_articles
+        ) / min(3, len(sorted_articles))
+        
+        # Calculate normalized article count (assuming max 100 articles)
+        norm_article_count = len(cluster['articles']) / 100
+
+        # Secondary gov docs count
+        if 'subdocuments' in cluster:
+            subdoc_count = len(cluster['subdocuments']) / 10
+        else:
+            subdoc_count = 0
+        
+        # Calculate final score
+        score = 2 * avg_similarity + 0.4 * norm_article_count + 0.6 * subdoc_count
+        return score
+
+    
+    def create_cluster_dataframes(self, clusters, gnews_df, gov_df):
+        """Create a dataframe for each cluster with all relevant information"""
+        # Rank clusters by score
+        ranked_clusters = []
+        for cluster_id, cluster_data in clusters.items():
+            score = self.calculate_cluster_score(cluster_data)
+            ranked_clusters.append((cluster_id, cluster_data, score))
+        
+        # Sort clusters by score in descending order
+        ranked_clusters.sort(key=lambda x: x[2], reverse=True)
+        
+        # top 5 clusters
+        top_clusters = ranked_clusters[:5]
+
+        cluster_dfs = []
+
+
+
+        # initialize web driver for gnews scraper
+        #if not self.scraper.setup_webdriver():
+        #    self.logger.error("Failed to set up WebDriver. Cannot proceed.")
+
+
+
+
         try:
-            # Parse HTML with BeautifulSoup
-            soup = BeautifulSoup(html_content, 'html.parser')
-            
-            # Remove script and style elements
-            for script_or_style in soup(["script", "style"]):
-                script_or_style.extract()
-            
-            # Get text content
-            text = soup.get_text()
-
-            # Get links
-            links = soup.find_all('a')
-
-            for link in links:
-                link = link.get('href')
-                if 'pdf' in link:
-                    self.logger.info(f"Following link: {link}")
+            for rank, (cluster_id, cluster_data, score) in enumerate(top_clusters, 1):
+                rows = []
+                
+                # Add primary document
+                doc_idx = cluster_data['doc_index']
+                rows.append({
+                    'source': 'gov',
+                    'type': 'primary',
+                    'title': gov_df.iloc[doc_idx]['title'],
+                    'text': gov_df.iloc[doc_idx]['text'][100:],
+                    'url': gov_df.iloc[doc_idx]['url'],
+                    'keyword': gov_df.iloc[doc_idx]['keyword'],
+                    'publisher': '',
+                })
+                
+                # Add subdocuments if they exist
+                if 'subdocuments' in cluster_data and cluster_data['subdocuments']:
+                    # Sort subdocuments by article count
+                    sorted_subdocs = sorted(
+                        cluster_data['subdocuments'],
+                        key=lambda x: x[1],
+                        reverse=True
+                    )
+                    for subdoc_idx, doc_count in sorted_subdocs:
+                        rows.append({
+                            'source': 'gov',
+                            'type': 'secondary',
+                            'title': gov_df.iloc[subdoc_idx]['title'],
+                            'text': gov_df.iloc[subdoc_idx]['text'],
+                            'url': gov_df.iloc[subdoc_idx]['url'],
+                            'keyword': gov_df.iloc[subdoc_idx]['keyword'],
+                            'publisher': 'Government',
+                        })
+                
+                # Add news articles
+                # Sort articles by similarity score
+                sorted_articles = sorted(
+                    cluster_data['articles'],
+                    key=lambda x: cluster_data['similarities'][x],
+                    reverse=True
+                )
+                start = len(rows)
+                for article_idx in sorted_articles:
+                    article = gnews_df.iloc[article_idx]
+                    '''
+                    # Get full text using ArticleScraper
                     try:
-                        response = requests.get(link)
-                        if response.status_code == 200:
-                            text += f"\n{self._extract_text_from_pdf(response.content)}"
-                        else:
-                            self.logger.error(f"Failed to retrieve linked document: {response.status_code}")
+                        full_text = self.scraper.get_document_text(article['url'])
+                        if len(full_text) < 1000:  # insufficient content
+                            self.logger.warning(
+                                f"Skipping article with insufficient content: "
+                                f"{article['title'][:50]}"
+                            )
+                            continue
                     except Exception as e:
-                        self.logger.error(f"Error retrieving linked document: {e}")
+                        self.logger.warning(
+                            f"Error retrieving text for article {article['title']}: {e}"
+                        )
+                        full_text = ""
+                    '''
+                    rows.append({
+                        'source': 'gnews',
+                        'type': 'news',
+                        'title': article['title'],
+                        'text': '',
+                        'url': article['url'], # self.scraper.driver.current_url,
+                        'keyword': article['keyword'],
+                        'publisher': article['publisher'],
+                    })
 
-            
-            # Clean up text: break into lines and remove leading/trailing space
-            lines = (line.strip() for line in text.splitlines())
-            
-            # Break multi-headlines into a line each
-            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-            
-            # Remove blank lines
-            text = '\n'.join(chunk for chunk in chunks if chunk)
-            
-            self.logger.info(f"Successfully extracted text from HTML ({len(text)} characters)")
-            return text
+                    if len(rows) - start > 2:
+                        break
+        
+                # Create dataframe and add to list
+                df = pd.DataFrame(rows)
+                cluster_dfs.append(df)
         except Exception as e:
-            self.logger.error(f"Error extracting text from HTML: {e}")
-            return html_content  # Return original content as fallback
+            self.logger.error(f"Error processing clusters: {e}")
+        '''
+        finally:
+            # Close the WebDriver
+            try:
+                if self.scraper.driver:
+                    self.scraper.driver.quit()
+            except Exception as e:
+                self.logger.error(f"Error closing WebDriver: {e}")
+        '''
     
-    def _extract_text_from_pdf(self, pdf_content):
+        return cluster_dfs
+
+    def cluster_articles(self, gnews_df, gov_df, output_file='cluster_report.txt'):
+        """Main method to cluster articles and generate report"""
         try:
-            self.logger.info("Attempting to extract text using PyPDF2")
-            pdf_file = io.BytesIO(pdf_content)
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            if gnews_df.empty:
+                self.logger.error("No Google News articles found")
             
-            # Check if PDF is encrypted
-            if pdf_reader.is_encrypted:
-                self.logger.warning("PDF is encrypted, cannot extract text")
-                return "PDF is encrypted, cannot extract text"
+            if gov_df.empty:
+                self.logger.error("No federal documents found")
             
-            # Extract text from all pages
-            text = ""
-            for page_num in range(len(pdf_reader.pages)):
-                page = pdf_reader.pages[page_num]
-                text += page.extract_text() + "\n"
+            # Embed Google News article titles
+            self.logger.info(f"Embedding {len(gnews_df)} Google News article titles...")
+            gnews_titles = gnews_df['title'].tolist()
+            gnews_embeddings = self.model.encode(gnews_titles)
+            if len(gnews_embeddings) == 0:
+                self.logger.error("No Google News article embeddings found")
+                return
             
-            self.logger.info(f"Successfully extracted text from PDF using PyPDF2 ({len(text)} characters)")
-            return text
+            # Embed federal documents
+            self.logger.info(f"Embedding {len(gov_df)} government document titles...")
+            gov_embeddings = []
+            for index, row in gov_df.iterrows():
+                title = row['title']
+                text = row['text']
+                embeddings = self.model.encode(title + " " + self.extract_entities(text[1000:5000]))
+                gov_embeddings.append(embeddings)
 
+            if len(gov_embeddings) == 0:
+                self.logger.error("No government document embeddings found")
+                return
+            
+            # Create and merge clusters
+            clusters = self.create_initial_clusters(gov_embeddings, gnews_embeddings)
+            clusters = self.merge_similar_clusters(clusters)
+
+            self.logger.info(f"Final number of clusters: {len(clusters)}")
+                        
+            # Create dataframes
+            dfs = self.create_cluster_dataframes(clusters, gnews_df, gov_df)
+            
+            return dfs
         except Exception as e:
-            self.logger.error(f"Error extracting text from PDF: {e}")
-            return "Error extracting text from PDF"
+            self.logger.error(f"Error in clustering process: {e}")
 
-# Main Execution
+
 def handler(payload):
     user_id = payload.get("user_id")
-    user_name = payload.get("user_name")
     user_email = payload.get("user_email")
     plan = payload.get("plan")
     episode = payload.get("episode")
+    keywords = payload.get("keywords", [])
+    user_name = payload.get("user_name")
 
-    user_topics_output = UserTopicsOutput(episode, user_id)
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
-    gov = Gov(user_topics_output)
+    if not user_id or not keywords:
+        raise ValueError("Invalid payload: user_id, episode and keywords are required")
 
-    gov.get_articles()
+    Gnews = GoogleNewsScraper(keywords)
+    gnews_df = Gnews.get_articles()
 
-    gov.rank_data()
+    gov = Gov(keywords)
+    gov.get_articles()  # Get government articles
 
-    final_df = ArticleResource.finalize_df([gov])
+    gov_df = gov.articles_df
 
-    print(final_df)
-    #final_df.to_csv('./data/final_df.csv', index=False)
+    # Create clusterer and run clustering
+    clusterer = ArticleClusterer()
+    dfs = clusterer.cluster_articles(gnews_df, gov_df)
 
-    common.s3.save_serialized(user_id, episode, "PULSE", {
-            "final_df": final_df,
-    })
+    if dfs and len(dfs) > 0:
+        common.s3.save_serialized(user_id, episode, "PULSE", {
+                "cluster_dfs": dfs,
+        })
 
-    # Send message to SQS
-    try:
-        next_event = {
-            "action": "e_nlp",
-            "payload": { 
-            "user_id": user_id,
-            "user_name": user_name,
-            "user_email": user_email,
-            "plan": plan,
-            "episode": episode,
-            "ep_type": "pulse"
+        # Send message to SQS
+        try:
+            next_event = {
+                "action": "e_nlp",
+                "payload": { 
+                "user_id": user_id,
+                "user_email": user_email,
+                "user_name": user_name,
+                "plan": plan,
+                "episode": episode,
+                "ep_type": "pulse"
+                }
             }
-        }
-        common.sqs.send_to_sqs(next_event)
-        print(f"Sent message to SQS for next action {next_event['action']}")
-    except Exception as e:
-        print(f"Exception when sending message to SQS {e}")
+            common.sqs.send_to_sqs(next_event)
+            print(f"Sent message to SQS for next action {next_event['action']}")
+        except Exception as e:
+            print(f"Exception when sending message to SQS {e}")
+    else:
+        logging.error("No clusters generated, notifying user.")
+        # Notify user via email if no clusters generated
+        try:
+            next_event = {
+                "action": "e_notify",
+                "payload": { 
+                "user_id": user_id,
+                "user_email": user_email,
+                "user_name": user_name,
+                "keywords": keywords
+                }
+            }
+            common.sqs.send_to_sqs(next_event)
+            print(f"Sent message to SQS for next action {next_event['action']}")
+        except Exception as e:
+            print(f"Exception when sending message to SQS {e}")
 
 if __name__ == "__main__":
-    handler(None)
+    import pickle as pkl
+    
+    keywords = [ 'climate change', 'tariffs', 'research grants', 'education', 'ukraine']
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    Gnews = GoogleNewsScraper(keywords)
+    gnews_df = Gnews.get_articles()
+
+    gov = Gov(keywords)
+    gov.get_articles()  # Get government articles
+
+    gov_df = gov.articles_df
+
+    # Create clusterer and run clustering
+    clusterer = ArticleClusterer()
+    dfs = clusterer.cluster_articles(gnews_df, gov_df)
+
+    # save to tmp
+    if dfs and len(dfs) > 0:
+        with open ('tmp/cluster_dfs.pkl', 'wb') as f:
+            pkl.dump(dfs, f)
+
+        for i, df in enumerate(dfs):
+            print( f"Cluster {i+1} DataFrame ({len(df)}):")
+            print( df.head(2))
+    else:
+        logging.error("No clusters generated.")
+

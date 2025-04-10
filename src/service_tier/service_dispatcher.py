@@ -1,8 +1,7 @@
-import logic.user_topics
 import logic.pulse
 import logic.nlp
-import logic.note
 import email_delivery.ses
+import email_delivery.notify
 import json
 import traceback
 
@@ -36,11 +35,11 @@ def _handler(event, context):
 
     # Map actions to internal functions
     action_map = {
-        "e_user_topics": logic.user_topics.handler,
         "e_pulse": logic.pulse.handler,
         "e_nlp": logic.nlp.handler,
         "e_email": email_delivery.ses.handler,
-        "e_note": logic.note.handler
+        "e_email": email_delivery.ses.handler,
+        "e_notify": email_delivery.notify.handler,
     }
 
     # Route to the appropriate function

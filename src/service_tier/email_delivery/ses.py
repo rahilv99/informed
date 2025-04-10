@@ -1,84 +1,31 @@
 import boto3
-from botocore.exceptions import ClientError
 import os          
 from string import Template
-import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
-import psycopg2 
-import json
-from datetime import datetime
-from pydub import AudioSegment
 from email_delivery.email_output import EmailOutput
-import common.s3
 
-db_access_url = "postgresql://auxiompostgres:astrapodcast!@auxiom-db.cvoqq0ms6fsc.us-east-1.rds.amazonaws.com:5432/postgres"
 
-def update_db(user_id, episode_title, email_description, episode_number, episode_type, mp3_file_url):
-    try:
-        conn = psycopg2.connect(dsn=db_access_url)
-        cursor = conn.cursor()
-
-        articles_list = [{
-            'title': row['title'],
-            'description': row['description'],
-            'url': row['url']
-        } for _, row in email_description.iterrows()]
-
-        cursor.execute("""
-            INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, audio_file_url, date, completed)
-            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, (episode_title, user_id, json.dumps(articles_list), episode_number, episode_type, mp3_file_url, datetime.now(), False))
-        
-        podcast_id = cursor.fetchone()[0]
-
-        # Update user's podcast array with the new podcast id
-        cursor.execute("""
-            UPDATE users 
-            SET episode = episode + 1,
-                delivered = %s
-            WHERE id = %s
-        """, (datetime.now(), user_id))
-
-        conn.commit()
-        print(f"Successfully updated podcast and user tables for user {user_id}")
-
-    except psycopg2.Error as e:
-        print(f"Database error: {e}")
-        if conn:
-            conn.rollback()
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
-def generate_html(episode_title, email_description, episode):
+def generate_html(episode_title, topics, episode, name):
     # Load the HTML template
     def _load_template(file_path):
         with open(file_path, 'r') as file:
             return Template(file.read())
 
     # Generate articles list as HTML
-    def _generate_articles_html(articles):
+    def _generate_articles_html(topics):
         articles_html = ''
-        for _, article in articles.iterrows():
+        for topic in topics:
             articles_template = _load_template('email_delivery/article.html')
-            articles_html += articles_template.substitute(title=article['title'], description=article['description'], url=article['url'])
+            articles_html += articles_template.substitute(title=topic['title'], description=topic['description'], url=topic['gov'][0][1])
         return articles_html
 
     template = _load_template('email_delivery/index.html')
-    articles_html = _generate_articles_html(email_description)
-    return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html)
-
-
+    articles_html = _generate_articles_html(topics)
+    return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html, user=name)
 
 
 def send_email(RECIPIENT, SUBJECT, BODY_HTML):
-    FILE_PATH = '/tmp/podcast.mp3'
 
     # Create a multipart/mixed parent container
     msg = MIMEMultipart('mixed')
@@ -91,17 +38,6 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
     html_part = MIMEText(BODY_HTML, 'html', 'utf-8')
     msg_body.attach(html_part)
     msg.attach(msg_body)
-
-    # Add the attachment to the email
-    with open(FILE_PATH, 'rb') as attachment:
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(attachment.read())
-        encoders.encode_base64(part)
-        part.add_header(
-            'Content-Disposition',
-            f'attachment; filename="{SUBJECT}.mp3"'
-        )
-        msg.attach(part)
 
     # Send the email
     client = boto3.client('ses',
@@ -131,26 +67,34 @@ def send_email(RECIPIENT, SUBJECT, BODY_HTML):
 def handler(payload):
     user_id = payload.get("user_id")
     user_email = payload.get("user_email")
+    name = payload.get("user_name")
     episode = payload.get("episode")
-    ep_type = payload.get("ep_type")
 
     headers = EmailOutput(user_id, episode)
-    email_description = headers.email_description
+    topics = headers.topics
     episode_title = headers.episode_title
 
-    common.s3.restore(user_id, episode,"PODCAST", "/tmp/podcast.mp3")
+    if len(name.split()) > 1:
+        name = name.split()[0]
 
-    mp3_file_path = "/tmp/podcast.mp3"
-    audio = AudioSegment.from_mp3(mp3_file_path)
 
-    html = generate_html(episode_title, email_description, episode)
+    html = generate_html(episode_title, topics, episode, name)
 
     send_email(user_email, episode_title, html)
 
-    s3_url = common.s3.get_s3_url(user_id, episode, "PODCAST")
-    print(f"S3 URL: {s3_url}")
-    # Update podcast and user tables 
-    update_db(user_id, episode_title, email_description, episode, ep_type, s3_url)
 
 if __name__ == "__main__":
-    handler(None)
+    user_id = '27'
+    user_email = 'rahilv99@gmail.com'
+    name = 'Rahil Verma'
+    episode = '10'
+
+    episode_title = 'The Future of AI in Healthcare'
+    topics = [{'title': 'AI in Healthcare', 'description': 'Exploring the impact of AI on healthcare.', 'gov': [['https://www.healthcareitnews.com/news/ai-healthcare-2023', 'Read more']]}]
+    
+    if len(name.split()) > 1:
+        name = name.split()[0]
+
+    html = generate_html(episode_title, topics, episode, name)
+
+    send_email(user_email, episode_title, html)
