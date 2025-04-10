@@ -23,7 +23,7 @@ export default function LearningProgress({
     audioFileUrl: string
     duration: string
     listened: boolean
-    articles: { title: string; description: string; url: string }[]
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[]
     script: string[] // Include the script column here
   }>,
   id: number
@@ -45,7 +45,7 @@ export default function LearningProgress({
     duration: string
     audioFileUrl: string
     listened: boolean
-    articles: { title: string; description: string; url: string }[]
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[]
     script: string[] // Include the script column here
   } | null>(null)
   const [listenedPodcasts, setListenedPodcasts] = useState<Record<number, boolean>>(() => {
@@ -87,7 +87,7 @@ export default function LearningProgress({
     duration: string;
     audioFileUrl: string;
     listened: boolean;
-    articles: { title: string; description: string; url: string }[];
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[];
     script: string[];
   }) => {
     console.log("Starting podcast playback:", podcast.title);

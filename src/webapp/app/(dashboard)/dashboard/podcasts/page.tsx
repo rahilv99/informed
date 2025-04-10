@@ -34,7 +34,7 @@ export default async function Page() {
     duration: "0:00",
     audioFileUrl: podcast.audioFileUrl ?? "",
     listened: podcast.completed,
-    articles: podcast.articles as { title: string; description: string; url: string }[],
+    clusters: podcast.articles as { title: string; description: string; gov: string[]; news: string[] }[],
     script: podcast.script as string[],
   }));
 
