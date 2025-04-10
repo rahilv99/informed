@@ -40,7 +40,7 @@ export default async function Page() {
 
   return (
     <div>
-      <LearningProgress podcasts={formattedPodcasts} />
+      <LearningProgress podcasts={formattedPodcasts} id={user.id} />
     </div>
   );
 }
