@@ -21,17 +21,8 @@ export class ServiceTierLambdaStack extends cdk.Stack {
       logGroupName: "ServiceTierLogGroup"
     })
 
-    // Update if changing requirements.txt
-    const imageTag = '7542ecd2965e6f1be4b7bfbaca263c73d2886c5aa238cb122097c289a993d4b1'
-    const repo_name = 'cdk-hnb659fds-container-assets-905418457861-us-east-1'
-
-    const ecrRepo = ecr.Repository.fromRepositoryName(this, 'FunctionEcrRepo', repo_name);
-
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
-      //code: lambda.DockerImageCode.fromEcr(ecrRepo, {
-      //  tagOrDigest: imageTag,
-      //}),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2*1024,
       environment: {
@@ -39,7 +30,6 @@ export class ServiceTierLambdaStack extends cdk.Stack {
         ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl,
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
-        CARTESIA_API_KEY: process.env.CARTESIA_API_KEY!,
         PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY!,
         GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
         DB_ACCESS_URL: process.env.DB_ACCESS_URL!

@@ -13,8 +13,8 @@ import common.sqs
 import common.s3
 
 #from article_scraper import ArticleScraper
-from legal_scraper import Gov
-from google_scraper import GoogleNewsScraper
+from logic.legal_scraper import Gov
+from logic.google_scraper import GoogleNewsScraper
 
 
 class ArticleClusterer:

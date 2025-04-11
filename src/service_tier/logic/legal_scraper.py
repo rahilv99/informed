@@ -3,7 +3,7 @@ import os
 import requests
 import logging
 
-from article_resource import ArticleResource
+from logic.article_resource import ArticleResource
 
 logging.basicConfig(
         level=logging.INFO,

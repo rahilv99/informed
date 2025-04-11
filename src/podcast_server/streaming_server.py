@@ -31,20 +31,10 @@ app.add_middleware(
 )
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
-
-# Configure API keys
-GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 # Temporary directory for audio files
 TEMP_BASE = "/tmp"
-
-if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
-
-# Initialize models
-summary_model = genai.GenerativeModel('gemini-1.5-flash')
-script_model = genai.GenerativeModel('gemini-2.0-flash')
 
 # Connection manager for WebSockets
 class ConnectionManager:
@@ -144,7 +134,7 @@ async def stream_podcast(websocket: WebSocket):
                 audio_bytes = bytearray()
                 
                 # Use regular for loop with iter_bytes()
-                for chunk in response.iter_bytes(chunk_size=8108):
+                for chunk in response.iter_bytes(chunk_size=16384):
                     audio_bytes.extend(chunk)
                     
                     # Only send to client if connection is still active
@@ -192,7 +182,7 @@ async def stream_podcast(websocket: WebSocket):
             print(f"Saved podcast to {temp_mp3_path}")
             
 
-            s3.save(user_id, episode, 'pulse', temp_mp3_path)
+            s3.save(user_id, episode, 'PODCAST', temp_mp3_path)
 
             s3_url = s3.get_s3_url(user_id, episode, "PODCAST")
             # Update the database with the MP3 file URL
@@ -248,7 +238,7 @@ async def stream_podcast(websocket: WebSocket):
             print(f"Saved podcast to {temp_mp3_path}")
             
 
-            s3.save(user_id, episode, 'pulse', temp_mp3_path)
+            s3.save(user_id, episode, 'PODCAST', temp_mp3_path)
 
             s3_url = s3.get_s3_url(user_id, episode, "PODCAST")
             # Update the database with the MP3 file URL
@@ -266,3 +256,4 @@ async def stream_podcast(websocket: WebSocket):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+    # uvicorn streaming_server:app

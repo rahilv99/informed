@@ -2,7 +2,6 @@ PyPDF2
 sentence-transformers
 spacy
 bs4
-cartesia
 openai
 pydub
 google-generativeai
@@ -10,7 +9,6 @@ boto3
 pandas
 psycopg2-binary
 gnews
-feedparser
 #selenium
 #webdriver_manager
 fuzzywuzzy

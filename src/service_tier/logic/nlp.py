@@ -9,7 +9,7 @@ import os
 from openai import OpenAI
 import psycopg2 
 import json
-import datetime
+from datetime import datetime
 
 from logic.pulse_output import PulseOutput
 import common.sqs
@@ -33,12 +33,12 @@ small_model = genai.GenerativeModel('gemini-1.5-flash-8b') # 15 RPM, $0.030 /mil
 
 def summarize(title, text, use = 'summary'):
     if use == 'topic':
-        prompt = f"Create a informative topic label based on the title of the documents discussed. Only include the generated topic itself; avoid any introductions, explanations, or meta-comments. \
-            Topics: {text}"
+        prompt = f"Create a informative topic title based on the title of the documents discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
+            Titles: {text}"
     if use == 'title':
         prompt = f"Create a informative and attention-grabbing title based on the topics discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
             Titles: {text}"
-    else: # email header case
+    if use == 'summary':
         prompt = f"Provide a succinct TLDR summary about the collection of articles with the topic '{title}'.\
             Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
             avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
@@ -47,7 +47,7 @@ def summarize(title, text, use = 'summary'):
     
     response = small_model.generate_content(prompt,
                                                 generation_config = genai.GenerationConfig(
-                                            max_output_tokens=100,
+                                            max_output_tokens=120,
                                             temperature=0.25))
     return response.text
 
@@ -444,6 +444,11 @@ def generate_email_headers(research_notes):
             'gov' : gov,
             'news': news
         })
+
+        print(f"Cluster {i+1} Title: {cluster_title}")
+        print(f"Cluster {i+1} Description: {cluster_description}\n")
+        print(f"Cluster {i+1} Gov: {gov}\n")
+        print(f"Cluster {i+1} News: {news}\n")
         titles.append(cluster_title)
 
     # Generate episode title from cluster titles
@@ -485,7 +490,7 @@ def clean_text_for_conversational_tts(input_text):
     return output_text
 
 
-def create_conversational_podcast(cluster_dfs, plan='free'):
+def create_conversational_podcast(cluster_dfs, plan='free', test = False):
     """
     Creates a conversational podcast from cluster dataframes.
     
@@ -503,8 +508,8 @@ def create_conversational_podcast(cluster_dfs, plan='free'):
     # Clean the script for TTS
     turns = clean_text_for_conversational_tts(script)
     
-    return turns, notes
-'''
+    if test:
+        return turns, notes
     # Create audio files for each turn
     if cartesia:
         client = Cartesia(api_key=os.environ.get('CARTESIA_API_KEY'))
@@ -538,7 +543,7 @@ def create_conversational_podcast(cluster_dfs, plan='free'):
         else:
             _create_line(client, host, sentence, index, 0)
     
-    return len(turns), notes
+    return turns, notes
 
 
 def _create_line(client, host, line, num, chunk):
@@ -621,7 +626,7 @@ def write_to_s3(num_turns, user_id, episode_number):
     common.s3.restore_from_system("INTRO", f"{TEMP_BASE}/intro_music.mp3")
     
     intro_music = AudioSegment.from_mp3(f"{TEMP_BASE}/intro_music.mp3")
-    final_audio = intro_music.append(final_audio, crossfade=1000)
+    final_audio = intro_music.append(final_audio, crossfade=2000)
     
     print("Intro music added.")
     final_audio.export(f"{TEMP_BASE}/podcast.mp3", format="mp3")
@@ -631,17 +636,24 @@ def write_to_s3(num_turns, user_id, episode_number):
     common.s3.save(user_id, episode_number, "PODCAST", f"{TEMP_BASE}/podcast.mp3")
     
     print("Audio file uploaded to S3.")
-'''
-def update_db(user_id, episode_title, topics, episode_number, episode_type, script):
-    try:
-        conn = psycopg2.connect(dsn=db_access_url)
-        cursor = conn.cursor()
 
+def update_db(user_id, episode_title, topics, episode_number, episode_type, s3_url, script):
+    try:
+        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+        cursor = conn.cursor()
+        print(episode_title)
+        print(user_id)
+        print(json.dumps(topics))
+        print(episode_number)
+        print(episode_type)
+        print(s3_url)
+        print(json.dumps(script))
+        print(datetime.now())
         cursor.execute("""
-            INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, script, date, completed)
-            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s, %s)
+            INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, audio_file_url, script, date, completed)
+            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s::jsonb, %s, %s)
             RETURNING id
-        """, (episode_title, user_id, json.dumps(topics), episode_number, episode_type, script, datetime.now(), False))
+        """, (episode_title, user_id, json.dumps(topics), episode_number, episode_type, s3_url, json.dumps(script), datetime.now(), False))
         
 
         # Update user's episode count and podcast status
@@ -669,7 +681,7 @@ def update_db(user_id, episode_title, topics, episode_number, episode_type, scri
 def handler(payload):
     """
     Main handler function for the podcast generation process.
-    
+
     Args:
         payload: Dictionary containing user information and preferences
     """
@@ -683,19 +695,22 @@ def handler(payload):
     pulse = PulseOutput(user_id, episode)
     all_data = pulse.all_data    
 
-    script, notes = create_conversational_podcast(all_data, plan = plan)
+    script, notes = create_conversational_podcast(all_data, plan = plan, test=True)
 
-    #write_to_s3(num_turns, user_id, episode)
+    num_turns = len(script)
+    write_to_s3(num_turns, user_id, episode)
 
     topics, episode_title = generate_email_headers(notes)
 
-    update_db(user_id, episode_title, topics, episode, ep_type, script)
+    s3_url = common.s3.get_s3_url(user_id, episode, "PODCAST")
 
     # Save the email description to S3
     common.s3.save_serialized(user_id, episode, "EMAIL", {
         "topics": topics,
         "episode_title": episode_title
     })
+
+    update_db(user_id, episode_title, topics, episode, ep_type, s3_url, script)
 
 
     # Send message to SQS
