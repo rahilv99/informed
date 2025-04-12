@@ -695,7 +695,7 @@ def handler(payload):
     pulse = PulseOutput(user_id, episode)
     all_data = pulse.all_data    
 
-    script, notes = create_conversational_podcast(all_data, plan = plan, test=True)
+    script, notes = create_conversational_podcast(all_data, plan = plan)
 
     num_turns = len(script)
     write_to_s3(num_turns, user_id, episode)
