@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 
 
 export default function LearningProgress({
-  podcasts, id
+  podcasts, id, active
 }: {
   podcasts: Array<{
     id: number
@@ -30,7 +30,8 @@ export default function LearningProgress({
     clusters: { title: string; description: string; gov: string[]; news: string[] }[]
     script: string[] // Include the script column here
   }>,
-  id: number
+  id: number,
+  active: boolean
 }) {
   const [expandedPodcast, setExpandedPodcast] = useState<number | null>(null)
   const [playerOpen, setPlayerOpen] = useState(false)
@@ -81,6 +82,26 @@ export default function LearningProgress({
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
+
+  if (!active) {
+    toast({
+      title: "Account Inactive",
+      description: (
+      <>
+        Please visit{" "}
+        <a
+        href="https://auxiomai.com/keywords"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:underline"
+        >
+        auxiomai.com/keywords
+        </a>{" "}
+        to complete your account.
+      </>
+      ),
+    });
   }
 
   const handlePlayPodcast = async (podcast: {

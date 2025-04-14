@@ -2,6 +2,8 @@ import { getKeywords, getAccountStatus } from "@/lib/actions";
 import { getUser, fetchUserPodcasts } from "@/lib/db/queries";
 import { redirect } from "next/navigation";
 import LearningProgress from "./history";
+import { toast } from "@/hooks/use-toast"; // Import the toast function
+
 
 export default async function Page() {
   const currentKeywords: string[] = await getKeywords();
@@ -20,10 +22,6 @@ export default async function Page() {
     redirect("/identity");
   }
 
-  if (!isActive) {
-    redirect("/keywords");
-  }
-
   const userPodcasts = await fetchUserPodcasts(user.id);
 
   const formattedPodcasts = userPodcasts.map((podcast) => ({
@@ -40,7 +38,7 @@ export default async function Page() {
 
   return (
     <div>
-      <LearningProgress podcasts={formattedPodcasts} id={user.id} />
+      <LearningProgress podcasts={formattedPodcasts} id={user.id} active={isActive} />
     </div>
   );
 }

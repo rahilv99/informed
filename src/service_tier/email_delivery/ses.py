@@ -4,8 +4,7 @@ from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-# 3
-#from email_delivery.email_output import EmailOutput
+from email_delivery.email_output import EmailOutput
 
 
 def generate_html(episode_title, topics, episode, name):
@@ -18,11 +17,11 @@ def generate_html(episode_title, topics, episode, name):
     def _generate_articles_html(topics):
         articles_html = ''
         for topic in topics:
-            articles_template = _load_template('article.html')
+            articles_template = _load_template('email_delivery/article.html')
             articles_html += articles_template.substitute(title=topic['title'], description=topic['description'], url=topic['gov'][0][1])
         return articles_html
 
-    template = _load_template('index.html')
+    template = _load_template('email_delivery/index.html')
     articles_html = _generate_articles_html(topics)
     return template.substitute(episode_title=episode_title, episode_number=episode, articles=articles_html, user=name)
 
