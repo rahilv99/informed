@@ -807,7 +807,7 @@ export default function LearningProgress({
                 <span className="text-sm text-gray-300">Speed</span>
               </div>
               <div className="flex gap-2">
-                {[0.5, 1, 1.5, 2].map((speed) => (
+                {[0.5, 1, 1.2, 1.5].map((speed) => (
                   <Button
                     key={speed}
                     variant={playbackSpeed === speed ? "default" : "outline"}

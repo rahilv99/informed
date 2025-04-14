@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select" // Assuming you have a Select component
 
 export default function PopupWidget() {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -14,6 +15,7 @@ export default function PopupWidget() {
   const [duration, setDuration] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [audioProgress, setAudioProgress] = useState(0)
+  const [playbackSpeed, setPlaybackSpeed] = useState(1) // Default playback speed is 1x
   const audioUrl = "https://905418457861-astra-bucket.s3.us-east-1.amazonaws.com/user/27/13/podcast.mp3"
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -71,6 +73,13 @@ export default function PopupWidget() {
     audioRef.current.muted = isMuted
   }, [isMuted])
 
+  // Handle playback speed changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackSpeed
+    }
+  }, [playbackSpeed])
+
   // Format time for audio player
   const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return "0:00"
@@ -115,10 +124,10 @@ export default function PopupWidget() {
       {!isExpanded && (
         <Button
           onClick={toggleExpanded}
-          className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
+          className="fixed bottom-4 right-4 h-16 w-16 rounded-full shadow-lg"
           size="icon"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-8 w-8" />
         </Button>
       )}
 
@@ -129,7 +138,7 @@ export default function PopupWidget() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleExpanded}
+              onClick={setIsExpanded.bind(null, false)}
               className="h-8 w-8 mr-2 text-primary-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -186,7 +195,7 @@ export default function PopupWidget() {
                   variant="ghost"
                   size="icon"
                   onClick={handlePlayPause}
-                  className="h-8 w-8 text-gray-200 hover:text-gray-100"
+                  className="h-8 w-8 text-gray-200 hover:text-gray-500"
                 >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
@@ -197,7 +206,7 @@ export default function PopupWidget() {
                   variant="ghost"
                   size="icon"
                   onClick={handleVolumeToggle}
-                  className="h-8 w-8 ml-auto text-gray-200 hover:text-gray-100"
+                  className="h-8 w-8 ml-auto text-gray-200 hover:text-gray-500"
                 >
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </Button>
@@ -211,6 +220,25 @@ export default function PopupWidget() {
                 onValueChange={handleProgressChange}
                 className="w-full bg-gray-700"
               />
+
+              {/* Playback Speed Selector */}
+              <div className="mt-4 flex items-center gap-2">
+                <span className="text-xs text-gray-400">Speed:</span>
+                <Select
+                  value={playbackSpeed.toString()}
+                  onValueChange={(value) => setPlaybackSpeed(parseFloat(value))}
+                >
+                  <SelectTrigger className="w-20 text-xs bg-gray-700 text-gray-300">
+                    {playbackSpeed}x
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0.5">0.5x</SelectItem>
+                    <SelectItem value="1">1x</SelectItem>
+                    <SelectItem value="1.2">1.2x</SelectItem>
+                    <SelectItem value="1.5">1.5x</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="text-xs text-center mt-2 text-gray-400">Weekly Briefing</div>
             </div>
