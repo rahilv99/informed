@@ -7,10 +7,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
-import { PlayCircle, PauseCircle, BookOpen, SkipBack, SkipForward, CheckCircle, Gauge, Radio } from "lucide-react"
+import { PauseCircle, SkipForward, CheckCircle, Radio, BookOpen, ChevronRight, ExternalLink, FileText, Newspaper, PlayCircle, Gauge, SkipBack} from "lucide-react"
 import Image from "next/image"
 import { setListened } from "@/lib/actions"
 import { toast } from "@/hooks/use-toast"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
+
+
 
 export default function LearningProgress({
   podcasts, id
@@ -535,10 +539,12 @@ export default function LearningProgress({
   return (
     <div className="min-h-screen py-6 sm:py-12 px-2 sm:px-4">
       <div className="container mx-auto max-w-4xl">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Learning Progress</h1>
-        <p className="text-gray-600 mb-6">
-          Track your podcast history and explore related articles to deepen your knowledge.
-        </p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Learning Progress</h1>
+          <p className="text-gray-600">
+            Track your podcast history and explore related articles to deepen your knowledge.
+          </p>
+        </div>
         <Separator className="my-6" />
 
         <div className="space-y-6">
@@ -546,7 +552,7 @@ export default function LearningProgress({
             sortedPodcasts.map((podcast, index) => (
               <Card
                 key={podcast.id}
-                className="backdrop-blur-lg bg-black bg-opacity-10 border-none overflow-hidden shadow-md"
+                className="backdrop-blur-lg bg-black bg-opacity-10 border border-gray-100 overflow-hidden shadow-md hover:shadow-lg transition-shadow"
               >
                 <CardContent className="p-0">
                   <div
@@ -556,10 +562,10 @@ export default function LearningProgress({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
                       <div className="flex flex-col items-start">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-gray-500 bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded-full inline-block whitespace-nowrap">
+                          <Badge variant="outline" className="bg-gray-100 text-gray-700">
                             Episode {podcast.episodeNumber}
-                          </span>
-                          <h2 className={`text-xl font-normal text-gray-800 break-words`}>
+                          </Badge>
+                          <h2 className="text-xl font-medium text-gray-800 break-words">
                             {podcast.title}
                             {listenedPodcasts[podcast.id] && (
                               <span className="inline-flex items-center ml-2 text-green-600">
@@ -583,7 +589,7 @@ export default function LearningProgress({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="rounded-full hover:bg-gray-200 hover:bg-opacity-50"
+                          className="rounded-full hover:bg-gray-200"
                           onClick={(e) => {
                             e.stopPropagation()
                             handlePlayPodcast(podcast)
@@ -591,6 +597,9 @@ export default function LearningProgress({
                         >
                           <PlayCircle className="h-6 w-6 text-gray-800" />
                         </Button>
+                        <ChevronRight
+                          className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedPodcast === podcast.id ? "rotate-90" : ""}`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -606,53 +615,75 @@ export default function LearningProgress({
                         <div className="px-6 py-4 border-t border-gray-100">
                           <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
                             <BookOpen className="h-5 w-5 mr-2" />
-                            Related Articles
+                            Related Materials
                           </h3>
-                          <div className="space-y-6">
+                          <div className="space-y-8">
                             {podcast.clusters.map((cluster, clusterIndex) => (
-                              <div key={clusterIndex} className="space-y-3">
-                                <h4 className="text-md font-medium text-gray-800">{cluster.title}</h4>
-                                <p className="text-gray-600 text-sm">{cluster.description}</p>
-                                
+                              <div key={clusterIndex} className="space-y-4">
+                                <div className="border-l-4 border-gray-300 pl-4">
+                                  <h4 className="text-md font-semibold text-gray-800">{cluster.title}</h4>
+                                  <p className="text-gray-600 text-sm mt-1">{cluster.description}</p>
+                                </div>
+
                                 {/* Government Documents */}
                                 {cluster.gov && cluster.gov.length > 0 && (
-                                  <div className="mt-3">
-                                    <h5 className="text-sm font-medium text-gray-700 mb-2">Government Documents</h5>
-                                    <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+                                  <div className="mt-4">
+                                    <h5 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                      <FileText className="h-4 w-4 mr-2 text-gray-600" />
+                                      Government Documents
+                                    </h5>
+                                    <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                                       {cluster.gov.map((govDoc, govIndex) => (
-                                        <div key={govIndex} className="flex flex-col items-start gap-1">
-                                          <a
-                                            href={govDoc[1]} // URL is the second element in the tuple
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-gray-800 hover:underline font-medium"
-                                          >
-                                            {govDoc[0]} {/* Title is the first element in the tuple */}
-                                          </a>
-                                        </div>
+                                        <a
+                                          key={govIndex}
+                                          href={govDoc[1]}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-start p-3 rounded-md bg-gray-800 border border-gray-200 hover:bg-gray-600 transition-colors group"
+                                        >
+                                          <div className="flex-1">
+                                            <h6 className="font-medium text-white group-hover:text-gray-100">
+                                              {govDoc[0]}
+                                            </h6>
+                                          </div>
+                                          <ExternalLink className="h-4 w-4 text-white group-hover:text-gray-100 mt-1 ml-2 flex-shrink-0" />
+                                        </a>
                                       ))}
                                     </div>
                                   </div>
                                 )}
-                                
+
                                 {/* News Articles */}
                                 {cluster.news && cluster.news.length > 0 && (
-                                  <div className="mt-3">
-                                    <h5 className="text-sm font-medium text-gray-700 mb-2">News Articles</h5>
-                                    <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
-                                      {cluster.news.map((newsArticle, newsIndex) => (
-                                        <div key={newsIndex} className="flex flex-col items-start gap-1">
-                                          <a
-                                            href={newsArticle[2]} // URL is the third element in the tuple
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-gray-800 hover:underline font-medium"
-                                          >
-                                            {newsArticle[0]} {/* Title is the first element in the tuple */}
-                                          </a>
-                                          <span className="text-gray-500 text-xs">{newsArticle[1]}</span> {/* Publisher is the second element in the tuple */}
+                                  <div className="mt-4">
+                                    <h5 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                      <Newspaper className="h-4 w-4 mr-2 text-gray-600" />
+                                      News Articles
+                                    </h5>
+                                    <div className="relative">
+                                      <ScrollArea className="w-full whitespace-nowrap rounded-md border bg-black bg-opacity-10">
+                                        <div className="flex p-4 gap-4">
+                                          {cluster.news.map((newsArticle, newsIndex) => (
+                                            <a
+                                              key={newsIndex}
+                                              href={newsArticle[2]}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="flex flex-col w-[280px] shrink-0 rounded-md border border-gray-200 bg-gray-800 p-3 hover:bg-gray-600 transition-colors"
+                                            >
+                                              <h6 className="font-medium text-white line-clamp-2 h-12">
+                                                {newsArticle[0]}
+                                              </h6>
+                                              <span className="text-gray-200 text-xs mt-2">{newsArticle[1]}</span>
+                                              <div className="flex items-center mt-2 text-xs text-gray-400">
+                                                <ExternalLink className="h-3 w-3 mr-1" />
+                                                Read article
+                                              </div>
+                                            </a>
+                                          ))}
                                         </div>
-                                      ))}
+                                        <ScrollBar orientation="horizontal" />
+                                      </ScrollArea>
                                     </div>
                                   </div>
                                 )}
@@ -667,11 +698,11 @@ export default function LearningProgress({
               </Card>
             ))
           ) : (
-            <Card className="backdrop-blur-lg bg-black bg-opacity-10 border-none overflow-hidden shadow-md">
+            <Card className="backdrop-blur-lg bg-white border border-gray-100 overflow-hidden shadow-md">
               <CardContent className="p-6 text-center">
                 <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                  <div className="rounded-full bg-gray-200 p-4">
-                    <PlayCircle className="h-10 w-10 text-gray-500" />
+                  <div className="rounded-full bg-gray-100 p-4">
+                    <PlayCircle className="h-10 w-10 text-gray-400" />
                   </div>
                   <h3 className="text-xl font-medium text-gray-800">No podcasts yet</h3>
                   <p className="text-gray-600 max-w-md">
