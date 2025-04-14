@@ -301,7 +301,7 @@ function calculateSimilarity(str1: string, str2: string): number {
 // Keyword component from keywords.tsx with original styling
 function Keyword({ keyword, onRemove }: { keyword: string; onRemove: (keyword: string) => void }) {
   return (
-    <div className="bg-black text-gray-300 px-3 py-1 rounded-full flex items-center">
+    <div className="bg-gray-800 text-white px-3 py-1 rounded-full flex items-center">
       <span className="mr-1">{keyword}</span>
       <button
         onClick={(e) => {
@@ -342,7 +342,7 @@ function AddKeyword({
         onChange={onChange}
         onKeyDown={onKeyDown}
         onKeyPress={(e) => e.key === "Enter" && onAdd(value)}
-        className="bg-black text-gray-300 px-3 py-1 rounded-full pr-8 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="bg-gray-800 text-gray-300 px-3 py-1 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-300"
       />
       <button
         onClick={() => onAdd(value)}
@@ -445,11 +445,6 @@ export function Interests({ onComplete }: InterestsProps) {
     if (e.key === "Enter" && inputValue.trim()) {
       e.preventDefault()
       addInterest(inputValue)
-    } else if (e.key === "Backspace" && inputValue === "" && keywords.length > 0) {
-      // Remove the last tag when backspace is pressed and input is empty
-      const newInterests = [...keywords]
-      newInterests.pop()
-      setKeywords(newInterests)
     }
   }
 
@@ -504,15 +499,13 @@ export function Interests({ onComplete }: InterestsProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
         {/* Container with keywords.tsx styling */}
-        <div className="w-full max-w-7xl rounded-lg shadow-md p-6 bg-black bg-opacity-10 rounded-xl backdrop-filter backdrop-blur-lg ml-0 h-64">
+        <div className="w-full max-w-7xl rounded-lg shadow-md p-6 bg-black bg-opacity-10 rounded-xl backdrop-filter backdrop-blur-lg ml-0 min-h pb-20">
           <h1 className="text-2xl font-semibold text-black mb-4">I want my podcasts to be about...</h1>
           <div className="flex flex-wrap gap-2 mb-4">
             {keywords.map((interest) => (
               <Keyword key={interest} keyword={interest} onRemove={removeInterest} />
             ))}
-          </div>
 
-          <div className="flex items-center">
             <AddKeyword
               value={inputValue}
               onChange={handleTextareaChange}
