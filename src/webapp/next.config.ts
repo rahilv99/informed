@@ -6,9 +6,6 @@ import type { Configuration as WebpackConfig } from "webpack"
 import CopyPlugin from "copy-webpack-plugin"
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: true,
-  },
   reactStrictMode: true,
   webpack: (config: WebpackConfig, { isServer }) => {
     // Only run this on the client
