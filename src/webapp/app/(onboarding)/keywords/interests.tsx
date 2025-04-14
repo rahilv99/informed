@@ -263,7 +263,12 @@ const SUGGESTED_INTERESTS = [
   "Election Methods",
   "Democratic Reform",
   "Constitutional Law",
-  "Impeachment"
+  "Impeachment",
+  "Tariffs",
+  "Trade",
+  "Domestic Labor",
+  "Foreign Labor",
+  "Labor Rights",
 ]
 
 // Function to calculate similarity between two strings

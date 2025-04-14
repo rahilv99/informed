@@ -1,20 +1,6 @@
 # Test lamda invovations locally
 import service_dispatcher
 
-user_topics_json = {
-    "action": "e_user_topics",
-    "payload": {
-        "user_id": "5678",
-        "user_input": [
-            "Generative AI",
-            "Data Engineering",
-            "Large Language Models",
-            "Adversarial Neural Networks",
-            "Agentic Frameworks"
-        ]
-    }
-}
-
 pulse_json = {
     "action": "e_pulse",
     "payload": {

@@ -641,14 +641,6 @@ def update_db(user_id, episode_title, topics, episode_number, episode_type, s3_u
     try:
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         cursor = conn.cursor()
-        print(episode_title)
-        print(user_id)
-        print(json.dumps(topics))
-        print(episode_number)
-        print(episode_type)
-        print(s3_url)
-        print(json.dumps(script))
-        print(datetime.now())
         cursor.execute("""
             INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, audio_file_url, script, date, completed)
             VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s::jsonb, %s, %s)

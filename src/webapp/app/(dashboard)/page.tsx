@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Title from '../../components/title';
 import Features from '../../components/features';
+import PopupWidget from "@/components/popup-demo";
 
 export default async function HomePage() {
   const user = await useUser();
@@ -41,6 +42,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      <PopupWidget />
     </main>
   );
 }
