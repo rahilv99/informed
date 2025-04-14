@@ -15,6 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { GoogleAnalytics } from '@next/third-parties/google'
+
 
 function NavDropdown({ user }: { user: any }) {
   return (
@@ -108,6 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </main>
     
       <Footer />
+      <GoogleAnalytics gaId="G-T7DM65L5CK" />
     </div>
   );
 }
