@@ -1,13 +1,17 @@
+'use client';
 import { Button } from '@/components/ui/button';
-import { ArrowRight , Database, Podcast, Fingerprint } from 'lucide-react';
+import { useUser } from '@/lib/auth';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Title from '../../components/title';
 import Features from '../../components/features';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await useUser();
+
   return (
     <main>
-      <Title />
+      <Title user/>
 
       <Features />
 

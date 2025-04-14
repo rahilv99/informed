@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function Title() {
+export default function Title(user: any) {
   return (
     <section className="py-20 text-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,11 +15,13 @@ export default function Title() {
                 A wealth of information creates a poverty of attention. Let Auxiom be your attention.
               </p>
               <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-center lg:mx-auto">
-                <Link href="/sign-up">
+                {!user && (
+                  <Link href="/sign-up">
                   <Button className="bg-gray-800 hover:bg-gray-600 text-white transition duration-300 font-semibold rounded-full text-lg px-8 py-8 inline-flex items-center justify-center">
-                    Sign Up
+                    Get Started
                   </Button>
-                </Link>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

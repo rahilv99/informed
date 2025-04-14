@@ -33,7 +33,7 @@ export default function LearningProgress({
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(true)
   const [maxListenedTime, setMaxListenedTime] = useState(0)
   const [bufferedBytes, setBufferedBytes] = useState(0)
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false)
@@ -356,6 +356,7 @@ export default function LearningProgress({
             // You might want to show a message to the user to interact with the player
           }
         });
+        setIsPlaying(true);
       }
     };
 
@@ -713,7 +714,7 @@ export default function LearningProgress({
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-gray-300">
-                <span>0:00</span>
+                <span>{formatTime(currentTime)}</span>
                 {playbackMode === 'stream' ? (
                   <span>{formatTime(maxListenedTime)}</span>
                 ) : (

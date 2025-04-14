@@ -20,7 +20,7 @@ export default function Features() {
                   Primary Data Sources
                 </h2>
                 <p className="mt-2 text-base text-gray-700">
-                  Auxiom analyzes legislative documents, financial data, and research papers to find things that are actually happening.
+                  Auxiom analyzes legislative documents, financial data, and research papers to find the root of the action.
                 </p>
               </div>
             </div>
@@ -49,8 +49,8 @@ export default function Features() {
                   Podcast Generation
                 </h2>
                 <p className="mt-2 text-base text-gray-700">
-                  Auxiom extracts only the most important information, generating engaging podcast 
-                  episodes with our personable hosts.
+                  Auxiom composes hundreds of pages of documents into a 5 minute weekly podcast
+                  episode with our personable hosts.
                 </p>
               </div>
             </div>

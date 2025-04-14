@@ -9,7 +9,6 @@ import { Footer } from '@/components/ui/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import Image from 'next/image';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import RotatingTopics from "@/components/rotating-topics";
 import {
   DropdownMenu,
   DropdownMenuContent,
