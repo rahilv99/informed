@@ -9,6 +9,7 @@ import { Footer } from '@/components/ui/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import Image from 'next/image';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import RotatingTopics from "@/components/rotating-topics";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +44,6 @@ function NavDropdown({ user }: { user: any }) {
             Sign Up
           </Link>
           )}
-          
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -101,10 +101,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex flex-col min-h-screen bg-amber-100/30">
       <Header />
+   
       <main className="flex-grow">
         {children}
+       
         <Toaster />
       </main>
+    
       <Footer />
     </div>
   );
