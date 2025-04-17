@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function Title(user: any) {
+export default function Title({ user }: { user: any }) {
   return (
     <section className="py-20 text-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

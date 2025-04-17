@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Play, Pause, Volume2, VolumeX, MessageCircle, ChevronLeft } from "lucide-react"
+import { X, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
-import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select" // Assuming you have a Select component
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select"
 
 export default function PopupWidget() {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -15,7 +15,7 @@ export default function PopupWidget() {
   const [duration, setDuration] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [audioProgress, setAudioProgress] = useState(0)
-  const [playbackSpeed, setPlaybackSpeed] = useState(1) // Default playback speed is 1x
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const audioUrl = "https://905418457861-astra-bucket.s3.us-east-1.amazonaws.com/user/27/13/podcast.mp3"
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -119,37 +119,34 @@ export default function PopupWidget() {
   }
 
   return (
-    <>
-      {/* Corner Icon */}
-      {!isExpanded && (
-        <Button
-          onClick={toggleExpanded}
-          className="fixed bottom-4 right-4 h-16 w-16 rounded-full shadow-lg"
-          size="icon"
-        >
-          <MessageCircle className="h-8 w-8" />
-        </Button>
+    <div
+      className={cn(
+        "fixed right-0 flex flex-col items-end z-50 transition-all duration-300 ease-in-out overflow-hidden",
+        isExpanded ? "bottom-0" : "bottom-[-550px]", // Ensure it's completely hidden
       )}
-
-      {/* Expanded Widget */}
-      {isExpanded && (
-    <Card className="fixed bottom-4 right-4 w-80 shadow-lg rounded-lg overflow-hidden z-50 border border-gray-700 bg-black/50 text-gray-200">
-      <div className="bg-gray-800 text-gray-100 p-3 flex justify-between items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={setIsExpanded.bind(null, false)}
-              className="h-8 w-8 mr-2 text-primary-foreground"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h3 className="font-medium flex-1">Your AI Journalist</h3>
-            <Button variant="ghost" size="icon" onClick={toggleExpanded} className="h-8 w-8 text-primary-foreground">
-          <X className="h-4 w-4" />
-        </Button>
+    >
+      {/* Stylized Tab */}
+      <div
+        onClick={toggleExpanded}
+        className={cn(
+          "flex items-center justify-center px-6 py-3 cursor-pointer",
+          "bg-gray-800 ",
+          "rounded-t-xl shadow-lg border border-primary/20 border-b-0",
+          "transition-all duration-300",
+          "w-36 text-center relative z-10",
+          isExpanded ? "mb-0" : "mb-0 hover:mb-1",
+        )}
+      >
+        <div className="flex items-center justify-center gap-2 font-medium text-primary-foreground">
+          {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+          <span>Demo</span>
+        </div>
       </div>
 
-      <div className="p-4 bg-gray-900">
+      {/* Widget Content */}
+      <Card className="w-80 shadow-lg rounded-tl-lg overflow-hidden border border-gray-700 bg-black/50 text-gray-200 rounded-tr-none">
+
+        <div className="p-4 bg-gray-900">
           <div className="animate-fadeIn">
             <div className="flex items-start gap-2 mb-4">
               <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
@@ -161,32 +158,32 @@ export default function PopupWidget() {
             </div>
           </div>
 
-            <div className="flex items-start gap-2 mb-4">
-              <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
-                <span className="text-xs text-gray-300">AI</span>
-              </div>
-              <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
-                What current events are you interested in tracking?
-              </div>
+          <div className="flex items-start gap-2 mb-4">
+            <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+              <span className="text-xs text-gray-300">AI</span>
             </div>
+            <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
+              What current events are you interested in tracking?
+            </div>
+          </div>
 
-            <div className="flex items-start gap-2 mb-4">
-              <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
-                I'm interested in the Ukraine war, foreign affairs, and immigration, and tariffs.
-              </div>
-              <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
-                <span className="text-xs text-gray-300">User</span>
-              </div>
+          <div className="flex items-start gap-2 mb-4">
+            <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
+              I'm interested in the Ukraine war, foreign affairs, and immigration, and tariffs.
             </div>
+            <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+              <span className="text-xs text-gray-300">User</span>
+            </div>
+          </div>
 
-            <div className="flex items-start gap-2 mb-4">
-              <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
-                <span className="text-xs text-gray-300">AI</span>
-              </div>
-              <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
-                Great! Here's the big news from the last week. Sign up for your own personalized journalist!
-              </div>
+          <div className="flex items-start gap-2 mb-4">
+            <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+              <span className="text-xs text-gray-300">AI</span>
             </div>
+            <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
+              Great! Here's the big news from the last week. Sign up for your own personalized journalist!
+            </div>
+          </div>
 
           <div className="animate-fadeIn">
             <div className="bg-gray-800/60 p-3 rounded-lg">
@@ -226,11 +223,9 @@ export default function PopupWidget() {
                 <span className="text-xs text-gray-400">Speed:</span>
                 <Select
                   value={playbackSpeed.toString()}
-                  onValueChange={(value) => setPlaybackSpeed(parseFloat(value))}
+                  onValueChange={(value) => setPlaybackSpeed(Number.parseFloat(value))}
                 >
-                  <SelectTrigger className="w-20 text-xs bg-gray-700 text-gray-300">
-                    {playbackSpeed}x
-                  </SelectTrigger>
+                  <SelectTrigger className="w-20 text-xs bg-gray-700 text-gray-300">{playbackSpeed}x</SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0.5">0.5x</SelectItem>
                     <SelectItem value="1">1x</SelectItem>
@@ -243,9 +238,8 @@ export default function PopupWidget() {
               <div className="text-xs text-center mt-2 text-gray-400">Weekly Briefing</div>
             </div>
           </div>
-      </div>
-    </Card>
-      )}
-    </>
+        </div>
+      </Card>
+    </div>
   )
 }

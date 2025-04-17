@@ -8,11 +8,10 @@ import Features from '../../components/features';
 import PopupWidget from "@/components/popup-demo";
 
 export default async function HomePage() {
-  const user = await useUser();
-
+  const { user, setUser } = useUser();
   return (
     <main>
-      <Title user/>
+      <Title user= {user}/>
 
       <Features />
 

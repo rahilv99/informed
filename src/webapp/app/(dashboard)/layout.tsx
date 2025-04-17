@@ -41,8 +41,8 @@ function NavDropdown({ user }: { user: any }) {
               Dashboard
             </Link>
           ) : (
-          <Link href="/sign-up" className="flex items-center">
-            Sign Up
+          <Link href="/sign-in" className="flex items-center">
+            Sign In
           </Link>
           )}
         </DropdownMenuItem>
