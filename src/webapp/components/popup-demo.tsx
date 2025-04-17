@@ -149,7 +149,7 @@ export default function PopupWidget() {
         <div className="p-4 bg-gray-900">
           <div className="animate-fadeIn">
             <div className="flex items-start gap-2 mb-4">
-              <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+              <div className="bg-gray-700 w-8 aspect-square rounded-full flex items-center justify-center">
                 <span className="text-xs text-gray-300">AI</span>
               </div>
               <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
@@ -159,11 +159,11 @@ export default function PopupWidget() {
           </div>
 
           <div className="flex items-start gap-2 mb-4">
-            <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+            <div className="bg-gray-700 w-8 h-8 aspect-square rounded-full flex items-center justify-center">
               <span className="text-xs text-gray-300">AI</span>
             </div>
             <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
-              What current events are you interested in tracking?
+              What political news do you care about?
             </div>
           </div>
 
@@ -171,13 +171,13 @@ export default function PopupWidget() {
             <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
               I'm interested in the Ukraine war, foreign affairs, and immigration, and tariffs.
             </div>
-            <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+            <div className="bg-gray-700 w-8 h-8 aspect-square rounded-full flex items-center justify-center">
               <span className="text-xs text-gray-300">User</span>
             </div>
           </div>
 
           <div className="flex items-start gap-2 mb-4">
-            <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center">
+            <div className="bg-gray-700 w-8 h-8 aspect-square rounded-full flex items-center justify-center">
               <span className="text-xs text-gray-300">AI</span>
             </div>
             <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-300">
