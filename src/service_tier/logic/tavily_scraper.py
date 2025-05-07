@@ -31,7 +31,7 @@ class TavilyScraper(ArticleResource):
         self.fuzzy_threshold = 87
         # Set Tavily parameters
         self.api_key = os.environ.get("TAVILY_API_KEY") if api_key is None else api_key
-        self.max_results = 20  # Limit results per query for cost right now (1 credit = 5 urls)
+        self.max_results = 20  # Limit results per query for cost right now
     
     def get_articles(self):
         """

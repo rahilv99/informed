@@ -14,7 +14,8 @@ import common.s3
 
 #from article_scraper import ArticleScraper
 from logic.legal_scraper import Gov
-from logic.google_scraper import GoogleNewsScraper
+from logic.scraper import Scraper
+from logic.tavily_scraper import TavilyScraper
 
 
 class ArticleClusterer:
@@ -162,7 +163,7 @@ class ArticleClusterer:
         
         return clusters
     
-    def create_initial_clusters(self, gov_embeddings, gnews_embeddings):
+    def create_initial_clusters(self, gov_embeddings, news_embeddings):
         """Create initial clusters based on government documents"""
         clusters = {}
         used_articles = set()
@@ -170,7 +171,7 @@ class ArticleClusterer:
         # First pass: Create clusters and find all potential article matches
         for i, doc_embedding in enumerate(gov_embeddings):
             cluster_articles = []
-            for j, news_embedding in enumerate(gnews_embeddings):
+            for j, news_embedding in enumerate(news_embeddings):
                 similarity = np.dot(doc_embedding, news_embedding) / (
                     np.linalg.norm(doc_embedding) * np.linalg.norm(news_embedding)
                 )
@@ -188,7 +189,7 @@ class ArticleClusterer:
         
         self.logger.info(f"Created {len(clusters)} initial clusters")
         # Second pass: Assign articles to clusters based on highest similarity
-        for article_idx in range(len(gnews_embeddings)):
+        for article_idx in range(len(news_embeddings)):
             max_similarity = -1
             best_cluster = None
             
@@ -238,7 +239,7 @@ class ArticleClusterer:
         return score
 
     
-    def create_cluster_dataframes(self, clusters, gnews_df, gov_df):
+    def create_cluster_dataframes(self, clusters, news_df, gov_df):
         """Create a dataframe for each cluster with all relevant information"""
         # Rank clusters by score
         ranked_clusters = []
@@ -254,14 +255,7 @@ class ArticleClusterer:
 
         cluster_dfs = []
 
-
-
-        # initialize web driver for gnews scraper
-        #if not self.scraper.setup_webdriver():
-        #    self.logger.error("Failed to set up WebDriver. Cannot proceed.")
-
-
-
+        scraper = Scraper()
 
         try:
             for rank, (cluster_id, cluster_data, score) in enumerate(top_clusters, 1):
@@ -307,29 +301,22 @@ class ArticleClusterer:
                 )
                 start = len(rows)
                 for article_idx in sorted_articles:
-                    article = gnews_df.iloc[article_idx]
-                    '''
-                    # Get full text using ArticleScraper
+                    article = news_df.iloc[article_idx]
                     try:
-                        full_text = self.scraper.get_document_text(article['url'])
-                        if len(full_text) < 1000:  # insufficient content
-                            self.logger.warning(
-                                f"Skipping article with insufficient content: "
-                                f"{article['title'][:50]}"
-                            )
+                        article_text = scraper.scrape(article['url'])
+                        
+                        # Skip if no meaningful text was retrieved
+                        if not article_text or len(article_text) < 100:
                             continue
                     except Exception as e:
-                        self.logger.warning(
-                            f"Error retrieving text for article {article['title']}: {e}"
-                        )
-                        full_text = ""
-                    '''
+                        self.logger.error(f"Error scraping article {article['url']}: {e}")
+                        continue
                     rows.append({
-                        'source': 'gnews',
+                        'source': 'tavily',
                         'type': 'news',
                         'title': article['title'],
-                        'text': '',
-                        'url': article['url'], # self.scraper.driver.current_url,
+                        'text': article_text,
+                        'url': article['url'],
                         'keyword': article['keyword'],
                         'publisher': article['publisher'],
                     })
@@ -342,32 +329,23 @@ class ArticleClusterer:
                 cluster_dfs.append(df)
         except Exception as e:
             self.logger.error(f"Error processing clusters: {e}")
-        '''
-        finally:
-            # Close the WebDriver
-            try:
-                if self.scraper.driver:
-                    self.scraper.driver.quit()
-            except Exception as e:
-                self.logger.error(f"Error closing WebDriver: {e}")
-        '''
     
         return cluster_dfs
 
-    def cluster_articles(self, gnews_df, gov_df, output_file='cluster_report.txt'):
+    def cluster_articles(self, news_df, gov_df, output_file='cluster_report.txt'):
         """Main method to cluster articles and generate report"""
         try:
-            if gnews_df.empty:
+            if news_df.empty:
                 self.logger.error("No Google News articles found")
             
             if gov_df.empty:
                 self.logger.error("No federal documents found")
             
             # Embed Google News article titles
-            self.logger.info(f"Embedding {len(gnews_df)} Google News article titles...")
-            gnews_titles = gnews_df['title'].tolist()
-            gnews_embeddings = self.model.encode(gnews_titles)
-            if len(gnews_embeddings) == 0:
+            self.logger.info(f"Embedding {len(news_df)} Google News article titles...")
+            news_titles = news_df['title'].tolist()
+            news_embeddings = self.model.encode(news_titles)
+            if len(news_embeddings) == 0:
                 self.logger.error("No Google News article embeddings found")
                 return
             
@@ -385,13 +363,13 @@ class ArticleClusterer:
                 return
             
             # Create and merge clusters
-            clusters = self.create_initial_clusters(gov_embeddings, gnews_embeddings)
+            clusters = self.create_initial_clusters(gov_embeddings, news_embeddings)
             clusters = self.merge_similar_clusters(clusters)
 
             self.logger.info(f"Final number of clusters: {len(clusters)}")
                         
             # Create dataframes
-            dfs = self.create_cluster_dataframes(clusters, gnews_df, gov_df)
+            dfs = self.create_cluster_dataframes(clusters, news_df, gov_df)
             
             return dfs
         except Exception as e:
@@ -414,8 +392,8 @@ def handler(payload):
     if not user_id or not keywords:
         raise ValueError("Invalid payload: user_id, episode and keywords are required")
 
-    Gnews = GoogleNewsScraper(keywords)
-    gnews_df = Gnews.get_articles()
+    news = GoogleNewsScraper(keywords)
+    news_df = news.get_articles()
 
     gov = Gov(keywords)
     gov.get_articles()  # Get government articles
@@ -424,7 +402,7 @@ def handler(payload):
 
     # Create clusterer and run clustering
     clusterer = ArticleClusterer()
-    dfs = clusterer.cluster_articles(gnews_df, gov_df)
+    dfs = clusterer.cluster_articles(news_df, gov_df)
 
     if dfs and len(dfs) > 0:
         common.s3.save_serialized(user_id, episode, "PULSE", {
@@ -476,8 +454,11 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    Gnews = GoogleNewsScraper(keywords)
-    gnews_df = Gnews.get_articles()
+    #news = GoogleNewsScraper(keywords)
+    #news_df = news.get_articles()
+
+    tavily = TavilyScraper(keywords)
+    news_df = tavily.get_articles()
 
     gov = Gov(keywords)
     gov.get_articles()  # Get government articles
@@ -486,7 +467,7 @@ if __name__ == "__main__":
 
     # Create clusterer and run clustering
     clusterer = ArticleClusterer()
-    dfs = clusterer.cluster_articles(gnews_df, gov_df)
+    dfs = clusterer.cluster_articles(news_df, gov_df)
 
     # save to tmp
     if dfs and len(dfs) > 0:
