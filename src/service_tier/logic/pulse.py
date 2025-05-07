@@ -12,7 +12,6 @@ import spacy
 import common.sqs
 import common.s3
 
-#from article_scraper import ArticleScraper
 from logic.legal_scraper import Gov
 from logic.scraper import Scraper
 from logic.tavily_scraper import TavilyScraper
@@ -281,7 +280,7 @@ class ArticleClusterer:
                         key=lambda x: x[1],
                         reverse=True
                     )
-                    for subdoc_idx, doc_count in sorted_subdocs:
+                    for subdoc_idx, doc_count in sorted_subdocs[:5]:
                         rows.append({
                             'source': 'gov',
                             'type': 'secondary',
@@ -392,8 +391,8 @@ def handler(payload):
     if not user_id or not keywords:
         raise ValueError("Invalid payload: user_id, episode and keywords are required")
 
-    news = GoogleNewsScraper(keywords)
-    news_df = news.get_articles()
+    tavily = TavilyScraper(keywords)
+    news_df = tavily.get_articles()
 
     gov = Gov(keywords)
     gov.get_articles()  # Get government articles
@@ -447,7 +446,7 @@ def handler(payload):
 if __name__ == "__main__":
     import pickle as pkl
     
-    keywords = [ 'climate change', 'tariffs', 'research grants', 'education', 'ukraine']
+    keywords = [ 'tariffs']
 
     logging.basicConfig(
         level=logging.INFO,

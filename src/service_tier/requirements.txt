@@ -4,14 +4,12 @@ spacy
 bs4
 openai
 pydub
-google-generativeai
+anthropic
 boto3
 pandas
 psycopg2-binary
-gnews
-#selenium
-#webdriver_manager
 fuzzywuzzy
 python-Levenshtein
 numpy
 hf_xet
+tavily-python

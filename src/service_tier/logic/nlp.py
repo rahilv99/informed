@@ -24,8 +24,8 @@ cartesia = False
 
 client = anthropic.Anthropic()
 
-summary_model = 'claude-3-5-haiku-latest'
-script_model = 'claude-3-7-sonnet-latest'
+summary_model = 'claude-3-haiku-20240307'
+script_model = 'claude-3-5-haiku-latest'
 small_model = 'claude-3-haiku-20240307'
 
 
@@ -51,7 +51,7 @@ def summarize(title, text, use = 'summary'):
             {"role": "user", "content": prompt},
         ]
     )
-    return response.text
+    return response.content[0].text
 
 
 ### Underwriter - Researches documents in a cluster
@@ -92,6 +92,7 @@ def underwriter_research(cluster_df):
     5. Context: Historical or policy context that would help listeners understand
     
     Format your response as a structured set of notes, not as a narrative.
+    Only include the generated notes; avoid any introductions, explanations, or meta-comments.
     Keep your response less than 300 tokens.
     """
 
@@ -107,7 +108,7 @@ def underwriter_research(cluster_df):
     research_notes['primary_doc'] = {
         'title': primary_doc['title'],
         'url': primary_doc['url'],
-        'notes': primary_response.text
+        'notes': primary_response.content[0].text
     }
 
     # Process secondary government documents
@@ -130,6 +131,7 @@ def underwriter_research(cluster_df):
         5. Context: Historical or policy context that would help listeners understand
 
         Format your response as a structured set of notes, not as a narrative.
+        Only include the generated notes; avoid any introductions, explanations, or meta-comments.
         Keep your response less than 200 tokens.
         """
 
@@ -145,13 +147,12 @@ def underwriter_research(cluster_df):
         research_notes['secondary_docs'].append({
             'title': doc['title'],
             'url': doc['url'],
-            'notes': secondary_response.text
+            'notes': secondary_response.content[0].text
         })
     
     # Process news articles
     news_articles = cluster_df[cluster_df['type'] == 'news']
-    for _, article in news_articles.iterrows():
-        '''
+    for i, article in news_articles.iterrows():
         news_prompt = f"""
         You are a research analyst for a podcast about government documents and their impact on current events.
         
@@ -160,7 +161,7 @@ def underwriter_research(cluster_df):
         ARTICLE:
         Title: {article['title']}
         Publisher: {article['publisher']}
-        Text: {article['text'][:30000]}
+        Text: {article['text'][:5000]}
         
         Create research notes with the following sections:
         1. Key Points: Main ideas and decisions in the document
@@ -170,22 +171,23 @@ def underwriter_research(cluster_df):
         5. Context: Historical or policy context that would help listeners understand
         
         Format your response as a structured set of notes, not as a narrative. Be concise.
+        Only include the generated notes; avoid any introductions, explanations, or meta-comments.
         Keep your response less than 200 tokens.
         """
         
-        news_response = summary_model.generate_content(
-            news_prompt,
-            generation_config=genai.GenerationConfig(
-                max_output_tokens=200,
-                temperature=0.2
-            )
+        news_response = client.messages.create(
+        model=summary_model,
+        max_tokens=200,
+        temperature=0.2,
+        messages=[
+            {"role": "user", "content": news_prompt},
+        ]
         )
-        '''
         research_notes['news_articles'].append({
             'title': article['title'],
             'publisher': article['publisher'],
             'url': article['url'],
-            'notes': '' #news_response.text
+            'notes': news_response.content[0].text
         })
     
     return research_notes
@@ -242,14 +244,16 @@ def create_cluster_segment(research_notes, plan='free'):
     * Incorporate filler words ("uh," "like," "you know") and occasional repetitions for a more human-like sound.
     * Create a dynamic range of responses.
     
-    **Example:**
-    **HOST 1:** Today we're looking at a significant development in...
-    **HOST 2:** Yes, I've been following this closely. The government just released...
-    **HOST 1:** Right, and what's interesting is how this connects to...
-    **HOST 2:** Exactly. And we're already seeing the impact in the news...
+    **EXAMPLE** (Do not follow exactly):
+    HOST 1: The government just unveiled a new policy on [TOPIC], and it's not a minor tweak — it's a fundamental shift.
+    HOST 2: And the timing's no accident. This comes right after [RELATED EVENT], which puts pressure on [AGENCY or INDUSTRY] to respond fast.
+    HOST 1: What's unusual is the scope. It doesn't just affect [GROUP A] — it also pulls in [GROUP B], which raises regulatory questions.
+    HOST 2: Not to mention the economic angle. Early estimates suggest it could impact [STATISTIC or TREND], especially if [POSSIBLE OUTCOME] plays out.
+    HOST 1: Some are calling it overdue. Others say it's rushed. Either way, the next few weeks will be key as [NEXT STEP] unfolds.
     
     Remember: This segment must be approximately {tokens} tokens long.
-    
+    Only include the generated segment; avoid any introductions, explanations, or meta-comments.
+
     **RESEARCH NOTES:**
     
     PRIMARY DOCUMENT:
@@ -289,7 +293,7 @@ def create_cluster_segment(research_notes, plan='free'):
         ]
         )
     
-    return response.text
+    return response.content[0].text
 
 ### Senior editor - Combines segments into a cohesive podcast
 def make_podcast_script(cluster_dfs, plan='free'):
@@ -308,7 +312,7 @@ def make_podcast_script(cluster_dfs, plan='free'):
         tokens = 2000
         cluster_dfs = cluster_dfs[:6]
     else:  # free
-        tokens = 900
+        tokens = 1000
         # Limit to 3 clusters for free plan
         cluster_dfs = cluster_dfs[:3]
     
@@ -371,7 +375,7 @@ def make_podcast_script(cluster_dfs, plan='free'):
     **HOST 1**: We hope you've learned something new today. Thanks for listening, stay tuned for more episodes.
     
     Remember: This segment must be approximately {tokens} tokens long.
-    
+    Only include the generated script; avoid any introductions, explanations, or meta-comments.
     SEGMENTS:
     """
     
@@ -388,7 +392,9 @@ def make_podcast_script(cluster_dfs, plan='free'):
         ]
         )
     
-    return response.text, notes
+    print('------SCRIPT BEFORE PROCESSING------')
+    print(response.content[0].text)
+    return response.content[0].text, notes
 
 def generate_email_headers(research_notes):
     """
@@ -727,7 +733,7 @@ def handler(payload):
 
 if __name__ == "__main__":
     import pickle as pkl
-    all_data = pkl.loads(open("/tmp/cluster_dfs.pkl", "rb").read())
+    all_data = pkl.loads(open("tmp/cluster_dfs.pkl", "rb").read())
 
     num_turns, notes = create_conversational_podcast(all_data, plan = 'free')
 

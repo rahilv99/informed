@@ -17,8 +17,7 @@ MAX_RETRIES = 10
 BASE_DELAY = 0.33
 MAX_DELAY = 15
 
-# NOTE: add back logic.
-from article_resource import ArticleResource
+from logic.article_resource import ArticleResource
 from urllib.parse import urlparse
 
 class TavilyScraper(ArticleResource):
