@@ -217,7 +217,7 @@ class ArticleClusterer:
             cluster['articles'],
             key=lambda x: cluster['similarities'][x],
             reverse=True
-        )[:3]
+        )[:5]
         
         # Calculate average similarity of top 3 articles
         avg_similarity = sum(

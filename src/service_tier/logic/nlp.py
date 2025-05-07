@@ -2,7 +2,7 @@
 
 import re
 #Gemini stuff
-import google.generativeai as genai
+import anthropic
 # merge chunks
 from pydub import AudioSegment
 import os
@@ -22,13 +22,11 @@ TEMP_BASE = "/tmp"
 # carteisa is expensive, TTS account is currently: CLOSED
 cartesia = False
 
-GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
-genai.configure(api_key=GOOGLE_API_KEY)
+client = anthropic.Anthropic()
 
-summary_model = genai.GenerativeModel('gemini-1.5-flash') # 15 RPM, $0.030 /million output tokens for higher RPM
-script_model = genai.GenerativeModel('gemini-2.0-flash') # 2 RPM, $5 /million output tokens for higher RPM
-
-small_model = genai.GenerativeModel('gemini-1.5-flash-8b') # 15 RPM, $0.030 /million output tokens for higher RPM
+summary_model = 'claude-3-5-haiku-latest'
+script_model = 'claude-3-7-sonnet-latest'
+small_model = 'claude-3-haiku-20240307'
 
 
 def summarize(title, text, use = 'summary'):
@@ -45,10 +43,14 @@ def summarize(title, text, use = 'summary'):
             Keep it less than 80 tokens.\
             Articles: \n {text}"
     
-    response = small_model.generate_content(prompt,
-                                                generation_config = genai.GenerationConfig(
-                                            max_output_tokens=120,
-                                            temperature=0.25))
+    response = client.messages.create(
+        model=small_model,
+        max_tokens=120,
+        temperature=0.25,
+        messages=[
+            {"role": "user", "content": prompt},
+        ]
+    )
     return response.text
 
 
@@ -92,13 +94,14 @@ def underwriter_research(cluster_df):
     Format your response as a structured set of notes, not as a narrative.
     Keep your response less than 300 tokens.
     """
-    
-    primary_response = summary_model.generate_content(
-        primary_prompt,
-        generation_config=genai.GenerationConfig(
-            max_output_tokens=400,
-            temperature=0.2
-        )
+
+    primary_response = client.messages.create(
+        model=summary_model,
+        max_tokens=400,
+        temperature=0.2,
+        messages=[
+            {"role": "user", "content": primary_prompt},
+        ]
     )
     
     research_notes['primary_doc'] = {
@@ -106,7 +109,7 @@ def underwriter_research(cluster_df):
         'url': primary_doc['url'],
         'notes': primary_response.text
     }
-    
+
     # Process secondary government documents
     secondary_docs = cluster_df[cluster_df['type'] == 'secondary']
     for _, doc in secondary_docs.iterrows():
@@ -129,13 +132,14 @@ def underwriter_research(cluster_df):
         Format your response as a structured set of notes, not as a narrative.
         Keep your response less than 200 tokens.
         """
-        
-        secondary_response = summary_model.generate_content(
-            secondary_prompt,
-            generation_config=genai.GenerationConfig(
-                max_output_tokens=200,
-                temperature=0.2
-            )
+
+        secondary_response = client.messages.create(
+        model=summary_model,
+        max_tokens=200,
+        temperature=0.2,
+        messages=[
+            {"role": "user", "content": secondary_prompt},
+        ]
         )
         
         research_notes['secondary_docs'].append({
@@ -202,7 +206,7 @@ def create_cluster_segment(research_notes, plan='free'):
     if plan == 'free':
         tokens = 200
     else:  # premium
-        tokens = 250
+        tokens = 300
     
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
@@ -276,14 +280,14 @@ def create_cluster_segment(research_notes, plan='free'):
         {article['notes']}
         """
     
-    # Generate the segment
-    response = script_model.generate_content(
-        system_prompt,
-        generation_config=genai.GenerationConfig(
-            max_output_tokens=tokens*2,
-            temperature=0.3
+    response = client.messages.create(
+        model=script_model,
+        max_tokens=tokens*2,
+        temperature=0.3,
+        messages=[
+            {"role": "user", "content": system_prompt},
+        ]
         )
-    )
     
     return response.text
 
@@ -300,9 +304,9 @@ def make_podcast_script(cluster_dfs, plan='free'):
     Returns:
         Complete podcast script
     """
-    if plan == 'plus':
-        tokens = 1500
-        cluster_dfs = cluster_dfs[:5]
+    if plan == 'Plus':
+        tokens = 2000
+        cluster_dfs = cluster_dfs[:6]
     else:  # free
         tokens = 900
         # Limit to 3 clusters for free plan
@@ -375,14 +379,14 @@ def make_podcast_script(cluster_dfs, plan='free'):
     for i, segment in enumerate(segments):
         system_prompt += f"\n\nSEGMENT {i+1}:\n{segment}\n"
     
-    # Generate the complete podcast script
-    response = script_model.generate_content(
-        system_prompt,
-        generation_config=genai.GenerationConfig(
-            max_output_tokens=tokens*2,
-            temperature=0.15
+    response = client.messages.create(
+        model=script_model,
+        max_tokens=tokens*2,
+        temperature=0.15,
+        messages=[
+            {"role": "user", "content": system_prompt},
+        ]
         )
-    )
     
     return response.text, notes
 
@@ -720,11 +724,6 @@ def handler(payload):
         print(f"Sent message to SQS for next action {next_event['action']}")
     except Exception as e:
         print(f"Exception when sending message to SQS {e}")
-
-
-
-
-
 
 if __name__ == "__main__":
     import pickle as pkl
