@@ -2,7 +2,7 @@
 
 import re
 #Gemini stuff
-import anthropic
+import google.generativeai as genai
 # merge chunks
 from pydub import AudioSegment
 import os
@@ -22,20 +22,26 @@ TEMP_BASE = "/tmp"
 # carteisa is expensive, TTS account is currently: CLOSED
 cartesia = False
 
-client = anthropic.Anthropic()
+GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
+genai.configure(api_key=GOOGLE_API_KEY)
 
-summary_model = 'claude-3-haiku-20240307'
-script_model = 'claude-3-5-haiku-latest'
-small_model = 'claude-3-haiku-20240307'
+summary_model = genai.GenerativeModel('gemini-1.5-flash') # 15 RPM, $0.030 /million output tokens for higher RPM
+script_model = genai.GenerativeModel('gemini-2.0-flash') # 2 RPM, $5 /million output tokens for higher RPM
+
+small_model = genai.GenerativeModel('gemini-1.5-flash-8b') # 15 RPM, $0.030 /million output tokens for higher RPM
 
 
 def summarize(title, text, use = 'summary'):
     if use == 'topic':
         prompt = f"Create a informative topic title based on the title of the documents discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
-            Titles: {text}"
+            Titles: "
+        for i, title in text:
+            prompt += f"Article {i}: {title}, "
     if use == 'title':
         prompt = f"Create a informative and attention-grabbing title based on the topics discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
-            Titles: {text}"
+            Titles: "
+        for i, title in text:
+            prompt += f"Article {i}: {title}, "
     if use == 'summary':
         prompt = f"Provide a succinct summary about the collection of articles with the topic '{title}'.\
             Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
@@ -43,15 +49,11 @@ def summarize(title, text, use = 'summary'):
             Keep it less than 80 tokens.\
             Articles: \n {text}"
     
-    response = client.messages.create(
-        model=small_model,
-        max_tokens=120,
-        temperature=0.25,
-        messages=[
-            {"role": "user", "content": prompt},
-        ]
-    )
-    return response.content[0].text
+    response = small_model.generate_content(prompt,
+                                                generation_config = genai.GenerationConfig(
+                                            max_output_tokens=120,
+                                            temperature=0.25))
+    return response.text
 
 
 ### Underwriter - Researches documents in a cluster
@@ -82,7 +84,7 @@ def underwriter_research(cluster_df):
     
     DOCUMENT:
     Title: {primary_doc['title']}
-    Text: {primary_doc['text'][1000:40000]}
+    Text: {primary_doc['text'][1000:50000]}
     
     Create research notes with the following sections:
     1. Key Points: Main ideas and decisions in the document
@@ -92,25 +94,23 @@ def underwriter_research(cluster_df):
     5. Context: Historical or policy context that would help listeners understand
     
     Format your response as a structured set of notes, not as a narrative.
-    Only include the generated notes; avoid any introductions, explanations, or meta-comments.
-    Keep your response less than 400 tokens.
+    Keep your response less than 300 tokens.
     """
-
-    primary_response = client.messages.create(
-        model=summary_model,
-        max_tokens=400,
-        temperature=0.2,
-        messages=[
-            {"role": "user", "content": primary_prompt},
-        ]
+    
+    primary_response = summary_model.generate_content(
+        primary_prompt,
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=400,
+            temperature=0.2
+        )
     )
     
     research_notes['primary_doc'] = {
         'title': primary_doc['title'],
         'url': primary_doc['url'],
-        'notes': primary_response.content[0].text
+        'notes': primary_response.text
     }
-
+    
     # Process secondary government documents
     secondary_docs = cluster_df[cluster_df['type'] == 'secondary']
     for _, doc in secondary_docs.iterrows():
@@ -121,7 +121,7 @@ def underwriter_research(cluster_df):
         
         DOCUMENT:
         Title: {doc['title']}
-        Text: {doc['text'][1000:20000]}
+        Text: {doc['text'][1000:50000]}
         
         Create research notes with the following sections:
         1. Key Points: Main ideas and decisions in the document
@@ -131,28 +131,27 @@ def underwriter_research(cluster_df):
         5. Context: Historical or policy context that would help listeners understand
 
         Format your response as a structured set of notes, not as a narrative.
-        Only include the generated notes; avoid any introductions, explanations, or meta-comments.
         Keep your response less than 200 tokens.
         """
-
-        secondary_response = client.messages.create(
-        model=summary_model,
-        max_tokens=200,
-        temperature=0.2,
-        messages=[
-            {"role": "user", "content": secondary_prompt},
-        ]
+        
+        secondary_response = summary_model.generate_content(
+            secondary_prompt,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=200,
+                temperature=0.2
+            )
         )
         
         research_notes['secondary_docs'].append({
             'title': doc['title'],
             'url': doc['url'],
-            'notes': secondary_response.content[0].text
+            'notes': secondary_response.text
         })
     
     # Process news articles
     news_articles = cluster_df[cluster_df['type'] == 'news']
-    for i, article in news_articles.iterrows():
+    for _, article in news_articles.iterrows():
+
         news_prompt = f"""
         You are a research analyst for a podcast about government documents and their impact on current events.
         
@@ -161,7 +160,7 @@ def underwriter_research(cluster_df):
         ARTICLE:
         Title: {article['title']}
         Publisher: {article['publisher']}
-        Text: {article['text'][:5000]}
+        Text: {article['text'][:30000]}
         
         Create research notes with the following sections:
         1. Key Points: Main ideas and decisions in the document
@@ -171,23 +170,22 @@ def underwriter_research(cluster_df):
         5. Context: Historical or policy context that would help listeners understand
         
         Format your response as a structured set of notes, not as a narrative. Be concise.
-        Only include the generated notes; avoid any introductions, explanations, or meta-comments.
         Keep your response less than 200 tokens.
         """
         
-        news_response = client.messages.create(
-        model=summary_model,
-        max_tokens=200,
-        temperature=0.2,
-        messages=[
-            {"role": "user", "content": news_prompt},
-        ]
+        news_response = summary_model.generate_content(
+            news_prompt,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=200,
+                temperature=0.2
+            )
         )
+
         research_notes['news_articles'].append({
             'title': article['title'],
             'publisher': article['publisher'],
             'url': article['url'],
-            'notes': news_response.content[0].text
+            'notes': news_response.text
         })
     
     return research_notes
@@ -206,9 +204,10 @@ def create_cluster_segment(research_notes, plan='free'):
         String containing the podcast segment script
     """
     if plan == 'free':
-        tokens = 400
+        tokens = 200
     else:  # premium
-        tokens = 600
+        tokens = 250
+        script_model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
     
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
@@ -233,7 +232,7 @@ def create_cluster_segment(research_notes, plan='free'):
     1. Begin with a brief introduction to the topic
     2. Discuss the primary government document and its key points
     3. Mention related government documents and how they connect
-    4. Discuss current news articles and how they relate to the government actions. Cite the publisher of the article directly when discussing it.
+    4. Discuss current news articles and how they relate to the government actions
     5. Observe implications, next steps, or reflections
     
     **SPEECH TIPS:**
@@ -244,16 +243,14 @@ def create_cluster_segment(research_notes, plan='free'):
     * Incorporate filler words ("uh," "like," "you know") and occasional repetitions for a more human-like sound.
     * Create a dynamic range of responses.
     
-    **EXAMPLE** (Do not follow exactly):
-    HOST 1: The government just unveiled a new policy on [TOPIC], and it's not a minor tweak — it's a fundamental shift.
-    HOST 2: And the timing's no accident. This comes right after [RELATED EVENT], which puts pressure on [AGENCY or INDUSTRY] to respond fast.
-    HOST 1: What's unusual is the scope. It doesn't just affect [GROUP A] — it also pulls in [GROUP B], which raises regulatory questions.
-    HOST 2: Not to mention the economic angle. Early estimates suggest it could impact [STATISTIC or TREND], especially if [POSSIBLE OUTCOME] plays out.
-    HOST 1: Some are calling it overdue. Others say it's rushed. Either way, the next few weeks will be key as [NEXT STEP] unfolds.
+    **Example:**
+    **HOST 1:** Today we're looking at a significant development in...
+    **HOST 2:** Yes, I've been following this closely. The government just released...
+    **HOST 1:** Right, and what's interesting is how this connects to...
+    **HOST 2:** Exactly. And we're already seeing the impact in the news...
     
     Remember: This segment must be approximately {tokens} tokens long.
-    Only include the generated segment; avoid any introductions, explanations, or meta-comments.
-
+    
     **RESEARCH NOTES:**
     
     PRIMARY DOCUMENT:
@@ -284,16 +281,16 @@ def create_cluster_segment(research_notes, plan='free'):
         {article['notes']}
         """
     
-    response = client.messages.create(
-        model=script_model,
-        max_tokens=tokens*2,
-        temperature=0.3,
-        messages=[
-            {"role": "user", "content": system_prompt},
-        ]
+    # Generate the segment
+    response = script_model.generate_content(
+        system_prompt,
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=tokens*2,
+            temperature=0.3
         )
+    )
     
-    return response.content[0].text
+    return response.text
 
 ### Senior editor - Combines segments into a cohesive podcast
 def make_podcast_script(cluster_dfs, plan='free'):
@@ -308,13 +305,15 @@ def make_podcast_script(cluster_dfs, plan='free'):
     Returns:
         Complete podcast script
     """
-    if plan == 'Plus':
-        tokens = 3000
-        cluster_dfs = cluster_dfs[:6]
-    else:  # free
-        tokens = 1500
+    if plan == 'free':
+        tokens = 900
         # Limit to 3 clusters for free plan
         cluster_dfs = cluster_dfs[:3]
+    else:  # premium
+        tokens = 1500
+        cluster_dfs = cluster_dfs[:6]
+        script_model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
+        
     
     # Process each cluster
     segments = []
@@ -375,7 +374,7 @@ def make_podcast_script(cluster_dfs, plan='free'):
     **HOST 1**: We hope you've learned something new today. Thanks for listening, stay tuned for more episodes.
     
     Remember: This segment must be approximately {tokens} tokens long.
-    Only include the generated script; avoid any introductions, explanations, or meta-comments.
+    
     SEGMENTS:
     """
     
@@ -383,16 +382,16 @@ def make_podcast_script(cluster_dfs, plan='free'):
     for i, segment in enumerate(segments):
         system_prompt += f"\n\nSEGMENT {i+1}:\n{segment}\n"
     
-    response = client.messages.create(
-        model=script_model,
-        max_tokens=tokens*2,
-        temperature=0.15,
-        messages=[
-            {"role": "user", "content": system_prompt},
-        ]
+    # Generate the complete podcast script
+    response = script_model.generate_content(
+        system_prompt,
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=tokens*2,
+            temperature=0.15
         )
-
-    return response.content[0].text, notes
+    )
+    
+    return response.text, notes
 
 def generate_email_headers(research_notes):
     """
@@ -437,8 +436,7 @@ def generate_email_headers(research_notes):
             news.append((article['title'], article['publisher'], article['url']))
 
         # Create cluster title
-        cluster_title_text = ", ".join(cluster_title_parts)
-        cluster_title = summarize("", cluster_title_text, use='topic')
+        cluster_title = summarize("", cluster_title_parts, use='topic')
         cluster_title = _clean_summary_text(cluster_title)
         
         # Create cluster description
@@ -460,8 +458,7 @@ def generate_email_headers(research_notes):
         titles.append(cluster_title)
 
     # Generate episode title from cluster titles
-    cluster_titles_text = ", ".join(titles)
-    episode_title = summarize("", cluster_titles_text, use='title')
+    episode_title = summarize("", titles, use='title')
     episode_title = _clean_summary_text(episode_title)
 
     return cluster_descriptions, episode_title
@@ -693,7 +690,8 @@ def handler(payload):
     user_name = payload.get("user_name")
 
     pulse = PulseOutput(user_id, episode)
-    all_data = pulse.all_data    
+    all_data = pulse.all_data
+
 
     script, notes = create_conversational_podcast(all_data, plan = plan)
 
@@ -729,9 +727,14 @@ def handler(payload):
     except Exception as e:
         print(f"Exception when sending message to SQS {e}")
 
+
+
+
+
+
 if __name__ == "__main__":
     import pickle as pkl
-    all_data = pkl.loads(open("tmp/cluster_dfs.pkl", "rb").read())
+    all_data = pkl.loads(open("/tmp/cluster_dfs.pkl", "rb").read())
 
     num_turns, notes = create_conversational_podcast(all_data, plan = 'free')
 

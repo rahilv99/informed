@@ -54,7 +54,8 @@ class TavilyScraper(ArticleResource):
                         client.search,
                         query=topic,
                         max_results=self.max_results,
-                        time_range="week"
+                        time_range="week",
+                        topic="news"
                     )
                     
                     articles = response.get("results", [])

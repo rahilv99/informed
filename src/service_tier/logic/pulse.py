@@ -446,7 +446,7 @@ def handler(payload):
 if __name__ == "__main__":
     import pickle as pkl
     
-    keywords = [ 'tariffs']
+    keywords = [ 'tariffs', 'trade', 'Taiwan', 'China']
 
     logging.basicConfig(
         level=logging.INFO,

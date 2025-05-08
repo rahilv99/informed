@@ -5,7 +5,6 @@ import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import { CoreStack } from "./core_stack";
 import * as dotenv from 'dotenv';
-import * as ecr from 'aws-cdk-lib/aws-ecr'; 
 
 dotenv.config();
 
@@ -22,10 +21,7 @@ export class ServiceTierLambdaStack extends cdk.Stack {
     })
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/service_tier', {
-        buildArgs: { /* … */ },
-        extraHash: Date.now().toString(),   // hack: bump the asset hash every time
-      }),
+      code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2*1024,
       environment: {
