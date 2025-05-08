@@ -2,4 +2,4 @@
 **/Dockerfile*
 __pycache__
 *.pyc
-auxiom_env
+venv

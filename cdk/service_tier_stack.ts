@@ -22,17 +22,20 @@ export class ServiceTierLambdaStack extends cdk.Stack {
     })
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
+      code: lambda.DockerImageCode.fromImageAsset('src/service_tier', {
+        buildArgs: { /* … */ },
+        extraHash: Date.now().toString(),   // hack: bump the asset hash every time
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2*1024,
       environment: {
         ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
         ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl,
-        GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
-        PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY!,
         GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
-        DB_ACCESS_URL: process.env.DB_ACCESS_URL!
+        DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
+        TAVILY_API_KEY: process.env.TAVILY_API_KEY!,
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
       },
       role: props.coreStack.astraLambdaRole,
       logGroup: logGroup

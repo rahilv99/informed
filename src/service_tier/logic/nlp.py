@@ -37,7 +37,7 @@ def summarize(title, text, use = 'summary'):
         prompt = f"Create a informative and attention-grabbing title based on the topics discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
             Titles: {text}"
     if use == 'summary':
-        prompt = f"Provide a succinct TLDR summary about the collection of articles with the topic '{title}'.\
+        prompt = f"Provide a succinct summary about the collection of articles with the topic '{title}'.\
             Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
             avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
             Keep it less than 80 tokens.\
@@ -82,7 +82,7 @@ def underwriter_research(cluster_df):
     
     DOCUMENT:
     Title: {primary_doc['title']}
-    Text: {primary_doc['text'][1000:50000]}
+    Text: {primary_doc['text'][1000:40000]}
     
     Create research notes with the following sections:
     1. Key Points: Main ideas and decisions in the document
@@ -93,7 +93,7 @@ def underwriter_research(cluster_df):
     
     Format your response as a structured set of notes, not as a narrative.
     Only include the generated notes; avoid any introductions, explanations, or meta-comments.
-    Keep your response less than 300 tokens.
+    Keep your response less than 400 tokens.
     """
 
     primary_response = client.messages.create(
@@ -121,7 +121,7 @@ def underwriter_research(cluster_df):
         
         DOCUMENT:
         Title: {doc['title']}
-        Text: {doc['text'][1000:50000]}
+        Text: {doc['text'][1000:20000]}
         
         Create research notes with the following sections:
         1. Key Points: Main ideas and decisions in the document
@@ -206,9 +206,9 @@ def create_cluster_segment(research_notes, plan='free'):
         String containing the podcast segment script
     """
     if plan == 'free':
-        tokens = 200
+        tokens = 400
     else:  # premium
-        tokens = 300
+        tokens = 600
     
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
@@ -233,7 +233,7 @@ def create_cluster_segment(research_notes, plan='free'):
     1. Begin with a brief introduction to the topic
     2. Discuss the primary government document and its key points
     3. Mention related government documents and how they connect
-    4. Discuss current news articles and how they relate to the government actions
+    4. Discuss current news articles and how they relate to the government actions. Cite the publisher of the article directly when discussing it.
     5. Observe implications, next steps, or reflections
     
     **SPEECH TIPS:**
@@ -309,10 +309,10 @@ def make_podcast_script(cluster_dfs, plan='free'):
         Complete podcast script
     """
     if plan == 'Plus':
-        tokens = 2000
+        tokens = 3000
         cluster_dfs = cluster_dfs[:6]
     else:  # free
-        tokens = 1000
+        tokens = 1500
         # Limit to 3 clusters for free plan
         cluster_dfs = cluster_dfs[:3]
     
@@ -391,9 +391,7 @@ def make_podcast_script(cluster_dfs, plan='free'):
             {"role": "user", "content": system_prompt},
         ]
         )
-    
-    print('------SCRIPT BEFORE PROCESSING------')
-    print(response.content[0].text)
+
     return response.content[0].text, notes
 
 def generate_email_headers(research_notes):
