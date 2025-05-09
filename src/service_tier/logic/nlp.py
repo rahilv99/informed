@@ -35,17 +35,17 @@ def summarize(title, text, use = 'summary'):
     if use == 'topic':
         prompt = f"Create a informative topic title based on the title of the documents discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
             Titles: "
-        for i, title in text:
+        for i, title in enumerate(text):
             prompt += f"Article {i}: {title}, "
     if use == 'title':
         prompt = f"Create a informative and attention-grabbing title based on the topics discussed. Only include the generated title itself; avoid any introductions, explanations, or meta-comments. \
             Titles: "
-        for i, title in text:
+        for i, title in enumerate(text):
             prompt += f"Article {i}: {title}, "
     if use == 'summary':
         prompt = f"Provide a succinct summary about the collection of articles with the topic '{title}'.\
-            Highlight the key details that help the user decide whether the source is worth reading. Only include the summary itself;\
-            avoid any introductions, explanations, or meta-comments. This summary will be in an email newsletter. Make the summary attention-grabbing and informative.\
+            Highlight the key details. Structure your output as a simple plain text response with only alphabetical characters. Only include the summary itself;\
+            avoid any introductions, explanations, or meta-comments. This summary will go directly into an email newsletter. Make the summary attention-grabbing and informative.\
             Keep it less than 80 tokens.\
             Articles: \n {text}"
     
@@ -206,8 +206,7 @@ def create_cluster_segment(research_notes, plan='free'):
     if plan == 'free':
         tokens = 200
     else:  # premium
-        tokens = 250
-        script_model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
+        tokens = 300
     
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
@@ -310,9 +309,8 @@ def make_podcast_script(cluster_dfs, plan='free'):
         # Limit to 3 clusters for free plan
         cluster_dfs = cluster_dfs[:3]
     else:  # premium
-        tokens = 1500
+        tokens =2000
         cluster_dfs = cluster_dfs[:6]
-        script_model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
         
     
     # Process each cluster

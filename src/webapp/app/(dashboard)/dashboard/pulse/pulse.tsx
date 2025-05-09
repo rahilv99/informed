@@ -109,6 +109,7 @@ export default function PulsePage({ keywords, day, deliveryStatus }: {
             </div>
             <div>
               <h3 className="mb-2 font-medium text-black">Delivery Day</h3>
+              <p className="mb-4 text-sm text-black/70">Your podcast is delivered at 7 AM EST on your selected day.</p>
               <div className="flex flex-wrap gap-2 justify-center px-8 sm:px-12">
                 <Carousel
                   className="w-full max-w-[280px] sm:max-w-sm md:max-w-md"
