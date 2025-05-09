@@ -19,7 +19,7 @@ def send_email(RECIPIENT, BODY_HTML):
 
     # Create a multipart/mixed parent container
     msg = MIMEMultipart('mixed')
-    msg['Subject'] = 'Your Axuiom podcast'
+    msg['Subject'] = 'Your Auxiom podcast'
     msg['From'] = "Auxiom <Auxiom@auxiomai.com>"
     msg['To'] = RECIPIENT
 
