@@ -17,8 +17,6 @@ export const users = pgTable('users', {
   stripeSubscriptionId: text('stripe_subscription_id').unique(),
   stripeProductId: text('stripe_product_id'),
   plan: varchar('plan', { length: 50 }).notNull().default('free'),
-  notes: jsonb('note').notNull().default([]),
-  activeNotes: jsonb('active_notes').notNull().default([]),
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
 });
