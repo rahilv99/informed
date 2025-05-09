@@ -7,17 +7,30 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
-import { PauseCircle, SkipForward, CheckCircle, Radio, BookOpen, ChevronRight, ExternalLink, FileText, Newspaper, PlayCircle, Gauge, SkipBack} from "lucide-react"
+import {
+  PauseCircle,
+  SkipForward,
+  CheckCircle,
+  Radio,
+  BookOpen,
+  ChevronRight,
+  ExternalLink,
+  FileText,
+  Newspaper,
+  PlayCircle,
+  Gauge,
+  SkipBack,
+} from "lucide-react"
 import Image from "next/image"
 import { setListened } from "@/lib/actions"
 import { toast } from "@/hooks/use-toast"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 
-
-
 export default function LearningProgress({
-  podcasts, id, active
+  podcasts,
+  id,
+  active,
 }: {
   podcasts: Array<{
     id: number
@@ -29,8 +42,8 @@ export default function LearningProgress({
     listened: boolean
     clusters: { title: string; description: string; gov: string[]; news: string[] }[]
     script: string[] // Include the script column here
-  }>,
-  id: number,
+  }>
+  id: number
   active: boolean
 }) {
   const [expandedPodcast, setExpandedPodcast] = useState<number | null>(null)
@@ -67,7 +80,7 @@ export default function LearningProgress({
   const audioQueueRef = useRef<ArrayBuffer[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [isAtLivePosition, setIsAtLivePosition] = useState(false)
-  const [playbackMode, setPlaybackMode] = useState<'file' | 'stream'>('stream')
+  const [playbackMode, setPlaybackMode] = useState<"file" | "stream">("stream")
 
   const sortedPodcasts = useMemo(() => {
     return [...podcasts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -88,153 +101,197 @@ export default function LearningProgress({
     toast({
       title: "Account Inactive",
       description: (
-      <>
-        Please visit{" "}
-        <a
-        href="https://auxiomai.com/keywords"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-        >
-        auxiomai.com/keywords
-        </a>{" "}
-        to complete your account.
-      </>
+        <>
+          Please visit{" "}
+          <a
+            href="https://auxiomai.com/keywords"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            auxiomai.com/keywords
+          </a>{" "}
+          to complete your account.
+        </>
       ),
-    });
+    })
   }
 
   const handlePlayPodcast = async (podcast: {
-    id: number;
-    title: string;
-    episodeNumber: number;
-    date: string;
-    duration: string;
-    audioFileUrl: string;
-    listened: boolean;
-    clusters: { title: string; description: string; gov: string[]; news: string[] }[];
-    script: string[];
+    id: number
+    title: string
+    episodeNumber: number
+    date: string
+    duration: string
+    audioFileUrl: string
+    listened: boolean
+    clusters: { title: string; description: string; gov: string[]; news: string[] }[]
+    script: string[]
   }) => {
-    console.log("Starting podcast playback:", podcast.title);
-    setCurrentPodcast(podcast);
-    setPlayerOpen(true);
-    setMaxListenedTime(0); // Reset max listened time when starting a new podcast
-    setBufferedBytes(0); // Reset buffered bytes counter
-    setIsPlaying(false); // Ensure we start in paused state
-    setIsStreaming(false); // Default to not streaming
+    console.log("Starting podcast playback:", podcast.title)
+    setCurrentPodcast(podcast)
+    setPlayerOpen(true)
+    setMaxListenedTime(0) // Reset max listened time when starting a new podcast
+    setBufferedBytes(0) // Reset buffered bytes counter
+    setIsPlaying(false) // Ensure we start in paused state
+    setIsStreaming(false) // Default to not streaming
 
     // Check if the podcast has a valid audio file URL
     if (podcast.audioFileUrl && podcast.audioFileUrl !== "") {
-      console.log("Using audio file URL for playback:", podcast.audioFileUrl);
-      setPlaybackMode('file');
-      
+      console.log("Using audio file URL for playback:", podcast.audioFileUrl)
+      setPlaybackMode("file")
+
       // Clean up existing MediaSource and related references
       if (mediaSourceRef.current) {
-        URL.revokeObjectURL(audioPlayerRef.current?.src || "");
-        mediaSourceRef.current = null;
-        sourceBufferRef.current = null;
-        audioQueueRef.current = [];
+        URL.revokeObjectURL(audioPlayerRef.current?.src || "")
+        mediaSourceRef.current = null
+        sourceBufferRef.current = null
+        audioQueueRef.current = []
       }
-      
+
       // Close any existing WebSocket connection
       if (websocketRef.current) {
-        const ws = websocketRef.current;
-        ws.close();
-        websocketRef.current = null;
+        const ws = websocketRef.current
+        ws.close()
+        websocketRef.current = null
       }
-      
+
       // Set up the audio player with the direct URL
-      const audioPlayer = audioPlayerRef.current;
+      const audioPlayer = audioPlayerRef.current
       if (audioPlayer) {
-        audioPlayer.src = podcast.audioFileUrl;
-        audioPlayer.load();
-        
+        audioPlayer.src = podcast.audioFileUrl
+        audioPlayer.load()
+
         // Set up event listeners for the audio player
         const handleLoadedMetadata = () => {
-          console.log("Audio metadata loaded, duration:", audioPlayer.duration);
-          setDuration(audioPlayer.duration || 0);
-        };
-        
+          console.log("Audio metadata loaded, duration:", audioPlayer.duration)
+          setDuration(audioPlayer.duration || 0)
+        }
+
         const handleEnded = () => {
-          console.log("Audio playback ended");
-          setIsPlaying(false);
+          console.log("Audio playback ended")
+          setIsPlaying(false)
           // Mark as listened when playback completes
           if (!listenedPodcasts[podcast.id]) {
-            setListenedPodcasts(prev => ({ ...prev, [podcast.id]: true }));
-            setListened(podcast.id);
+            setListenedPodcasts((prev) => ({ ...prev, [podcast.id]: true }))
+            setListened(podcast.id)
           }
-        };
-        
-        audioPlayer.addEventListener("loadedmetadata", handleLoadedMetadata);
-        audioPlayer.addEventListener("ended", handleEnded);
+        }
+
+        audioPlayer.addEventListener("loadedmetadata", handleLoadedMetadata)
+        audioPlayer.addEventListener("ended", handleEnded)
       }
     } else {
       // Use livestreaming approach
-      console.log("Using livestreaming for playback");
-      setPlaybackMode('stream');
-      setIsStreaming(true);
-      
+      console.log("Using livestreaming for playback")
+      setPlaybackMode("stream")
+      setIsStreaming(true)
+
       // Hardcoded test script for testing purposes
-      const testScript = ["Welcome to Auxiom! Today we're covering several important developments in trade and foreign policy.", "That's right. We'll be breaking down some complex government documents and exploring their potential impact.", 'First up, we\'re diving into the "Leveling the Playing Field 2.0 Act," also known as S. 691. This is all about making international trade fairer.', 'This bill, sponsored by Senator Reno, is an amendment to the Tariff Act of 1930. It aims to strengthen our laws against unfair trade practices like dumping and subsidies.', "It's designed to protect American businesses from unfair competition. The research analyst notes that it addresses companies trying to bypass tariffs or manipulate their currency.", "There's also a similar bill, sponsored by Ms. Van Duyne, that went to the Ways and Means Committee. It seems there's broad agreement on the need to update these trade laws.", "And let's not forget HR 322, which focuses on de minimis imports. These are goods coming in under a certain value, currently around 800 dollars.", 'The goal is to increase documentation requirements, implement stricter rules, and impose penalties for providing false information on these imports.', 'So, faster investigations, tougher rules, and more paperwork. It sounds like importers might face some challenges.', 'Potentially. News outlets like Reuters and the BBC report that the US Trade Representative is considering reciprocal tariffs.', "Meaning, if another country imposes tariffs on us, we'll respond with tariffs of our own.", "It has the potential to escalate into a trade war. But Senator Reno argues it's necessary to protect domestic industries.", "The analyst notes that this approach could lead to disputes with other countries. It's a delicate balancing act.", "It is. Now, let's shift gears and talk about a different perspective on trade policy.", "We're moving on to an Executive Calendar item that's highly critical of former President Trump's trade policies.", 'This document doesn\'t mince words. It calls Trump\'s tariffs a "national sales tax" that harms American families.', "It estimates that these tariffs could cost families around $5,000 per year. That's a significant burden.", "Reuters and the BBC covered the global backlash and uncertainty surrounding these tariffs during Trump's presidency.", 'Foreign Affairs even described it as a "turbulent new era" for the global economy.', "This document goes beyond just the economic impact. It also criticizes Trump's foreign policy, particularly towards Russia and Ukraine.", "It mentions the war in Ukraine and suggests Trump's approach weakened US credibility on the global stage.", 'The document even raises concerns about the possibility of him running for a third term, which is unconstitutional.', "That's a serious accusation. The document implies that these actions are eroding US standing in the world.", "It's a very harsh assessment. It will be interesting to see how this critique influences future policy decisions.", "Absolutely. Now, let's turn our attention to a joint resolution concerning Ukraine.", 'This resolution is quite significant. It aims to force the removal of US troops from Ukraine.', 'It cites the fact that US intelligence is assisting Ukraine in targeting Russian territory with ATACMS missiles.', 'These are long-range missiles. The resolution argues that this is happening without proper Congressional approval.', 'Which they say violates the War Powers Resolution. Any US involvement that constitutes "hostilities" requires Congressional authorization.', "They're also concerned about escalation, especially given Putin's updated nuclear doctrine.", "And Trump's recent statements likely aren't helping to de-escalate the situation.", 'If this resolution passes, all US forces would have to withdraw from Ukraine within 30 days, unless Congress grants an extension.', "That's a very tight deadline. It raises the question of how many personnel we're talking about.", 'The research notes mention about 14 special forces operators were present back in March of 2023. Plus, there are military contractors.', "But it's not just about the numbers. It's about the message it sends to Ukraine and Russia.", 'Newsweek reports that Ukraine is evolving into a military powerhouse. Withdrawing US support now could significantly alter the dynamics.', 'The Institute for the Study of War is constantly providing updates on the Russian offensive. Any shift in US policy will be felt on the ground.', 'DefenseScoop reports that Ukraine has destroyed thousands of Russian tanks. The conflict is intense.', 'So, what are the potential consequences of this resolution?', 'It could de-escalate tensions with Russia. However, it also creates significant uncertainty about our future support for Ukraine.', "It's a complex situation with potentially far-reaching implications for global security.", "Indeed. These are just a few of the important issues we're following closely here at Auxiom.", "We hope you've learned something new today. Thanks for listening, stay tuned for more episodes."];
+      const testScript = [
+        "Welcome to Auxiom! Today we're covering several important developments in trade and foreign policy.",
+        "That's right. We'll be breaking down some complex government documents and exploring their potential impact.",
+        'First up, we\'re diving into the "Leveling the Playing Field 2.0 Act," also known as S. 691. This is all about making international trade fairer.',
+        "This bill, sponsored by Senator Reno, is an amendment to the Tariff Act of 1930. It aims to strengthen our laws against unfair trade practices like dumping and subsidies.",
+        "It's designed to protect American businesses from unfair competition. The research analyst notes that it addresses companies trying to bypass tariffs or manipulate their currency.",
+        "There's also a similar bill, sponsored by Ms. Van Duyne, that went to the Ways and Means Committee. It seems there's broad agreement on the need to update these trade laws.",
+        "And let's not forget HR 322, which focuses on de minimis imports. These are goods coming in under a certain value, currently around 800 dollars.",
+        "The goal is to increase documentation requirements, implement stricter rules, and impose penalties for providing false information on these imports.",
+        "So, faster investigations, tougher rules, and more paperwork. It sounds like importers might face some challenges.",
+        "Potentially. News outlets like Reuters and the BBC report that the US Trade Representative is considering reciprocal tariffs.",
+        "Meaning, if another country imposes tariffs on us, we'll respond with tariffs of our own.",
+        "It has the potential to escalate into a trade war. But Senator Reno argues it's necessary to protect domestic industries.",
+        "The analyst notes that this approach could lead to disputes with other countries. It's a delicate balancing act.",
+        "It is. Now, let's shift gears and talk about a different perspective on trade policy.",
+        "We're moving on to an Executive Calendar item that's highly critical of former President Trump's trade policies.",
+        "This document doesn't mince words. It calls Trump's tariffs a \"national sales tax\" that harms American families.",
+        "It estimates that these tariffs could cost families around $5,000 per year. That's a significant burden.",
+        "Reuters and the BBC covered the global backlash and uncertainty surrounding these tariffs during Trump's presidency.",
+        'Foreign Affairs even described it as a "turbulent new era" for the global economy.',
+        "This document goes beyond just the economic impact. It also criticizes Trump's foreign policy, particularly towards Russia and Ukraine.",
+        "It mentions the war in Ukraine and suggests Trump's approach weakened US credibility on the global stage.",
+        "The document even raises concerns about the possibility of him running for a third term, which is unconstitutional.",
+        "That's a serious accusation. The document implies that these actions are eroding US standing in the world.",
+        "It's a very harsh assessment. It will be interesting to see how this critique influences future policy decisions.",
+        "Absolutely. Now, let's turn our attention to a joint resolution concerning Ukraine.",
+        "This resolution is quite significant. It aims to force the removal of US troops from Ukraine.",
+        "It cites the fact that US intelligence is assisting Ukraine in targeting Russian territory with ATACMS missiles.",
+        "These are long-range missiles. The resolution argues that this is happening without proper Congressional approval.",
+        'Which they say violates the War Powers Resolution. Any US involvement that constitutes "hostilities" requires Congressional authorization.',
+        "They're also concerned about escalation, especially given Putin's updated nuclear doctrine.",
+        "And Trump's recent statements likely aren't helping to de-escalate the situation.",
+        "If this resolution passes, all US forces would have to withdraw from Ukraine within 30 days, unless Congress grants an extension.",
+        "That's a very tight deadline. It raises the question of how many personnel we're talking about.",
+        "The research notes mention about 14 special forces operators were present back in March of 2023. Plus, there are military contractors.",
+        "But it's not just about the numbers. It's about the message it sends to Ukraine and Russia.",
+        "Newsweek reports that Ukraine is evolving into a military powerhouse. Withdrawing US support now could significantly alter the dynamics.",
+        "The Institute for the Study of War is constantly providing updates on the Russian offensive. Any shift in US policy will be felt on the ground.",
+        "DefenseScoop reports that Ukraine has destroyed thousands of Russian tanks. The conflict is intense.",
+        "So, what are the potential consequences of this resolution?",
+        "It could de-escalate tensions with Russia. However, it also creates significant uncertainty about our future support for Ukraine.",
+        "It's a complex situation with potentially far-reaching implications for global security.",
+        "Indeed. These are just a few of the important issues we're following closely here at Auxiom.",
+        "We hope you've learned something new today. Thanks for listening, stay tuned for more episodes.",
+      ]
 
       // Clean up existing MediaSource and related references for a new podcast
       if (mediaSourceRef.current) {
-        URL.revokeObjectURL(audioPlayerRef.current?.src || "");
-        mediaSourceRef.current = null;
-        sourceBufferRef.current = null;
-        audioQueueRef.current = [];
+        URL.revokeObjectURL(audioPlayerRef.current?.src || "")
+        mediaSourceRef.current = null
+        sourceBufferRef.current = null
+        audioQueueRef.current = []
       }
 
       // Create a new MediaSource object
-      mediaSourceRef.current = new MediaSource();
-      const mediaSourceUrl = URL.createObjectURL(mediaSourceRef.current);
+      mediaSourceRef.current = new MediaSource()
+      const mediaSourceUrl = URL.createObjectURL(mediaSourceRef.current)
       if (audioPlayerRef.current) {
-        audioPlayerRef.current.src = mediaSourceUrl;
+        audioPlayerRef.current.src = mediaSourceUrl
       }
 
       mediaSourceRef.current.addEventListener("sourceopen", () => {
-        console.log("MediaSource opened");
-        const mimeType = "audio/mpeg"; // Consider making this configurable
+        console.log("MediaSource opened")
+        const mimeType = "audio/mpeg" // Consider making this configurable
 
         if (!MediaSource.isTypeSupported(mimeType)) {
-          console.error(`MIME type "${mimeType}" is not supported`);
-          return;
+          console.error(`MIME type "${mimeType}" is not supported`)
+          return
         }
 
-        const sourceBuffer = mediaSourceRef.current?.addSourceBuffer(mimeType);
-        sourceBufferRef.current = sourceBuffer || null;
+        const sourceBuffer = mediaSourceRef.current?.addSourceBuffer(mimeType)
+        sourceBufferRef.current = sourceBuffer || null
 
         sourceBuffer?.addEventListener("updateend", () => {
           if (audioQueueRef.current.length > 0 && !sourceBuffer.updating) {
-            const nextChunk = audioQueueRef.current.shift();
+            const nextChunk = audioQueueRef.current.shift()
             if (nextChunk) {
               try {
-                sourceBuffer.appendBuffer(nextChunk);
+                sourceBuffer.appendBuffer(nextChunk)
               } catch (error) {
-                console.error("Error appending buffer:", error);
+                console.error("Error appending buffer:", error)
               }
             }
           }
-        });
-      });
+        })
+      })
 
       // Connect to WebSocket and pass the hardcoded test script
-      console.log("TRYING to connect");
-      connectToWebSocket(testScript);
+      console.log("TRYING to connect")
+      connectToWebSocket(testScript)
     }
-  };
+  }
 
   const connectToWebSocket = (script: string[]) => {
-    const wsUrl = `ws://127.0.0.1:8000/ws/podcast`; // WebSocket server URL
-    websocketRef.current = new WebSocket(wsUrl);
+    const wsUrl = `ws://127.0.0.1:8000/ws/podcast` // WebSocket server URL
+    websocketRef.current = new WebSocket(wsUrl)
 
-    websocketRef.current.binaryType = "arraybuffer";
-    setBufferedBytes(0); // Reset buffered bytes counter
-    setIsWebSocketConnected(true);
+    websocketRef.current.binaryType = "arraybuffer"
+    setBufferedBytes(0) // Reset buffered bytes counter
+    setIsWebSocketConnected(true)
 
     websocketRef.current.onopen = () => {
-      console.log("WebSocket connection established");
-      setIsWebSocketConnected(true);
+      console.log("WebSocket connection established")
+      setIsWebSocketConnected(true)
 
       // Send the script to the server
       websocketRef.current?.send(
@@ -243,75 +300,75 @@ export default function LearningProgress({
           podcast_id: currentPodcast?.id,
           user_id: id,
           episode: currentPodcast?.episodeNumber,
-        })
-      );
-    };
+        }),
+      )
+    }
 
     websocketRef.current.onmessage = (event) => {
       if (event.data instanceof ArrayBuffer) {
-        console.log(`Received audio data: ${event.data.byteLength} bytes`);
-        
+        console.log(`Received audio data: ${event.data.byteLength} bytes`)
+
         // Update buffered bytes counter
-        setBufferedBytes(prev => {
-          const newTotal = prev + event.data.byteLength;
-          console.log(`Total buffered: ${newTotal} bytes`);
-          
-          return newTotal;
-        });
+        setBufferedBytes((prev) => {
+          const newTotal = prev + event.data.byteLength
+          console.log(`Total buffered: ${newTotal} bytes`)
+
+          return newTotal
+        })
 
         if (!sourceBufferRef.current) {
-          console.warn("No SourceBuffer available, queuing chunk");
-          audioQueueRef.current.push(event.data);
-          return;
+          console.warn("No SourceBuffer available, queuing chunk")
+          audioQueueRef.current.push(event.data)
+          return
         }
 
         if (sourceBufferRef.current.updating) {
-          audioQueueRef.current.push(event.data);
+          audioQueueRef.current.push(event.data)
         } else {
           try {
-            sourceBufferRef.current.appendBuffer(event.data);
-            console.log(`Appended chunk of size: ${event.data.byteLength}`);
+            sourceBufferRef.current.appendBuffer(event.data)
+            console.log(`Appended chunk of size: ${event.data.byteLength}`)
           } catch (error) {
-            console.error("Error appending buffer:", error);
-            audioQueueRef.current.push(event.data);
+            console.error("Error appending buffer:", error)
+            audioQueueRef.current.push(event.data)
           }
         }
       } else {
         try {
-          const message = JSON.parse(event.data as string);
+          const message = JSON.parse(event.data as string)
           switch (message.type) {
             case "complete":
-              console.log("Podcast streaming completed");
-              setIsStreaming(false);
-              break;
+              console.log("Podcast streaming completed")
+              setIsStreaming(false)
+              break
             case "error":
-              console.error("Error:", message.message);
-              setIsStreaming(false);
-              setIsPlaying(false);
-              break;
+              console.error("Error:", message.message)
+              setIsStreaming(false)
+              setIsPlaying(false)
+              break
             default:
-              console.log("Received WebSocket message:", message);
+              console.log("Received WebSocket message:", message)
           }
         } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
+          console.error("Error parsing WebSocket message:", error)
         }
       }
-    };
+    }
 
     websocketRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      setIsWebSocketConnected(false);
+      console.error("WebSocket error:", error)
+      setIsWebSocketConnected(false)
       // Don't stop playback on WebSocket error
-    };
+    }
 
     websocketRef.current.onclose = () => {
-      console.log("WebSocket connection closed");
-      setIsWebSocketConnected(false);
-      
+      console.log("WebSocket connection closed")
+      setIsWebSocketConnected(false)
+
       // If we're in streaming mode and playing, we'll let the waiting event handler
       // take care of pausing the podcast when needed
-    };
-  };
+    }
+  }
 
   const togglePlayPause = () => {
     if (audioPlayerRef.current) {
@@ -329,90 +386,87 @@ export default function LearningProgress({
   const handleSkipForward = () => {
     if (audioPlayerRef.current) {
       // For direct audio files, skip forward by 10 seconds
-      if (playbackMode === 'file') {
+      if (playbackMode === "file") {
         audioPlayerRef.current.currentTime = Math.min(
           audioPlayerRef.current.currentTime + 10,
-          audioPlayerRef.current.duration
-        );
-        setCurrentTime(audioPlayerRef.current.currentTime);
-      } 
+          audioPlayerRef.current.duration,
+        )
+        setCurrentTime(audioPlayerRef.current.currentTime)
+      }
       // For streaming, only allow skipping forward if we're playing and within the listened portion
       else if (isPlaying && currentTime < maxListenedTime) {
-        audioPlayerRef.current.currentTime = Math.min(
-          audioPlayerRef.current.currentTime + 10,
-          maxListenedTime
-        );
-        setCurrentTime(audioPlayerRef.current.currentTime);
+        audioPlayerRef.current.currentTime = Math.min(audioPlayerRef.current.currentTime + 10, maxListenedTime)
+        setCurrentTime(audioPlayerRef.current.currentTime)
       }
     }
-  };
+  }
 
   const handleSkipBackward = () => {
     if (audioPlayerRef.current) {
       // When streaming, only allow skipping backward up to the max listened time
-      const minTime = 0;
-      audioPlayerRef.current.currentTime = Math.max(audioPlayerRef.current.currentTime - 10, minTime);
-      setCurrentTime(audioPlayerRef.current.currentTime);
+      const minTime = 0
+      audioPlayerRef.current.currentTime = Math.max(audioPlayerRef.current.currentTime - 10, minTime)
+      setCurrentTime(audioPlayerRef.current.currentTime)
     }
-  };
+  }
 
   useEffect(() => {
     // Create audio element
-    audioPlayerRef.current = new Audio();
-    audioPlayerRef.current.controls = true; // Make the audio player visible for debugging
-    audioPlayerRef.current.autoplay = false; // Important: don't autoplay until we're ready
+    audioPlayerRef.current = new Audio()
+    audioPlayerRef.current.controls = true // Make the audio player visible for debugging
+    audioPlayerRef.current.autoplay = false // Important: don't autoplay until we're ready
 
     // Append the audio player to the DOM for debugging
-    const audioContainer = document.getElementById("audio-debug-container");
+    const audioContainer = document.getElementById("audio-debug-container")
     if (audioContainer && audioPlayerRef.current) {
-      audioContainer.appendChild(audioPlayerRef.current);
+      audioContainer.appendChild(audioPlayerRef.current)
     }
 
     // Add debug listeners
     const handleCanPlay = () => {
-      console.log("Audio can play now");
+      console.log("Audio can play now")
       if (isPlaying && audioPlayerRef.current && audioPlayerRef.current.src) {
-        console.log("Attempting to play on canplay event");
+        console.log("Attempting to play on canplay event")
         audioPlayerRef.current.play().catch((err) => {
-          console.error("Error starting playback on canplay:", err);
+          console.error("Error starting playback on canplay:", err)
           // Consider handling specific errors like autoplay prevention
           if (err.name === "NotAllowedError") {
-            console.log("Autoplay prevented by browser.");
+            console.log("Autoplay prevented by browser.")
             // You might want to show a message to the user to interact with the player
           }
-        });
-        setIsPlaying(true);
+        })
+        setIsPlaying(true)
       }
-    };
+    }
 
-    const handlePlaying = () => console.log("Audio is playing");
-    const handlePause = () => console.log("Audio is paused");
-    const handleWaiting = () => console.log("Audio waiting for more data");
-    const handleStalled = () => console.log("Audio playback has stalled");
-    const handleError = (e: Event & { target: HTMLAudioElement }) => console.error("Audio error:", e.target.error);
+    const handlePlaying = () => console.log("Audio is playing")
+    const handlePause = () => console.log("Audio is paused")
+    const handleWaiting = () => console.log("Audio waiting for more data")
+    const handleStalled = () => console.log("Audio playback has stalled")
+    const handleError = (e: Event & { target: HTMLAudioElement }) => console.error("Audio error:", e.target.error)
 
     if (audioPlayerRef.current) {
-      audioPlayerRef.current.addEventListener("canplay", handleCanPlay);
-      audioPlayerRef.current.addEventListener("playing", handlePlaying);
-      audioPlayerRef.current.addEventListener("pause", handlePause);
-      audioPlayerRef.current.addEventListener("waiting", handleWaiting);
-      audioPlayerRef.current.addEventListener("stalled", handleStalled);
+      audioPlayerRef.current.addEventListener("canplay", handleCanPlay)
+      audioPlayerRef.current.addEventListener("playing", handlePlaying)
+      audioPlayerRef.current.addEventListener("pause", handlePause)
+      audioPlayerRef.current.addEventListener("waiting", handleWaiting)
+      audioPlayerRef.current.addEventListener("stalled", handleStalled)
     }
 
     // Cleanup logic
     return () => {
       if (audioPlayerRef.current) {
-        audioPlayerRef.current.removeEventListener("canplay", handleCanPlay);
-        audioPlayerRef.current.removeEventListener("playing", handlePlaying);
-        audioPlayerRef.current.removeEventListener("pause", handlePause);
-        audioPlayerRef.current.removeEventListener("waiting", handleWaiting);
-        audioPlayerRef.current.removeEventListener("stalled", handleStalled);
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current.src = "";
-        audioPlayerRef.current = null;
+        audioPlayerRef.current.removeEventListener("canplay", handleCanPlay)
+        audioPlayerRef.current.removeEventListener("playing", handlePlaying)
+        audioPlayerRef.current.removeEventListener("pause", handlePause)
+        audioPlayerRef.current.removeEventListener("waiting", handleWaiting)
+        audioPlayerRef.current.removeEventListener("stalled", handleStalled)
+        audioPlayerRef.current.pause()
+        audioPlayerRef.current.src = ""
+        audioPlayerRef.current = null
       }
-    };
-  }, []);
+    }
+  }, [])
 
   useEffect(() => {
     if (audioPlayerRef.current) {
@@ -447,40 +501,40 @@ export default function LearningProgress({
     } else {
       // Clean up if player is closed or no podcast is selected
       if (websocketRef.current) {
-        websocketRef.current.close();
-        websocketRef.current = null;
+        websocketRef.current.close()
+        websocketRef.current = null
       }
       if (mediaSourceRef.current && mediaSourceRef.current.readyState === "open") {
-        mediaSourceRef.current.endOfStream();
-        URL.revokeObjectURL(audioPlayerRef.current?.src || "");
-        mediaSourceRef.current = null;
-        sourceBufferRef.current = null;
-        audioQueueRef.current = [];
+        mediaSourceRef.current.endOfStream()
+        URL.revokeObjectURL(audioPlayerRef.current?.src || "")
+        mediaSourceRef.current = null
+        sourceBufferRef.current = null
+        audioQueueRef.current = []
         if (audioPlayerRef.current) {
-          audioPlayerRef.current.src = "";
-          audioPlayerRef.current.load();
+          audioPlayerRef.current.src = ""
+          audioPlayerRef.current.load()
         }
       }
-      setIsStreaming(false); // Set streaming to false when player is closed
-      setIsPlaying(false);
+      setIsStreaming(false) // Set streaming to false when player is closed
+      setIsPlaying(false)
     }
-  }, [playerOpen, currentPodcast?.script]);
+  }, [playerOpen, currentPodcast?.script])
 
   useEffect(() => {
     const updateTime = () => {
       if (audioPlayerRef.current) {
-        const newTime = audioPlayerRef.current.currentTime;
-        setCurrentTime(newTime);
-        setDuration(audioPlayerRef.current.duration);
-        
+        const newTime = audioPlayerRef.current.currentTime
+        setCurrentTime(newTime)
+        setDuration(audioPlayerRef.current.duration)
+
         // Update max listened time if current time is greater
         if (newTime > maxListenedTime) {
-          setMaxListenedTime(newTime);
+          setMaxListenedTime(newTime)
         }
-        
+
         // Check if we're at the live position (max listened time)
         // Use a small threshold (0.1 seconds) to account for small timing differences
-        setIsAtLivePosition(Math.abs(newTime - maxListenedTime) < 0.1);
+        setIsAtLivePosition(Math.abs(newTime - maxListenedTime) < 0.1)
       }
     }
 
@@ -508,54 +562,55 @@ export default function LearningProgress({
 
   // Add a new effect to handle buffer exhaustion
   useEffect(() => {
-    if (!isWebSocketConnected && playbackMode === 'stream' && audioPlayerRef.current) {
+    if (!isWebSocketConnected && playbackMode === "stream" && audioPlayerRef.current) {
       const handleEnded = () => {
-        console.log("Audio playback ended");
-        setIsPlaying(false);
-        setIsStreaming(false); // Set streaming to false when playback ends
-      };
+        console.log("Audio playback ended")
+        setIsPlaying(false)
+        setIsStreaming(false) // Set streaming to false when playback ends
+      }
 
       const handleWaiting = () => {
-        console.log("Audio waiting for more data");
+        console.log("Audio waiting for more data")
         // If we're waiting for more data and the WebSocket is closed,
         // we should pause playback
         if (!isWebSocketConnected) {
-          console.log("WebSocket closed and waiting for data, pausing playback");
-          setIsPlaying(false);
-          setIsStreaming(false); // Set streaming to false when buffer is exhausted
-          
+          console.log("WebSocket closed and waiting for data, pausing playback")
+          setIsPlaying(false)
+          setIsStreaming(false) // Set streaming to false when buffer is exhausted
+
           // Show a toast notification to inform the user
           toast({
             title: "Stream ended",
             description: "The live stream has ended.",
-          });
+          })
         }
-      };
+      }
 
       // Check if we're already waiting for data when WebSocket closes
-      if (audioPlayerRef.current.readyState === 3) { // HAVE_FUTURE_DATA
-        console.log("WebSocket closed and waiting for data, pausing playback");
-        setIsPlaying(false);
-        setIsStreaming(false);
-        
+      if (audioPlayerRef.current.readyState === 3) {
+        // HAVE_FUTURE_DATA
+        console.log("WebSocket closed and waiting for data, pausing playback")
+        setIsPlaying(false)
+        setIsStreaming(false)
+
         // Show a toast notification to inform the user
         toast({
           title: "Stream ended",
           description: "The live stream has ended.",
-        });
+        })
       }
 
-      audioPlayerRef.current.addEventListener("ended", handleEnded);
-      audioPlayerRef.current.addEventListener("waiting", handleWaiting);
+      audioPlayerRef.current.addEventListener("ended", handleEnded)
+      audioPlayerRef.current.addEventListener("waiting", handleWaiting)
 
       return () => {
         if (audioPlayerRef.current) {
-          audioPlayerRef.current.removeEventListener("ended", handleEnded);
-          audioPlayerRef.current.removeEventListener("waiting", handleWaiting);
+          audioPlayerRef.current.removeEventListener("ended", handleEnded)
+          audioPlayerRef.current.removeEventListener("waiting", handleWaiting)
         }
-      };
+      }
     }
-  }, [isWebSocketConnected, playbackMode]);
+  }, [isWebSocketConnected, playbackMode])
 
   return (
     <div className="min-h-screen py-6 sm:py-12 px-2 sm:px-4">
@@ -690,9 +745,9 @@ export default function LearningProgress({
                                               href={newsArticle[2]}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className="flex flex-col w-[280px] shrink-0 rounded-md border border-gray-200 bg-gray-800 p-3 hover:bg-gray-600 transition-colors"
+                                              className="flex flex-col w-[280px] shrink-0 rounded-md border border-gray-200 bg-gray-800 p-3 hover:bg-gray-600 transition-colors overflow-hidden"
                                             >
-                                              <h6 className="font-medium text-white line-clamp-2 h-12">
+                                              <h6 className="font-medium text-white break-words whitespace-normal h-12 overflow-hidden text-ellipsis line-clamp-2">
                                                 {newsArticle[0]}
                                               </h6>
                                               <span className="text-gray-200 text-xs mt-2">{newsArticle[1]}</span>
@@ -767,15 +822,15 @@ export default function LearningProgress({
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-gray-300">
                 <span>{formatTime(currentTime)}</span>
-                {playbackMode === 'stream' ? (
+                {playbackMode === "stream" ? (
                   <span>{formatTime(maxListenedTime)}</span>
                 ) : (
                   <span>{formatTime(duration)}</span>
                 )}
               </div>
-              
+
               {/* Only show slider for file playback mode */}
-              {playbackMode === 'file' && (
+              {playbackMode === "file" && (
                 <div className="relative">
                   <Slider
                     value={[currentTime]}
@@ -784,38 +839,38 @@ export default function LearningProgress({
                     className="cursor-pointer bg-gray-500/50"
                     onValueChange={(value) => {
                       if (audioPlayerRef.current && !isNaN(value[0])) {
-                        const seekTime = Math.min(value[0], duration);
+                        const seekTime = Math.min(value[0], duration)
 
                         // Check if the seek position is within the buffered range
-                        let canSeek = false;
+                        let canSeek = false
                         if (audioPlayerRef.current.buffered.length > 0) {
                           for (let i = 0; i < audioPlayerRef.current.buffered.length; i++) {
                             if (
                               seekTime >= audioPlayerRef.current.buffered.start(i) &&
                               seekTime <= audioPlayerRef.current.buffered.end(i)
                             ) {
-                              canSeek = true;
-                              break;
+                              canSeek = true
+                              break
                             }
                           }
                         }
 
                         if (canSeek) {
-                          audioPlayerRef.current.currentTime = seekTime;
-                          setCurrentTime(seekTime);
+                          audioPlayerRef.current.currentTime = seekTime
+                          setCurrentTime(seekTime)
                         } else {
-                          console.log("Cannot seek to unbuffered position:", seekTime);
+                          console.log("Cannot seek to unbuffered position:", seekTime)
                           // Revert to a valid position
-                          setCurrentTime(audioPlayerRef.current.currentTime);
+                          setCurrentTime(audioPlayerRef.current.currentTime)
                         }
                       }
                     }}
                   />
                 </div>
               )}
-              
+
               {/* Live stream indicator */}
-              {playbackMode === 'stream' && (
+              {playbackMode === "stream" && (
                 <div className="flex items-center justify-center py-2">
                   <div className="flex items-center gap-2 text-amber-200 text-sm">
                     <Radio className="h-4 w-4 animate-pulse" />
