@@ -26,7 +26,7 @@ import {  AlertDialog,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { signOut, deleteAccount } from '@/lib/actions';
+import { deleteAccount, signOut } from '@/lib/actions';
 
 
 const deleteAccountFormSchema = z.object({
@@ -44,7 +44,7 @@ export function DeleteAccountForm() {
   const form = useForm<DeleteAccountFormValues>({
     resolver: zodResolver(deleteAccountFormSchema),
     defaultValues: {
-      confirmDelete: "" as "DELETE",
+      confirmDelete: "DELETE",
     },
   })
 
@@ -52,6 +52,14 @@ export function DeleteAccountForm() {
     try {
       await deleteAccount()
       setIsDialogOpen(false)
+      await signOut()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async function handleSignOut() {
+    try {
       await signOut()
     } catch (error) {
       console.error(error)
@@ -80,7 +88,11 @@ export function DeleteAccountForm() {
                 <FormItem>
                   <FormLabel>Confirm Deletion</FormLabel>
                   <FormControl>
-                    <Input placeholder="Type DELETE to confirm" {...field} />
+                    <Input 
+                      placeholder="Type DELETE to confirm" 
+                      value={field.value} // Explicitly set value
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormDescription>
                     This action is irreversible. Please type DELETE to confirm.
@@ -101,6 +113,7 @@ export function DeleteAccountForm() {
         </Form>
       </AlertDialogContent>
     </AlertDialog>
+    <Button onClick={handleSignOut}>Sign Out</Button>
     </div>
   )
 }
