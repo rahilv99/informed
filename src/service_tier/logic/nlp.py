@@ -44,7 +44,7 @@ def summarize(title, text, use = 'summary'):
             prompt += f"Article {i}: {title}, "
     if use == 'summary':
         prompt = f"Provide a succinct summary about the collection of articles with the topic '{title}'.\
-            Highlight the key details. Structure your output as a simple plain text response with only alphabetical characters. Only include the summary itself;\
+            Highlight the key details. Structure your output as a simple plain text response with only lowercase english characters. Only include the summary itself;\
             avoid any introductions, explanations, or meta-comments. This summary will go directly into an email newsletter. Make the summary attention-grabbing and informative.\
             Keep it less than 80 tokens.\
             Articles: \n {text}"
@@ -130,7 +130,7 @@ def underwriter_research(cluster_df):
         4. Implications: Potential impact or consequences of this document
         5. Context: Historical or policy context that would help listeners understand
 
-        Format your response as a structured set of notes, not as a narrative.
+        Format your response as a structured set of notes, not as a narrative. Write in all lowercase english letters.
         Keep your response less than 200 tokens.
         """
         
