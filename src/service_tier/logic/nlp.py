@@ -15,7 +15,7 @@ from logic.pulse_output import PulseOutput
 import common.sqs
 import common.s3
 
-db_access_url = os.environ.get('DB_ACCESS_URL')
+db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres'
 
 TEMP_BASE = "/tmp"
 

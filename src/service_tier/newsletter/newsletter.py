@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import psycopg2 
 
-db_access_url = "postgresql://auxiompostgres:astrapodcast!@auxiom-db.cvoqq0ms6fsc.us-east-1.rds.amazonaws.com:5432/postgres"
+db_access_url = "postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
 
 def get_emails():
     try:
