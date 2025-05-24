@@ -38,5 +38,7 @@ RUN npm install
 # Copy source code
 COPY src/ ./src/
 
+ENV HOME=/tmp
+
 # Set the Lambda handler
 CMD [ "src/index.handler" ]

@@ -8,7 +8,8 @@ pulse_json = {
         "user_name": "Rahil Verma",
         "user_email": "rahilv99@gmail.com",
         "plan": "free",
-        "episode": "1"
+        "episode": "1",
+        "keywords": ["Tarriffs", "Inflation", "Ukraine", "Immigration"]
     }
 }
 
