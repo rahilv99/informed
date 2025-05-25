@@ -7,6 +7,7 @@ const { withRetry } = require('../utils/retry');
 const config = require('../config');
 const { Readability } = require('@mozilla/readability');
 const { JSDOM } = require('jsdom');
+const cheerio = require('cheerio');
 
 class ArticleScraper {
   /**
@@ -54,7 +55,13 @@ class ArticleScraper {
     
     try {
       // Create a new page
-      page = await createPage(this.browser);
+      page = await Promise.race([ createPage(this.browser), 
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Page creation timeout')), this.timeout+100)) 
+      ]);
+      if (!page) {
+        console.error('Failed to create a new page within the timeout period.');
+        return '';
+      }
       
       // Load the Google News page with a timeout
       console.log('Attempting to load page with Puppeteer...');
@@ -129,7 +136,21 @@ class ArticleScraper {
         } else {
           console.warn('Error during redirect monitoring:', error.message);
         }
-      }
+
+        try {
+          await Promise.race([
+            page.close(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Close timeout')), 5000))
+          ]);
+        } catch (err) {
+          console.error('Failed to close page:', err);
+          console.log('Restarting browser...');
+          await this.browser.close();
+          console.log('Closed browser...');
+          this.browser = await initBrowser();
+        }
+        return '';
+    }
       
       // Get the content
       const html = await page.content();
@@ -140,7 +161,24 @@ class ArticleScraper {
       });
       const reader = new Readability(dom.window.document);
       const content = reader.parse();
-      
+      let cleaned; 
+
+      if (content && content.textContent.length > 100) {
+        console.log(`Readability parsed content from: ${currentUrl}`);
+        console.log(`Extracted ${content.textContent.length} characters`);
+        console.log('Text (first 2000 chars): ', content.textContent.slice(0, 2000));
+        console.log('Excerpt: ', content.excerpt);
+        cleaned = cleanText(content.textContent);
+        console.log(`After cleaning text: ${cleaned.length} characters`);
+      } else {
+        console.error('Failed to parse content with Readability. Manual parsing ');
+        const content = await this.getContent(page);
+        console.log(`Extracted ${content.length} characters`);
+        console.log('Text (first 2000 chars): ', content.slice(0, 2000));
+        cleaned = cleanText(content);
+        console.log(`After cleaning text: ${cleaned.length} characters`);
+      }
+
       // Close the page
       try {
         await Promise.race([
@@ -154,33 +192,186 @@ class ArticleScraper {
         console.log('Closed browser...');
         this.browser = await initBrowser();
       }
-      console.log(content);
-      if (!content) {
-        console.error('Failed to parse content with Readability');
+      if (!cleaned || cleaned.length === 0) {
+        console.warn('No content extracted or cleaned text is empty.');
         return '';
       } else {
-        console.log(`Extracted ${content.textContent.length} characters`);
-        return cleanText(content.textContent);
+        return cleaned; // '' if error, otherwise cleaned text
       }
     } catch (error) {
       console.error(`Error following URL ${googleUrl}:`, error);
-      try {
-        await Promise.race([
-          page.close(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Close timeout')), 5000))
-        ]);
-      } catch (err) {
-        console.error('Failed to close page:', err);
-        console.log('Restarting browser...');
-        await this.browser.close();
-        console.log('Closed browser...');
-        this.browser = await initBrowser();
+
+      async function isPageOpen(page) {
+        try {
+          await page.url(); // Will throw if page is closed
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      // Then replace the if (page) check with:
+      if (await isPageOpen(page)) {
+        try {
+          await Promise.race([
+            page.close(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Close timeout')), 5000))
+          ]);
+        } catch (err) {
+          console.error('Failed to close page:', err);
+          // ...rest of error handling
+        }
       }
       return '';
     }
   }
   
-  
+  /**
+   * Extract content from a page
+   * 
+   * @param {Page} page - Puppeteer page object
+   * @returns {Promise<string>} - Extracted content
+   */
+  async getContent(page) {
+    console.log(`Attempting to extract content from: ${page.url()}`);
+    
+    try {
+      // Wait for content to load
+      await page.waitForSelector('body', { timeout: this.timeout });
+      
+      // Extract article content directly with Puppeteer
+      const content = await page.evaluate(() => {
+        // Try to find the main article content
+        const articleSelectors = [
+          'article',
+          '[role="article"]',
+          '.article-content',
+          '.article-body',
+          '.story-body',
+          '.story-content',
+          '.post-content',
+          '.entry-content',
+          'main',
+          '#content',
+          '.content'
+        ];
+        
+        let articleElement = null;
+        
+        // Try each selector until we find content
+        for (const selector of articleSelectors) {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            // Use the largest element by content length
+            let maxLength = 0;
+            let bestElement = null;
+            
+            for (const element of elements) {
+              if (element.textContent.length > maxLength) {
+                maxLength = element.textContent.length;
+                bestElement = element;
+              }
+            }
+            
+            if (bestElement && maxLength > 500) {
+              articleElement = bestElement;
+              break;
+            }
+          }
+        }
+        
+        // If no article element found, use body
+        if (!articleElement) {
+          articleElement = document.body;
+        }
+        
+        // Remove unwanted elements
+        const unwantedSelectors = [
+          'script',
+          'style',
+          'nav',
+          'header',
+          'footer',
+          '.nav',
+          '.header',
+          '.footer',
+          '.menu',
+          '.sidebar',
+          '.comments',
+          '.advertisement',
+          '.ad',
+          '.social',
+          '.related',
+          '.recommended'
+        ];
+        
+        for (const selector of unwantedSelectors) {
+          const elements = articleElement.querySelectorAll(selector);
+          for (const element of elements) {
+            if (element.parentNode) {
+              element.parentNode.removeChild(element);
+            }
+          }
+        }
+        
+        return articleElement.textContent || document.body.textContent || '';
+      });
+      
+      // Clean the extracted text
+      const cleanedText = cleanText(content);
+      console.log(`Extracted text length: ${cleanedText.length} characters`);
+      
+      return cleanedText;
+    } catch (error) {
+      console.warn(`Error getting article content: ${error}`);
+      
+      // Fallback: get HTML and use Cheerio
+      try {
+        const html = await page.content();
+        const $ = cheerio.load(html);
+        
+        // Remove unwanted elements
+        $('script, style, nav, header, footer, .nav, .header, .footer, .menu, .sidebar, .comments, .advertisement, .ad, .social, .related, .recommended').remove();
+        
+        // Get text from article or main content
+        let text = '';
+        const articleSelectors = [
+          'article',
+          '[role="article"]',
+          '.article-content',
+          '.article-body',
+          '.story-body',
+          '.story-content',
+          '.post-content',
+          '.entry-content',
+          'main',
+          '#content',
+          '.content'
+        ];
+        
+        for (const selector of articleSelectors) {
+          if ($(selector).length) {
+            text = $(selector).text();
+            if (text.length > 500) break;
+          }
+        }
+        
+        // If no article found, use body
+        if (!text || text.length < 500) {
+          text = $('body').text();
+        }
+        
+        const cleanedText = cleanText(text);
+        console.log(`Fallback extraction text length: ${cleanedText.length} characters`);
+        
+        return cleanedText;
+      } catch (fallbackError) {
+        console.error(`Fallback extraction failed: ${fallbackError}`);
+        return '';
+      }
+    }
+  }
+
   /**
    * Close the browser and clean up resources
    */

@@ -73,7 +73,7 @@ async function createPage(browser) {
   const page = await browser.newPage();
   
   // Set default timeout
-  page.setDefaultTimeout(config.browser.defaultTimeout);
+  page.setDefaultTimeout(5000); // 5 seconds
   
   // Block unnecessary resources to improve performance
   await page.setRequestInterception(true);
