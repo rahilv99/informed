@@ -5,7 +5,6 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
 import { CoreStack } from "./core_stack";
-import * as ecr from 'aws-cdk-lib/aws-ecr';
 
 interface ExtendedProps extends cdk.StackProps {
   readonly coreStack: CoreStack;
@@ -38,8 +37,8 @@ export class CronStack extends cdk.Stack {
     // Create a CloudWatch Event Rule for the cron schedule
     const scheduleRule = new events.Rule(this, 'ScheduleRule', {
       schedule: events.Schedule.cron({
-        minute: '0', // Run every hour at the top of the hour
-        hour: '*',
+        minute: '*',
+        hour: '11',
         day: '*',
         month: '*',
         year: '*',

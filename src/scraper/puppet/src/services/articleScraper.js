@@ -171,7 +171,7 @@ class ArticleScraper {
         cleaned = cleanText(content.textContent);
         console.log(`After cleaning text: ${cleaned.length} characters`);
       } else {
-        console.error('Failed to parse content with Readability. Manual parsing ');
+        console.warn('Failed to parse content with Readability. Manual parsing ');
         const content = await this.getContent(page);
         console.log(`Extracted ${content.length} characters`);
         console.log('Text (first 2000 chars): ', content.slice(0, 2000));
@@ -234,100 +234,102 @@ class ArticleScraper {
    */
   async getContent(page) {
     console.log(`Attempting to extract content from: ${page.url()}`);
+    const OPERATION_TIMEOUT = 5000; // 5 second timeout for each operation
     
     try {
-      // Wait for content to load
-      await page.waitForSelector('body', { timeout: this.timeout });
+      // Wait for content to load with timeout
+      await Promise.race([
+        page.waitForSelector('body', { timeout: OPERATION_TIMEOUT }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Body selector timeout')), OPERATION_TIMEOUT)
+        )
+      ]);
       
-      // Extract article content directly with Puppeteer
-      const content = await page.evaluate(() => {
-        // Try to find the main article content
-        const articleSelectors = [
-          'article',
-          '[role="article"]',
-          '.article-content',
-          '.article-body',
-          '.story-body',
-          '.story-content',
-          '.post-content',
-          '.entry-content',
-          'main',
-          '#content',
-          '.content'
-        ];
-        
-        let articleElement = null;
-        
-        // Try each selector until we find content
-        for (const selector of articleSelectors) {
-          const elements = document.querySelectorAll(selector);
-          if (elements.length > 0) {
-            // Use the largest element by content length
-            let maxLength = 0;
-            let bestElement = null;
-            
-            for (const element of elements) {
-              if (element.textContent.length > maxLength) {
-                maxLength = element.textContent.length;
-                bestElement = element;
+      // Extract article content with timeout
+      const content = await Promise.race([
+        page.evaluate(() => {
+          // Try to find the main article content
+          const articleSelectors = [
+            'article',
+            '[role="article"]',
+            '.article-content',
+            '.article-body',
+            '.story-body',
+            '.story-content',
+            '.post-content',
+            '.entry-content',
+            'main',
+            '#content',
+            '.content'
+          ];
+          
+          let articleElement = null;
+          
+          // Try each selector until we find content
+          for (const selector of articleSelectors) {
+            const elements = document.querySelectorAll(selector);
+            if (elements.length > 0) {
+              // Use the largest element by content length
+              let maxLength = 0;
+              let bestElement = null;
+              
+              for (const element of elements) {
+                if (element.textContent.length > maxLength) {
+                  maxLength = element.textContent.length;
+                  bestElement = element;
+                }
+              }
+              
+              if (bestElement && maxLength > 500) {
+                articleElement = bestElement;
+                break;
               }
             }
-            
-            if (bestElement && maxLength > 500) {
-              articleElement = bestElement;
-              break;
-            }
           }
-        }
-        
-        // If no article element found, use body
-        if (!articleElement) {
-          articleElement = document.body;
-        }
-        
-        // Remove unwanted elements
-        const unwantedSelectors = [
-          'script',
-          'style',
-          'nav',
-          'header',
-          'footer',
-          '.nav',
-          '.header',
-          '.footer',
-          '.menu',
-          '.sidebar',
-          '.comments',
-          '.advertisement',
-          '.ad',
-          '.social',
-          '.related',
-          '.recommended'
-        ];
-        
-        for (const selector of unwantedSelectors) {
-          const elements = articleElement.querySelectorAll(selector);
-          for (const element of elements) {
-            if (element.parentNode) {
-              element.parentNode.removeChild(element);
-            }
+          
+          // If no article element found, use body
+          if (!articleElement) {
+            articleElement = document.body;
           }
-        }
-        
-        return articleElement.textContent || document.body.textContent || '';
-      });
+          
+          // Remove unwanted elements
+          const unwantedSelectors = [
+            'script', 'style', 'nav', 'header', 'footer',
+            '.nav', '.header', '.footer', '.menu', '.sidebar',
+            '.comments', '.advertisement', '.ad', '.social',
+            '.related', '.recommended'
+          ];
+          
+          for (const selector of unwantedSelectors) {
+            const elements = articleElement.querySelectorAll(selector);
+            elements.forEach(el => el.parentNode?.removeChild(el));
+          }
+          
+          return articleElement.textContent || document.body.textContent || '';
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Content extraction timeout')), OPERATION_TIMEOUT)
+        )
+      ]);
       
       // Clean the extracted text
       const cleanedText = cleanText(content);
       console.log(`Extracted text length: ${cleanedText.length} characters`);
       
       return cleanedText;
+      
     } catch (error) {
       console.warn(`Error getting article content: ${error}`);
       
-      // Fallback: get HTML and use Cheerio
+      // Fallback: get HTML and use Cheerio with timeout
       try {
-        const html = await page.content();
+        const html = await Promise.race([
+          page.content(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('HTML content timeout')), OPERATION_TIMEOUT)
+          )
+        ]);
+        
         const $ = cheerio.load(html);
         
         // Remove unwanted elements
@@ -336,17 +338,10 @@ class ArticleScraper {
         // Get text from article or main content
         let text = '';
         const articleSelectors = [
-          'article',
-          '[role="article"]',
-          '.article-content',
-          '.article-body',
-          '.story-body',
-          '.story-content',
-          '.post-content',
-          '.entry-content',
-          'main',
-          '#content',
-          '.content'
+          'article', '[role="article"]', '.article-content',
+          '.article-body', '.story-body', '.story-content',
+          '.post-content', '.entry-content', 'main',
+          '#content', '.content'
         ];
         
         for (const selector of articleSelectors) {
@@ -365,6 +360,7 @@ class ArticleScraper {
         console.log(`Fallback extraction text length: ${cleanedText.length} characters`);
         
         return cleanedText;
+        
       } catch (fallbackError) {
         console.error(`Fallback extraction failed: ${fallbackError}`);
         return '';
@@ -377,8 +373,15 @@ class ArticleScraper {
    */
   async close() {
     if (this.browser) {
-      await closeBrowser(this.browser);
+      try {
+      await Promise.race([
+        closeBrowser(this.browser),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Browser close timeout')), 10000))
+      ]);
       this.browser = null;
+    } catch (error) {
+        console.error('Error closing browser:', error);
+      }
     }
   }
 }
