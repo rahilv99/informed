@@ -2,10 +2,10 @@ import boto3
 import os
 
 
-def handler():
+def handler(payload):
     bucket_name = os.getenv("BUCKET_NAME")
-    prefix = 'gnews/'
-
+    prefix = payload.get('prefix', 'gnews/')
+    
     s3 = boto3.client('s3')
 
     # List all objects in the folder

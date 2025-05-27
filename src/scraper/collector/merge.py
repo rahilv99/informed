@@ -7,7 +7,6 @@ import pickle
 
 bucket_name = os.getenv("BUCKET_NAME")
 astra_bucket_name = os.getenv("ASTRA_BUCKET_NAME")
-prefix = 'gnews/'
 
 
 def read_json_from_s3(bucket_name: str, prefix: str) -> List[Dict]:
@@ -42,8 +41,9 @@ def read_json_from_s3(bucket_name: str, prefix: str) -> List[Dict]:
 
     return all_articles
 
-def handler():
+def handler(payload):
     # Read all JSON files and combine them
+    prefix = payload.get('prefix', 'gnews/')
     articles = read_json_from_s3(bucket_name, prefix)
 
     if not articles:
@@ -71,6 +71,9 @@ def handler():
     
     next_event = {
         "action": "e_clean",
+        "payload": {
+            "prefix": prefix
+        }
     }
 
     sqs = boto3.client('sqs')

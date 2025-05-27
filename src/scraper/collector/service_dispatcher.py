@@ -3,6 +3,7 @@ import merge
 import dispatch
 import json
 import traceback
+import legal_scraper
 
 def _handler(event, context):
     """
@@ -29,6 +30,7 @@ def _handler(event, context):
 
     # Extract the action and payload
     action = json_message.get('action')
+    payload = json_message.get('payload', {})
     print(f"Scraper helper Lambda Invoked with action {action}")
 
     # Map actions to internal functions
@@ -36,11 +38,12 @@ def _handler(event, context):
         "e_merge": merge.handler,
         "e_clean": clean.handler,
         "e_dispatch": dispatch.handler,
+        "e_gov": legal_scraper.handler
     }
 
     # Route to the appropriate function
     if action in action_map:
-        result = action_map[action]()
+        result = action_map[action](payload)
     else:
         print(f"Unsupported Action {action}")
 
