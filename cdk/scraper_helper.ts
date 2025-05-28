@@ -22,8 +22,8 @@ export class ScraperHelperStack extends cdk.Stack {
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperHelperFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/scraper/collector'),
-      timeout: cdk.Duration.minutes(15),
-      memorySize: 1024,
+      timeout: cdk.Duration.minutes(5),
+      memorySize: 512,
       environment: {
         ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
         BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName,

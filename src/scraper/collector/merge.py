@@ -4,6 +4,8 @@ import pandas as pd
 from typing import List, Dict
 import os
 import pickle
+from fuzzywuzzy import fuzz
+
 
 bucket_name = os.getenv("BUCKET_NAME")
 astra_bucket_name = os.getenv("ASTRA_BUCKET_NAME")
@@ -41,6 +43,30 @@ def read_json_from_s3(bucket_name: str, prefix: str) -> List[Dict]:
 
     return all_articles
 
+
+def is_duplicate_title(title: str, seen_titles: set, fuzzy_threshold: int = 88) -> bool:
+    """
+    Check if a title is duplicate using fuzzy matching
+    """
+    if not title or not seen_titles:
+        return False
+
+    # Normalize the new title
+    title = title.lower().strip()
+
+    # Check for exact match first (faster)
+    if title in seen_titles:
+        return True
+
+    # Check for fuzzy matches
+    for seen_title in seen_titles:
+        # Use token sort ratio to handle word order differences
+        ratio = fuzz.token_sort_ratio(title, seen_title)
+        if ratio >= fuzzy_threshold:
+            return True
+
+    return False
+
 def handler(payload):
     # Read all JSON files and combine them
     prefix = payload.get('prefix', 'gnews/')
@@ -49,14 +75,32 @@ def handler(payload):
     if not articles:
         print("No articles found in the bucket")
         return
-
+    
     # Create DataFrame
     df = pd.DataFrame(articles)
 
-    # Basic data info
-    print(f"Total number of articles: {len(df)}")
+    # Basic data info before deduplication
+    print(f"Total number of articles before deduplication: {len(df)}")
+
+    # Initialize variables for deduplication
+    seen_titles = set()
+    indices_to_keep = []
+
+    # Iterate through DataFrame to check for duplicates
+    for idx, row in df.iterrows():
+        title = row['title']
+        if not is_duplicate_title(title, seen_titles):
+            seen_titles.add(title.lower().strip())
+            indices_to_keep.append(idx)
+
+    # Keep only non-duplicate rows
+    df = df.loc[indices_to_keep]
+
+    # Print info after deduplication
+    print(f"Total number of articles after deduplication: {len(df)}")
     print("\nDataFrame Info:")
     print(df.info())
+
 
     # Serialize output
     serialized_data = pickle.dumps(df)

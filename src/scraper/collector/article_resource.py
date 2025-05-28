@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 import PyPDF2
 import io
 import re
-from fuzzywuzzy import fuzz
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
@@ -23,28 +22,7 @@ class ArticleResource:
         self.time_constraint = self.today - datetime.timedelta(days=DEFAULT_ARTICLE_AGE)
         self.user_input = user_input
 
-    
-    def _is_duplicate_title(self, new_title, seen_titles):
-        if not new_title or not seen_titles:
-            return False
-
-        # Normalize the new title
-        new_title = new_title.lower().strip()
-
-        # Check for exact match first (faster)
-        if new_title in seen_titles:
-            return True
-
-        # Check for fuzzy matches
-        for seen_title in seen_titles:
-            # Use token sort ratio to handle word order differences
-            ratio = fuzz.token_sort_ratio(new_title, seen_title)
-            if ratio >= self.fuzzy_threshold:
-                self.logger.info(f"Fuzzy match found: '{new_title}' matches '{seen_title}' with ratio {ratio}")
-                return True
-
-        return False
-    
+ 
     def get_document_text(self, url):
         try:
             response = self.fetch_with_retry(requests.get, url)

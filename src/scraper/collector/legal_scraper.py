@@ -17,7 +17,6 @@ logging.basicConfig(
 class Gov(ArticleResource):
     def __init__(self, user_topics_output):
         super().__init__(user_topics_output)
-        self.fuzzy_threshold = 95
         # In production, this should be moved to environment variables
         self.api_key = os.environ.get('GOVINFO_API_KEY')
         self.search_url = f"https://api.govinfo.gov/search?api_key={self.api_key}"
@@ -27,7 +26,6 @@ class Gov(ArticleResource):
     def get_articles(self):
         try:
             results = []
-            seen_titles = []  # Track titles for fuzzy matching
             for topic in self.user_input:
                 # Create payload for API request with date range for last week
                 payload = {
@@ -83,12 +81,7 @@ class Gov(ArticleResource):
                                 self.logger.info(f"Skipping document: {item.get('title','')} ({doc_type})")
                                 continue
                                 
-                            # Check for duplicate titles using fuzzy matching
                             title = item.get('title', '')
-                            if self._is_duplicate_title(title, seen_titles):
-                                self.logger.info(f"Skipping duplicate document: {title}")
-                                continue
-                                
                             if 'v.' in title.lower():
                                 self.logger.info(f"Skipping court document: {title} ({doc_type})")
                                 continue
@@ -100,9 +93,6 @@ class Gov(ArticleResource):
                                 continue
                             
                             self.logger.info(f"Retrieved document: {title} ({len(full_text)} characters) from {url_with_key}")
-
-                            # Add title to seen titles after processing
-                            seen_titles.append(title.lower().strip())
 
                             results.append({
                                 "title": title,
@@ -176,7 +166,7 @@ def handler(payload):
     """
     AWS Lambda handler function to process incoming events.
     """
-    topics = payload.get(topics, ["tariffs", "immigration", "foreign aid"])
+    topics = payload.get("topics", ["tariffs", "immigration", "foreign aid"])
     gov = Gov(topics)  # Add Gov instance
 
     # Retrieve articles from all sources

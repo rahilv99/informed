@@ -2,18 +2,16 @@
  * Google News scraper for retrieving article metadata
  */
 const axios = require('axios');
-const ArticleResource = require('./articleResource');
 const { withRetry } = require('../utils/retry');
 const config = require('../config');
 
-class GoogleNewsScraper extends ArticleResource {
+class GoogleNewsScraper {
   /**
    * Initialize the Google News scraper
    * 
-   * @param {string[]} userTopics - User topics for article search
+   * @param {string[]} topics - User topics for article search
    */
-  constructor(userTopics) {
-    super(userTopics);
+  constructor(topics) {
     console.log('Initializing Google News scraper...');
     
     // Set up Google News parameters
@@ -21,6 +19,8 @@ class GoogleNewsScraper extends ArticleResource {
     this.language = config.googleNews.language;
     this.country = config.googleNews.country;
     this.maxResults = config.googleNews.maxResults;
+    this.topics = topics;
+    this.defaultArticleAge = config.article.defaultArticleAge;
   }
   
   /**
@@ -35,7 +35,7 @@ class GoogleNewsScraper extends ArticleResource {
       const results = [];
       
       // Process each user topic
-      for (const topic of this.userInput) {
+      for (const topic of this.topics) {
         try {
           console.log(`Searching for news articles related to: ${topic}`);
           
@@ -45,17 +45,11 @@ class GoogleNewsScraper extends ArticleResource {
           console.log(`Found ${newsResults.length} articles for topic: ${topic}`);
           
           // Process each article
-          const seenTitles = [];
           for (const article of newsResults) {
             // Extract article information
             const title = article.title || 'No title';
             const url = article.link || '';
             const publisher = article.source || 'Unknown';
-            
-            if (this.isDuplicateTitle(title, seenTitles)) {
-              console.log(`Skipping duplicate article: ${title}`);
-              continue;
-            }
             
             // Add article to results
             results.push({
@@ -65,7 +59,6 @@ class GoogleNewsScraper extends ArticleResource {
               keyword: topic
             });
             
-            seenTitles.push(title.toLowerCase().trim());
           }
         } catch (error) {
           console.error(`Error processing Google News query for ${topic}:`, error);
