@@ -222,6 +222,25 @@ class ArticleScraper {
           // ...rest of error handling
         }
       }
+      console.error('This is an Unforseen critical error. Restarting browser...');
+      try {
+        await Promise.race([
+          this.browser.close(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Browser close timeout')), 10000))
+        ]);
+        console.log('Closed browser...');
+      } catch (err) {
+        console.error('Failed to close browser:', err);
+      }
+      try {
+        await Promise.race([
+          this.browser = await initBrowser(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Browser init timeout')), 10000))
+        ]);
+        console.log('Browser restarted successfully.');
+      } catch (err) {
+        console.error('Failed to reinitialize browser:', err);
+      }
       return '';
     }
   }

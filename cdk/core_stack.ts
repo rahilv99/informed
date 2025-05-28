@@ -94,7 +94,7 @@ export class CoreStack extends cdk.Stack {
     // Create a CloudWatch Event Rule for the scraper schedule
     const scraperRule = new events.Rule(this, 'ScraperRule', {
         schedule: events.Schedule.cron({
-        minute: '*',
+        minute: '0',
         hour: '10',
         day: '*',
         month: '*',

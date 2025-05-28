@@ -1,13 +1,11 @@
-import pandas as pd
 import os
 import requests
 import logging
-import pickle
 import boto3
 import json
 import warnings
 
-from scraper.collector.article_resource import ArticleResource
+from article_resource import ArticleResource
 from botocore.exceptions import ClientError
 
 logging.basicConfig(

@@ -37,7 +37,7 @@ export class CronStack extends cdk.Stack {
     // Create a CloudWatch Event Rule for the cron schedule
     const scheduleRule = new events.Rule(this, 'ScheduleRule', {
       schedule: events.Schedule.cron({
-        minute: '*',
+        minute: '0',
         hour: '11',
         day: '*',
         month: '*',
