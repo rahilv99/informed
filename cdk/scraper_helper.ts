@@ -38,6 +38,7 @@ export class ScraperHelperStack extends cdk.Stack {
     // Grant Lambda permissions to send messages to the queue
     props.coreStack.scraperSQSQueue.grantSendMessages(lambdaFunction);
     props.coreStack.puppetSqsQueue.grantSendMessages(lambdaFunction);
+    props.coreStack.astraSQSQueue.grantSendMessages(lambdaFunction);
     
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
