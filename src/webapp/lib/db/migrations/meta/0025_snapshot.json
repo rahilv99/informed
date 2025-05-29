@@ -1,6 +1,6 @@
 {
-  "id": "75247c6f-26d9-4a92-8d9c-6f7e24d060cc",
-  "prevId": "1fcea82d-5f66-492e-b349-2d5ff695a8eb",
+  "id": "b82dae63-ce5e-4c04-844e-9f048c64f9f8",
+  "prevId": "75247c6f-26d9-4a92-8d9c-6f7e24d060cc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -16,7 +16,7 @@
         },
         "embedding": {
           "name": "embedding",
-          "type": "vector(1536)",
+          "type": "vector(1024)",
           "primaryKey": false,
           "notNull": false
         },
@@ -126,7 +126,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "'2025-05-29 01:50:54.689'"
+          "default": "'2025-05-29 12:38:09.922'"
         },
         "completed": {
           "name": "completed",

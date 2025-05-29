@@ -5,21 +5,22 @@ clustering
 
 import numpy as np
 import pandas as pd
-from sentence_transformers import SentenceTransformer
 import logging
 import spacy
-
-
+import psycopg2
 import boto3
 import os
 import pickle
+import json
+import voyageai
 
+db_access_url = os.environ.get('DB_ACCESS_URL')
 
 class ArticleClusterer:
     """Class for clustering news articles based on government documents"""
     def __init__(self, similarity_threshold=0.35, merge_threshold=0.85):
         self.logger = logging.getLogger('pulse.clustering')
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.model = voyageai.Client()
         self.nlp = spacy.load("en_core_web_sm")
         self.similarity_threshold = similarity_threshold
         self.merge_threshold = merge_threshold
@@ -29,7 +30,7 @@ class ArticleClusterer:
         if not isinstance(input_text, str):
             return ""
         
-        input_text = input_text[:5000]
+        input_text = input_text[1000:]
         doc = self.nlp(input_text)
         
         entities = [ent.text.lower() for ent in doc.ents]
@@ -331,7 +332,7 @@ class ArticleClusterer:
             # Embed Google News article titles
             self.logger.info(f"Embedding {len(news_df)} Google News article titles...")
             news_titles = news_df['title'].tolist()
-            news_embeddings = self.model.encode(news_titles)
+            news_embeddings = self.model.embed(news_titles, model = "voyage-3.5-lite", input_type="document")
             
             # Embed federal documents
             self.logger.info(f"Embedding {len(gov_df)} government document titles...")
@@ -341,7 +342,7 @@ class ArticleClusterer:
                 text = row['full_text']
                 gov_texts.append(title + " " + self.extract_entities(text[1000:10000]))
             
-            gov_embeddings = self.model.encode(gov_texts)
+            gov_embeddings = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document")
             
             # Create and merge clusters
             clusters = self.create_initial_clusters(gov_embeddings, news_embeddings)
@@ -409,6 +410,21 @@ def handler(payload):
 
     if clusters and len(clusters) > 0:
         save_df(clusters)
+        
+        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+        try:
+            for i, metadata in enumerate(clusters):
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO clusters (embedding, metadata)
+                    VALUES (%s, %s::jsonb)
+                    RETURNING id
+                """, (metadata['center_embedding'], json.dumps(metadata['articles'])))
+
+                print(f"Inserted cluster {i} into db")
+        except Exception as e:
+            print(f"Error inserting cluster {i} into db: {e}")
+
     else:
         logging.error("No clusters generated")
 

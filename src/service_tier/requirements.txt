@@ -13,3 +13,4 @@ numpy
 hf_xet
 tavily-python
 google-generativeai
+voyageai
