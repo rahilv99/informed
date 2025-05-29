@@ -332,18 +332,21 @@ class ArticleClusterer:
             # Embed Google News article titles
             self.logger.info(f"Embedding {len(news_df)} Google News article titles...")
             news_titles = news_df['title'].tolist()
-            news_embeddings = self.model.embed(news_titles, model = "voyage-3.5-lite", input_type="document")
-            
+            response = self.model.embed(news_titles, model = "voyage-3.5-lite", input_type="document")
+            news_embeddings = response.embeddings
+
             # Embed federal documents
             self.logger.info(f"Embedding {len(gov_df)} government document titles...")
             gov_texts = []
             for index, row in gov_df.iterrows():
                 title = row['title']
                 text = row['full_text']
-                gov_texts.append(title + " " + self.extract_entities(text[1000:10000]))
+                content = title + " " + self.extract_entities(text[1000:10000])
+                gov_texts.append(content[:5000])
             
-            gov_embeddings = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document")
-            
+            response = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document")
+            gov_embeddings = response.embeddings
+
             # Create and merge clusters
             clusters = self.create_initial_clusters(gov_embeddings, news_embeddings)
 
@@ -377,23 +380,8 @@ def load_df(type):
         return df
     except Exception as e:
         print(f"Error processing file: {str(e)}")
-        raise e
-    
-def save_df(clusters):
-    # Initialize S3 client
-    s3 = boto3.client('s3')
-    astra_bucket_name = os.getenv("ASTRA_BUCKET_NAME")
-    try:
-        # Load pickled DataFrame from S3
-        key = f"system/clusters.pkl"
-        serialized_data = pickle.dumps(clusters)
-        s3.put_object(Bucket=astra_bucket_name, Key=key, Body=serialized_data)
-        print('Saved list of cluster DataFrames to S3')
+        raise e  
 
-    except Exception as e:
-        print(f"Error processing file: {str(e)}")
-        raise e
-        
 
 def handler(payload):
 
@@ -409,7 +397,6 @@ def handler(payload):
     clusters = clusterer.cluster_articles(news_df, gov_df)
 
     if clusters and len(clusters) > 0:
-        save_df(clusters)
         
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         try:
@@ -429,7 +416,6 @@ def handler(payload):
         logging.error("No clusters generated")
 
 if __name__ == "__main__":
-    
 
     logging.basicConfig(
         level=logging.INFO,
@@ -463,18 +449,34 @@ if __name__ == "__main__":
         print(f"URL: {row['url']}")
         print(row['full_text'][:1000])
         if idx >= 4:  # Show first 5 articles
-            break 
+            break
 
 
     # Create clusterer and run clustering
     clusterer = ArticleClusterer()
     clusters = clusterer.cluster_articles(news_df, gov_df)
 
-    # save to tmp
     if clusters and len(clusters) > 0:
+        # save to tmp
         with open ('tmp/clusters.pkl', 'wb') as f:
             pickle.dump(clusters, f)
+        
+        # save to db
+        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+        try:
+            for i, metadata in enumerate(clusters):
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO clusters (embedding, metadata)
+                    VALUES (%s, %s::jsonb)
+                    RETURNING id
+                """, (metadata['center_embedding'], json.dumps(metadata['articles'])))
 
+                print(f"Inserted cluster {i} into db")
+        except Exception as e:
+            print(f"Error inserting cluster {i} into db: {e}")
+
+        # print debugging
         print(f"{len(clusters)} clusters created")
         print("========== OUTPUT CLUSTERS ===========")
         for i, metadata in enumerate(clusters):

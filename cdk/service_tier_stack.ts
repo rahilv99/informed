@@ -32,6 +32,7 @@ export class ServiceTierLambdaStack extends cdk.Stack {
         DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
         TAVILY_API_KEY: process.env.TAVILY_API_KEY!,
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
+        VOYAGE_API_KEY: process.env.VOYAGE_API_KEY!
       },
       role: props.coreStack.astraLambdaRole,
       logGroup: logGroup
