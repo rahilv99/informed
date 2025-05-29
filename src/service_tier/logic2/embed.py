@@ -310,10 +310,8 @@ class ArticleClusterer:
                 
                 # Create cluster metadata
                 cluster_metadata.append({
-                    'articles': pd.DataFrame(rows),
                     'center_embedding': center_embedding,
-                    'main_keyword': main_keyword,
-                    'score': score
+                    'articles': pd.DataFrame(rows).to_json
                 })
                 
         except Exception as e:
@@ -465,10 +463,8 @@ if __name__ == "__main__":
         print("========== OUTPUT CLUSTERS ===========")
         for i, metadata in enumerate(clusters):
             print(f"----- Cluster {i+1} -------")
-            print(f"Main keyword: {metadata['main_keyword']}")
-            print(f"Score: {metadata['score']:.3f}")
             print(f"Center embedding shape: {metadata['center_embedding'].shape}")
-            df = metadata['articles']
+            df = pd.read_json(metadata['articles'])
             print(f"Number of articles: {len(df)}")
             for idx, row in df.head().iterrows():
                 print(f"{row['title']}")
