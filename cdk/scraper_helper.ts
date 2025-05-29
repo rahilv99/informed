@@ -29,6 +29,7 @@ export class ScraperHelperStack extends cdk.Stack {
         BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName,
         SCRAPER_QUEUE_URL: props.coreStack.scraperSQSQueue.queueUrl,
         PUPPET_QUEUE_URL: props.coreStack.puppetSqsQueue.queueUrl,
+        ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl,
         GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
       },
       role: props.coreStack.ScraperLambdaRole,

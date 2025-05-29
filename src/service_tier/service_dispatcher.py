@@ -1,6 +1,6 @@
 import logic.pulse
 import logic.nlp
-import logic.embed
+import logic2.embed
 import email_delivery.ses
 import email_delivery.notify
 import json
@@ -41,7 +41,7 @@ def _handler(event, context):
         "e_email": email_delivery.ses.handler,
         "e_email": email_delivery.ses.handler,
         "e_notify": email_delivery.notify.handler,
-        "e_embed": logic.embed.handler
+        "e_embed": logic2.embed.handler
     }
 
     # Route to the appropriate function

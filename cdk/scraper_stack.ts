@@ -23,7 +23,7 @@ export class ScraperStack extends cdk.Stack {
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/scraper/puppet'),
       timeout: cdk.Duration.minutes(15),
-      memorySize: 3*1024,
+      memorySize: 3008,
       environment: {
        BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName
       },

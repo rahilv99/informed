@@ -122,36 +122,11 @@ export class CoreStack extends cdk.Stack {
     });
 
     const messagePayload2 = {
-        "action": "e_merge",
-        "payload": {
-          "prefix": "gnews/"
-        }
+        "action": "e_merge"
     };
 
     mergeRule.addTarget(new targets.SqsQueue(this.scraperSQSQueue, {
       message: events.RuleTargetInput.fromObject(messagePayload2)
-    }));
-
-    // Create a CloudWatch Event Rule for the scraper schedule
-    const govMergeRule = new events.Rule(this, 'govMergeRule', {
-        schedule: events.Schedule.cron({
-        minute: '16',
-        hour: '10',
-        day: '*',
-        month: '*',
-        year: '*',
-        }),
-    });
-
-    const messagePayload3 = {
-        "action": "e_merge",
-        "payload": {
-          "prefix": "gov/"
-        }
-    };
-
-    govMergeRule.addTarget(new targets.SqsQueue(this.scraperSQSQueue, {
-      message: events.RuleTargetInput.fromObject(messagePayload3)
     }));
 
     ////// PUPPETEER QUEUE ////////

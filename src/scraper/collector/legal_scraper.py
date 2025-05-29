@@ -29,7 +29,7 @@ class Gov(ArticleResource):
             for topic in self.user_input:
                 # Create payload for API request with date range for last week
                 payload = {
-                    "query": f"{topic} publishdate:range({self.time_constraint.strftime('%Y-%m-%d')},{self.today.strftime('%Y-%m-%d')})",
+                    "query": f"{topic} lastModified:range({self.time_constraint.strftime('%Y-%m-%d')}T12:00:05Z,)",
                     "pageSize": 20,
                     "offsetMark": "*",
                     "sorts": [
@@ -92,6 +92,7 @@ class Gov(ArticleResource):
                             if len(full_text) < 5000:
                                 continue
                             
+                            date = item.get('dateIngested', '')
                             self.logger.info(f"Retrieved document: {title} ({len(full_text)} characters) from {url_with_key}")
 
                             results.append({
@@ -99,6 +100,7 @@ class Gov(ArticleResource):
                                 "url": url_with_key,
                                 "keyword": topic,
                                 "full_text": full_text,
+                                "date": date
                             })
                     else:
                         self.logger.error(f"API request failed with status code: {response.status_code}")

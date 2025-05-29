@@ -147,10 +147,16 @@ async function processArticles(articlesData) {
         }
         
         // Get the true URL after redirects
-        const trueUrl = scraper.browser ? 
-          (await scraper.browser.pages())[0]?.url() || article.url : 
-          article.url;
-        
+        let trueUrl;
+        try {
+          trueUrl = await Promise.race([
+            page.url(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('URL timeout')), 2000))
+          ]);
+        } catch (error) {
+          console.error(`Error retrieving true URL: ${error}`)
+          trueUrl = article.url;
+        }
         // Add to results
         results.push({
           title: article.title,

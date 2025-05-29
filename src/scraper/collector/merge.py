@@ -69,71 +69,68 @@ def is_duplicate_title(title: str, seen_titles: set, fuzzy_threshold: int = 88) 
 
 def handler(payload):
     # Read all JSON files and combine them
-    prefix = payload.get('prefix', 'gnews/')
-    articles = read_json_from_s3(bucket_name, prefix)
+    for prefix in ['gnews/', 'gov/']:
+        articles = read_json_from_s3(bucket_name, prefix)
 
-    if not articles:
-        print("No articles found in the bucket")
-        return
-    
-    # Create DataFrame
-    df = pd.DataFrame(articles)
+        if not articles:
+            print("No articles found in the bucket")
+            return
+        
+        # Create DataFrame
+        df = pd.DataFrame(articles)
 
-    # Basic data info before deduplication
-    print(f"Total number of articles before deduplication: {len(df)}")
+        # Basic data info before deduplication
+        print(f"Total number of articles before deduplication: {len(df)}")
 
-    # Initialize variables for deduplication
-    seen_titles = set()
-    indices_to_keep = []
+        # Initialize variables for deduplication
+        seen_titles = set()
+        indices_to_keep = []
 
-    # Iterate through DataFrame to check for duplicates
-    for idx, row in df.iterrows():
-        title = row['title']
-        if not is_duplicate_title(title, seen_titles):
-            seen_titles.add(title.lower().strip())
-            indices_to_keep.append(idx)
+        # Iterate through DataFrame to check for duplicates
+        for idx, row in df.iterrows():
+            title = row['title']
+            if not is_duplicate_title(title, seen_titles):
+                seen_titles.add(title.lower().strip())
+                indices_to_keep.append(idx)
 
-    # Keep only non-duplicate rows
-    df = df.loc[indices_to_keep]
+        # Keep only non-duplicate rows
+        df = df.loc[indices_to_keep]
 
-    # Print info after deduplication
-    print(f"Total number of articles after deduplication: {len(df)}")
-    print("\nDataFrame Info:")
-    print(df.info())
+        # Print info after deduplication
+        print(f"Total number of articles after deduplication: {len(df)}")
+        print("\nDataFrame Info:")
+        print(df.info())
 
 
-    # Serialize output
-    serialized_data = pickle.dumps(df)
-    key = f"{prefix}articles.pkl"
-    # Upload to S3
-    try:
-        s3 = boto3.client('s3')
-        s3.put_object(Bucket=astra_bucket_name, Key=key, Body=serialized_data)
-        print('Saved serialized data')
-    except Exception as e:
-        print(f"Error saving to bucket {e}")
-    
-    next_event = {
-        "action": "e_clean",
-        "payload": {
-            "prefix": prefix
+        # Serialize output
+        serialized_data = pickle.dumps(df)
+        key = f"{prefix}articles.pkl"
+        # Upload to S3
+        try:
+            s3 = boto3.client('s3')
+            s3.put_object(Bucket=astra_bucket_name, Key=key, Body=serialized_data)
+            print('Saved serialized data')
+        except Exception as e:
+            print(f"Error saving to bucket {e}")
+        
+        next_event = {
+            "action": "e_clean",
+            "payload": {
+                "prefix": prefix
+            }
         }
-    }
 
-    sqs = boto3.client('sqs')
-    SCRAPER_QUEUE_URL = os.getenv("SCRAPER_QUEUE_URL")
-    
-    response = sqs.send_message(
-        QueueUrl=SCRAPER_QUEUE_URL,
-        MessageBody=json.dumps(next_event)
-    )
-    print(f"Sent clean request to Scraper SQS: {response.get('MessageId')}")
+        sqs = boto3.client('sqs')
+        SCRAPER_QUEUE_URL = os.getenv("SCRAPER_QUEUE_URL")
+        
+        response = sqs.send_message(
+            QueueUrl=SCRAPER_QUEUE_URL,
+            MessageBody=json.dumps(next_event)
+        )
+        print(f"Sent clean request to Scraper SQS: {response.get('MessageId')}")
 
     next_event = {
-        "action": "e_embed",
-        "payload": {
-            "prefix": prefix
-        }
+        "action": "e_embed"
     }
 
     sqs = boto3.client('sqs')
