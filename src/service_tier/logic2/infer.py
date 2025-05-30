@@ -1,23 +1,27 @@
 import psycopg2
 import voyageai
 import os
+import json
 
 # Connect to the database
 db_access_url = os.environ.get('DB_ACCESS_URL')
+# db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres' # local testing
+
 conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
 cur = conn.cursor()
 model = voyageai.Client()
 
 def get_embedding(interest):
-    return model.embed([interest], model = "voyage-3.5-lite", input_type="query").embeddings[0]
+    embedding = model.embed([interest], model = "voyage-3.5-lite", input_type="query").embeddings[0]
+    return embedding
 
 
 def search_documents(interest, limit=5):
     # Uses pgvector cosine similarity
     query_embedding = get_embedding(interest)
     cur.execute("""
-        SELECT id, metadata, embedding <=> %s AS distance
-        FROM documents
+        SELECT id, metadata, score, embedding <=> %s::vector AS distance
+        FROM clusters
         ORDER BY distance
         LIMIT %s
     """, (query_embedding, limit))
@@ -30,22 +34,23 @@ def main(interests):
     for interest in interests:
         rows = search_documents(interest)
         for row in rows:
-            id, metadata, distance = row
+            id, metadata, score, distance = row
 
             if id in clusters:
                 # add this distance to entry for cluster
                 clusters[id][0].append(distance)
             else:
-                clusters[id] = ([distance], metadata) 
+                clusters[id] = ([distance], score, metadata) 
     
     # sorting
     recommendations = []
-    for id, (distances, metadata) in clusters.items():
+    for id, (distances, score, metadata) in clusters.items():
         # Lower distance means higher similarity
-        score = min(distances) / len(distances)
+        dist = min(distances) / len(distances)
+        score = dist / max(1, score)
         recommendations.append((score, metadata))
     
-    recommendations.sort(lambda x: x[0])
+    recommendations.sort(key = lambda x: x[0])
     # only return metadata
     return [metadata for score, metadata in recommendations]
 
@@ -68,4 +73,7 @@ if __name__ == "__main__":
 
     for i, metadata in enumerate(recommendations):
         print(f"------ CLUSTER {i} --------")
-        print(metadata)
+        # access first title
+        data = json.loads(metadata)
+        title = data.get("title").get("0")
+        print(title)

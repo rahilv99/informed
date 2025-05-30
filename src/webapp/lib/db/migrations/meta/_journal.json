@@ -183,6 +183,20 @@
       "when": 1748522289941,
       "tag": "0025_cute_payback",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1748575935830,
+      "tag": "0026_red_lord_hawal",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1748576602591,
+      "tag": "0027_aberrant_black_bolt",
+      "breakpoints": true
     }
   ]
 }

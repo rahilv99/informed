@@ -15,6 +15,7 @@ import json
 import voyageai
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
+# db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres' # local testing
 
 class ArticleClusterer:
     """Class for clustering news articles based on government documents"""
@@ -222,18 +223,19 @@ class ArticleClusterer:
             cluster['similarities'][idx] for idx in sorted_articles
         ) / min(3, len(sorted_articles))
         
-        # Calculate normalized article count (assuming max 100 articles)
-        norm_article_count = len(cluster['articles']) / 100
+        norm_article_count = len(cluster['articles']) / 10
 
         # Secondary gov docs count
         if 'subdocuments' in cluster:
-            subdoc_count = len(cluster['subdocuments']) / 10
+            subdoc_count = len(cluster['subdocuments']) / 5
         else:
             subdoc_count = 0
         
         # Calculate final score
-        score = 2 * avg_similarity + 0.4 * norm_article_count + 0.6 * subdoc_count
-        return score
+        score = 2 * avg_similarity + norm_article_count + 0.5 * subdoc_count
+
+        # Truncate to float4 (4 decimal places)
+        return float(f"{score:.4f}")
 
     
     def create_cluster_dataframes(self, clusters, news_df, gov_df):
@@ -312,6 +314,7 @@ class ArticleClusterer:
                 # Create cluster metadata
                 cluster_metadata.append({
                     'center_embedding': center_embedding.tolist(),
+                    'score': score,
                     'articles': pd.DataFrame(rows).to_json()
                 })
                 
@@ -396,19 +399,20 @@ def handler(payload):
 
     if clusters and len(clusters) > 0:
 
+        # save to db
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         try:
             for i, metadata in enumerate(clusters):
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO clusters (embedding, metadata)
-                    VALUES (%s, %s::jsonb)
+                    INSERT INTO clusters (embedding, score, metadata)
+                    VALUES (%s, %s, %s::jsonb)
                     RETURNING id
-                """, (metadata['center_embedding'], json.dumps(metadata['articles'])))
-
-                print(f"Inserted cluster {i} into db")
+                """, (metadata['center_embedding'], metadata['score'], json.dumps(metadata['articles'])))
+                print(f"Inserted cluster {i+1} into db")
+            conn.commit()
         except Exception as e:
-            print(f"Error inserting cluster {i} into db: {e}")
+            print(f"Error inserting cluster {i+1} into db: {e}")
 
     else:
         logging.error("No clusters generated")
@@ -434,7 +438,6 @@ if __name__ == "__main__":
     for idx, row in news_df.iterrows():
         print(f"{idx+1}. {row['title']}")
         print(f"URL: {row['url']}")
-        print(row['full_text'][:1000])
         if idx >= 4:  # Show first 5 articles
             break 
     
@@ -445,16 +448,15 @@ if __name__ == "__main__":
     for idx, row in gov_df.iterrows():
         print(f"{idx+1}. {row['title']}")
         print(f"URL: {row['url']}")
-        print(row['full_text'][:1000])
         if idx >= 4:  # Show first 5 articles
             break
 
 
     # Create clusterer and run clustering
-    clusterer = ArticleClusterer()
-    clusters = clusterer.cluster_articles(news_df, gov_df)
-    # with open ('tmp/clusters.pkl', 'rb') as f:
-    #    clusters = pickle.load(f)
+    # clusterer = ArticleClusterer()
+    # clusters = clusterer.cluster_articles(news_df, gov_df)
+    with open ('tmp/clusters.pkl', 'rb') as f:
+      clusters = pickle.load(f)
 
     if clusters and len(clusters) > 0:
         # save to tmp
@@ -467,14 +469,14 @@ if __name__ == "__main__":
             for i, metadata in enumerate(clusters):
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO clusters (embedding, metadata)
-                    VALUES (%s, %s::jsonb)
+                    INSERT INTO clusters (embedding, score, metadata)
+                    VALUES (%s, %s, %s::jsonb)
                     RETURNING id
-                """, (metadata['center_embedding'], json.dumps(metadata['articles'])))
-
-                print(f"Inserted cluster {i} into db")
+                """, (metadata['center_embedding'], metadata['score'], json.dumps(metadata['articles'])))
+                print(f"Inserted cluster {i+1} into db")
+            conn.commit()
         except Exception as e:
-            print(f"Error inserting cluster {i} into db: {e}")
+            print(f"Error inserting cluster {i+1} into db: {e}")
 
         # print debugging
         print(f"{len(clusters)} clusters created")

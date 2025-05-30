@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, jsonb, integer, boolean, timestamp, vector } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, jsonb, integer, boolean, timestamp, vector, real } from 'drizzle-orm/pg-core';
 
 // Define the user table schema
 export const users = pgTable('users', {
@@ -44,8 +44,9 @@ export const podcasts = pgTable('podcasts', {
 
 export const clusters = pgTable('clusters', {
   id: serial('id').primaryKey(),
-  embedding: vector('embedding', { dimensions: 1024 }), 
-  metadata: jsonb('metadata').notNull()
+  embedding: vector('embedding', { dimensions: 1024 }),
+  metadata: jsonb('metadata').notNull(),
+  score: real('score').notNull().default(1)
 });
 
 export type User = typeof users.$inferSelect;
