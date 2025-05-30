@@ -5,6 +5,11 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
 import { CoreStack } from "./core_stack";
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+
 
 interface ExtendedProps extends cdk.StackProps {
   readonly coreStack: CoreStack;
@@ -30,6 +35,24 @@ export class CronStack extends cdk.Stack {
       role: props.coreStack.astraLambdaRole,
       logGroup: logGroup
     });
+
+    const CronlambdaErrorMetric = lambdaFunction.metricErrors({
+      period: cdk.Duration.hours(20),
+      statistic: 'Sum',
+    });
+
+    // Alarm for Lambda function errors
+    const CronLambdaFailureAlarm  = new cloudwatch.Alarm(this, 'CronLambdaFailureAlarm', {
+      metric: CronlambdaErrorMetric,
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      alarmDescription: 'Alarm when Lambda function fails',
+    });
+
+    const CronLambdaFailureAlarmTopic = new sns.Topic(this, 'CronLambdaFailureAlarmTopic');
+    CronLambdaFailureAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    CronLambdaFailureAlarm.addAlarmAction(new cloudwatchActions.SnsAction(CronLambdaFailureAlarmTopic));
 
     // Grant Lambda permissions to send messages to the queue
     props.coreStack.astraSQSQueue.grantSendMessages(lambdaFunction);

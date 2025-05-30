@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ export class ServiceTierLambdaStack extends cdk.Stack {
       period: cdk.Duration.hours(20),
     });
 
-    new cloudwatch.Alarm(this, 'DBErrorAlarm', {
+    const DBErrorAlarm = new cloudwatch.Alarm(this, 'DBErrorAlarm', {
       metric: DBErrorMetric,
       threshold: 1,
       evaluationPeriods: 1,
@@ -48,12 +49,13 @@ export class ServiceTierLambdaStack extends cdk.Stack {
 
     const dberrorTopic = new sns.Topic(this, 'DBErrorAlarmTopic');
     dberrorTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    DBErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(dberrorTopic))
 
     new logs.MetricFilter(this, 'RecommendationSizeFilter', {
       logGroup,
       metricNamespace: 'ServiceTier/Metrics',
       metricName: 'RecommendationSize',
-      filterPattern: logs.FilterPattern.literal('Warning: Low number of recommendations'),
+      filterPattern: logs.FilterPattern.literal('Low number of recommendations'),
       metricValue: '1',
     });
 
@@ -64,7 +66,7 @@ export class ServiceTierLambdaStack extends cdk.Stack {
       period: cdk.Duration.hours(20),
     });
 
-    new cloudwatch.Alarm(this, 'RecommendationSizeAlarm', {
+    const RecommendationSizeAlarm = new cloudwatch.Alarm(this, 'RecommendationSizeAlarm', {
       metric: RecommendationSizeMetric,
       threshold: 1,
       evaluationPeriods: 1,
@@ -74,6 +76,7 @@ export class ServiceTierLambdaStack extends cdk.Stack {
 
     const RecommendationSizeAlarmTopic = new sns.Topic(this, 'RecommendationSizeAlarmTopic');
     RecommendationSizeAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    RecommendationSizeAlarm.addAlarmAction(new cloudwatchActions.SnsAction(RecommendationSizeAlarmTopic))
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
@@ -92,6 +95,24 @@ export class ServiceTierLambdaStack extends cdk.Stack {
       role: props.coreStack.astraLambdaRole,
       logGroup: logGroup
     });
+
+    const ServicelambdaErrorMetric = lambdaFunction.metricErrors({
+      period: cdk.Duration.hours(20),
+      statistic: 'Sum',
+    });
+
+    // Alarm for Lambda function errors
+    const ServiceLambdaFailureAlarm = new cloudwatch.Alarm(this, 'ServiceLambdaFailureAlarm', {
+      metric: ServicelambdaErrorMetric,
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      alarmDescription: 'Alarm when Lambda function fails',
+    });
+
+    const ServiceLambdaFailureAlarmTopic = new sns.Topic(this, 'ServiceLambdaFailureAlarmTopic');
+    ServiceLambdaFailureAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    ServiceLambdaFailureAlarm.addAlarmAction(new cloudwatchActions.SnsAction(ServiceLambdaFailureAlarmTopic))
 
     // Grant Lambda permissions to send messages to the queue
     props.coreStack.astraSQSQueue.grantSendMessages(lambdaFunction);

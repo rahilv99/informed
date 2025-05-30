@@ -8,6 +8,7 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ export class ScraperStack extends cdk.Stack {
       period: cdk.Duration.hours(20),
     });
 
-    new cloudwatch.Alarm(this, 'RestartBrowserAlarm', {
+    const RestartBrowserAlarm = new cloudwatch.Alarm(this, 'RestartBrowserAlarm', {
       metric: RestartBrowserMetric,
       threshold: 3,
       evaluationPeriods: 1,
@@ -48,6 +49,7 @@ export class ScraperStack extends cdk.Stack {
 
     const RestartBrowserAlarmTopic = new sns.Topic(this, 'RestartBrowserAlarmTopic');
     RestartBrowserAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    RestartBrowserAlarm.addAlarmAction(new cloudwatchActions.SnsAction(RestartBrowserAlarmTopic));
 
     new logs.MetricFilter(this, 'TimeoutFilter', {
       logGroup,
@@ -64,7 +66,7 @@ export class ScraperStack extends cdk.Stack {
       period: cdk.Duration.hours(20),
     });
 
-    new cloudwatch.Alarm(this, 'TimeoutAlarm', {
+    const TimeoutAlarm = new cloudwatch.Alarm(this, 'TimeoutAlarm', {
       metric: TimeoutMetric,
       threshold: 10,
       evaluationPeriods: 1,
@@ -74,6 +76,7 @@ export class ScraperStack extends cdk.Stack {
 
     const TimeoutAlarmTopic = new sns.Topic(this, 'TimeoutAlarmTopic');
     TimeoutAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    TimeoutAlarm.addAlarmAction(new cloudwatchActions.SnsAction(TimeoutAlarmTopic));
 
     new logs.MetricFilter(this, 'FailureFilter', {
       logGroup,
@@ -90,7 +93,7 @@ export class ScraperStack extends cdk.Stack {
       period: cdk.Duration.hours(20),
     });
 
-    new cloudwatch.Alarm(this, 'FailureAlarm', {
+    const FailureAlarm = new cloudwatch.Alarm(this, 'FailureAlarm', {
       metric: FailureMetric,
       threshold: 1,
       evaluationPeriods: 1,
@@ -100,6 +103,7 @@ export class ScraperStack extends cdk.Stack {
 
     const FailureAlarmTopic = new sns.Topic(this, 'FailureAlarmTopic');
     FailureAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    FailureAlarm.addAlarmAction(new cloudwatchActions.SnsAction(FailureAlarmTopic));
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/scraper/puppet'),
@@ -111,6 +115,24 @@ export class ScraperStack extends cdk.Stack {
       role: props.coreStack.ScraperLambdaRole,
       logGroup: logGroup
     });
+
+    const ScraperlambdaErrorMetric = lambdaFunction.metricErrors({
+      period: cdk.Duration.hours(20),
+      statistic: 'Sum',
+    });
+
+    // Alarm for Lambda function errors
+    const ScraperLambdaFailureAlarm  = new cloudwatch.Alarm(this, 'ScraperLambdaFailureAlarm', {
+      metric: ScraperlambdaErrorMetric,
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      alarmDescription: 'Alarm when Lambda function fails',
+    });
+
+    const ScraperLambdaFailureAlarmTopic = new sns.Topic(this, 'ScraperLambdaFailureAlarmTopic');
+    ScraperLambdaFailureAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    ScraperLambdaFailureAlarm.addAlarmAction(new cloudwatchActions.SnsAction(ScraperLambdaFailureAlarmTopic));
 
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
