@@ -232,7 +232,7 @@ class ArticleClusterer:
             subdoc_count = 0
         
         # Calculate final score
-        score = 2 * avg_similarity + norm_article_count + 0.5 * subdoc_count
+        score = 2 * avg_similarity + norm_article_count + 0.5 * subdoc_count + 1
 
         # Truncate to float4 (4 decimal places)
         return float(f"{score:.4f}")
@@ -409,10 +409,10 @@ def handler(payload):
                     VALUES (%s, %s, %s::jsonb)
                     RETURNING id
                 """, (metadata['center_embedding'], metadata['score'], json.dumps(metadata['articles'])))
-                print(f"Inserted cluster {i+1} into db")
             conn.commit()
+            print(f"Inserted {len(clusters)} clusters into db")
         except Exception as e:
-            print(f"Error inserting cluster {i+1} into db: {e}")
+            print(f"Error inserting clusters into db: {e}")
 
     else:
         logging.error("No clusters generated")
@@ -473,8 +473,8 @@ if __name__ == "__main__":
                     VALUES (%s, %s, %s::jsonb)
                     RETURNING id
                 """, (metadata['center_embedding'], metadata['score'], json.dumps(metadata['articles'])))
-                print(f"Inserted cluster {i+1} into db")
             conn.commit()
+            print(f"Inserted {len(clusters)} clusters into db")
         except Exception as e:
             print(f"Error inserting cluster {i+1} into db: {e}")
 

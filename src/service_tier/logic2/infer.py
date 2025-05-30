@@ -56,11 +56,13 @@ def main(interests):
 
 
 def handler(payload):
-    interests = payload.get(interests, '')
+    interests = payload.get('interests', [])
     print(f"Infer.py invoked with interests: {interests}")
 
     recommendations = main(interests)
 
+    if len(recommendations) < 5:
+        print('Warning: Low number of recommendations')
     for i, metadata in enumerate(recommendations):
         print(f"------ CLUSTER {i} --------")
         print(metadata)
