@@ -18,7 +18,7 @@ db_access_url = os.environ.get('DB_ACCESS_URL')
 
 class ArticleClusterer:
     """Class for clustering news articles based on government documents"""
-    def __init__(self, similarity_threshold=0.35, merge_threshold=0.85):
+    def __init__(self, similarity_threshold=0.35, merge_threshold=0.80):
         self.logger = logging.getLogger('pulse.clustering')
         self.model = voyageai.Client()
         self.nlp = spacy.load("en_core_web_sm")
@@ -308,11 +308,11 @@ class ArticleClusterer:
                 
                 # Calculate center as mean of all embeddings
                 center_embedding = np.mean(embeddings, axis=0)
-                
+
                 # Create cluster metadata
                 cluster_metadata.append({
-                    'center_embedding': center_embedding,
-                    'articles': pd.DataFrame(rows).to_json
+                    'center_embedding': center_embedding.tolist(),
+                    'articles': pd.DataFrame(rows).to_json()
                 })
                 
         except Exception as e:
@@ -332,8 +332,7 @@ class ArticleClusterer:
             # Embed Google News article titles
             self.logger.info(f"Embedding {len(news_df)} Google News article titles...")
             news_titles = news_df['title'].tolist()
-            response = self.model.embed(news_titles, model = "voyage-3.5-lite", input_type="document")
-            news_embeddings = response.embeddings
+            news_embeddings = self.model.embed(news_titles, model = "voyage-3.5-lite", input_type="document").embeddings
 
             # Embed federal documents
             self.logger.info(f"Embedding {len(gov_df)} government document titles...")
@@ -344,8 +343,7 @@ class ArticleClusterer:
                 content = title + " " + self.extract_entities(text[1000:10000])
                 gov_texts.append(content[:5000])
             
-            response = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document")
-            gov_embeddings = response.embeddings
+            gov_embeddings = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document").embeddings
 
             # Create and merge clusters
             clusters = self.create_initial_clusters(gov_embeddings, news_embeddings)
@@ -356,8 +354,8 @@ class ArticleClusterer:
             self.logger.info(f"Final number of clusters: {len(clusters)}")
             
             # add embeddings to dfs
-            news_df['embeddings'] = news_embeddings.tolist()
-            gov_df['embeddings'] = gov_embeddings.tolist()
+            news_df['embeddings'] = news_embeddings
+            gov_df['embeddings'] = gov_embeddings
             # Create dataframes
             dfs = self.create_cluster_dataframes(clusters, news_df, gov_df)
             
@@ -397,7 +395,7 @@ def handler(payload):
     clusters = clusterer.cluster_articles(news_df, gov_df)
 
     if clusters and len(clusters) > 0:
-        
+
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         try:
             for i, metadata in enumerate(clusters):
@@ -455,6 +453,8 @@ if __name__ == "__main__":
     # Create clusterer and run clustering
     clusterer = ArticleClusterer()
     clusters = clusterer.cluster_articles(news_df, gov_df)
+    # with open ('tmp/clusters.pkl', 'rb') as f:
+    #    clusters = pickle.load(f)
 
     if clusters and len(clusters) > 0:
         # save to tmp
