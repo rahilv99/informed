@@ -153,7 +153,12 @@ class ArticleScraper {
     }
       
       // Get the content
-      const html = await page.content();
+      try {
+        const html = await page.content();
+      } catch (err) {
+        console.log('Could not load page content. Execution context destroyed. Skipping link')
+        return ''
+      }
       const dom = new JSDOM(html, {
         url: currentUrl, // Provide the current URL for proper base URL resolution
         contentType: 'text/html',
