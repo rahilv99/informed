@@ -1,12 +1,32 @@
 import boto3
 import json
 from botocore.exceptions import ClientError
-import logging
 import os
+import psycopg2
 
 PUPPET_QUEUE_URL = os.getenv("PUPPET_QUEUE_URL")
 SCRAPER_QUEUE_URL = os.getenv("SCRAPER_QUEUE_URL")
 
+DB_ACCESS_URL = os.getenv('DB_ACCESS_URL')
+
+def get_unique_keywords(conn):
+    """
+    Fetch all unique keywords from users table
+    
+    Args:
+        conn: psycopg2 connection object
+    
+    Returns:
+        list: List of unique keywords
+    """
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM get_unique_keywords()")
+            keywords = [row[0] for row in cur.fetchall()]
+            return keywords
+    except psycopg2.Error as e:
+        print(f"Error fetching keywords: {e}")
+        return []
 
 def handler(payload):
     """
@@ -15,7 +35,9 @@ def handler(payload):
     """
     print("Starting the dispatch process to SQS queue.")
 
-    topics = ["tariffs", "immigration", "foreign aid"]
+    conn = psycopg2.connect(DB_ACCESS_URL)
+    topics = get_unique_keywords(conn)
+    conn.close()
     
     sqs = boto3.client('sqs')
     

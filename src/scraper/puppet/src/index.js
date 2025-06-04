@@ -138,7 +138,7 @@ async function processArticles(articlesData) {
         console.log(`Processing article: ${article.title}`);
         
         // Get the full text
-        const fullText = await scraper.getDocumentText(article.url);
+        const { fullText, trueUrl } = await scraper.getDocumentText(article.url);
         
         // Skip articles with insufficient content
         if (!fullText || fullText.length < config.article.minTextLength) {
@@ -146,17 +146,6 @@ async function processArticles(articlesData) {
           continue;
         }
         
-        // Get the true URL after redirects
-        let trueUrl;
-        try {
-          trueUrl = await Promise.race([
-            page.url(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('URL timeout')), 2000))
-          ]);
-        } catch (error) {
-          console.error(`Error retrieving true URL: ${error}`)
-          trueUrl = article.url;
-        }
         // Add to results
         results.push({
           title: article.title,

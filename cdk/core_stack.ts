@@ -38,9 +38,9 @@ export class CoreStack extends cdk.Stack {
 
     // Create SQS queue
     this.astraSQSQueue = new sqs.Queue(this, 'AstraSqsQueue', {
-        visibilityTimeout: cdk.Duration.seconds(60*15),     // setting it to 15 minutes
+        visibilityTimeout: cdk.Duration.seconds(60*15), // 15 minutes
         deadLetterQueue: {
-            maxReceiveCount: 1, // Retry before moving to DLQ - TODO After testing change this to 3 or so
+            maxReceiveCount: 2,
             queue: new sqs.Queue(this, 'DLQ', {
                 queueName: 'AstraSqsDLQ',
                 retentionPeriod: cdk.Duration.days(14), // Retain messages in DLQ for 14 days
@@ -71,9 +71,9 @@ export class CoreStack extends cdk.Stack {
 
     // Create SQS queue
     this.scraperSQSQueue = new sqs.Queue(this, 'ScraperSqsQueue', {
-        visibilityTimeout: cdk.Duration.seconds(60*15),     // setting it to 15 minutes
+        visibilityTimeout: cdk.Duration.seconds(60*15),     // 15 minutes
         deadLetterQueue: {
-            maxReceiveCount: 1, // Retry before moving to DLQ - TODO After testing change this to 3 or so
+            maxReceiveCount: 2,
             queue: new sqs.Queue(this, 'scraper_DLQ', {
                 queueName: 'ScraperSqsDLQ',
                 retentionPeriod: cdk.Duration.days(14), // Retain messages in DLQ for 14 days
@@ -133,9 +133,9 @@ export class CoreStack extends cdk.Stack {
 
     // Create SQS queue
     this.puppetSqsQueue = new sqs.Queue(this, 'puppetSqsQueue', {
-        visibilityTimeout: cdk.Duration.seconds(60*15),     // setting it to 15 minutes
+        visibilityTimeout: cdk.Duration.seconds(60*15),     // 15 minutes
         deadLetterQueue: {
-            maxReceiveCount: 1, // Retry before moving to DLQ - TODO After testing change this to 3 or so
+            maxReceiveCount: 2,
             queue: new sqs.Queue(this, 'puppet_DLQ', {
                 queueName: 'puppetSqsDLQ',
                 retentionPeriod: cdk.Duration.days(14), // Retain messages in DLQ for 14 days

@@ -25,11 +25,8 @@ cartesia = False
 GOOGLE_API_KEY= os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
-summary_model = genai.GenerativeModel('gemini-1.5-flash') # 15 RPM, $0.030 /million output tokens for higher RPM
-script_model = genai.GenerativeModel('gemini-2.0-flash') # 2 RPM, $5 /million output tokens for higher RPM
-
-small_model = genai.GenerativeModel('gemini-1.5-flash-8b') # 15 RPM, $0.030 /million output tokens for higher RPM
-
+summary_model = genai.GenerativeModel('gemini-1.5-flash') # $0.075 /M input  $0.30 /M output tokens 
+script_model = genai.GenerativeModel('gemini-2.0-flash') # $0.10 /M input $0.40 /M output tokens
 
 def summarize(title, text, use = 'summary'):
     if use == 'topic':
@@ -44,12 +41,12 @@ def summarize(title, text, use = 'summary'):
             prompt += f"Article {i}: {title}, "
     if use == 'summary':
         prompt = f"Provide a succinct summary about the collection of articles with the topic '{title}'.\
-            Highlight the key details. Structure your output as a simple plain text response with only lowercase english characters. Only include the summary itself;\
+            Highlight the key details. Structure your output as a simple plain text response with only english characters. Only include the summary itself;\
             avoid any introductions, explanations, or meta-comments. This summary will go directly into an email newsletter. Make the summary attention-grabbing and informative.\
             Keep it less than 80 tokens.\
             Articles: \n {text}"
     
-    response = small_model.generate_content(prompt,
+    response = summary_model.generate_content(prompt,
                                                 generation_config = genai.GenerationConfig(
                                             max_output_tokens=120,
                                             temperature=0.25))

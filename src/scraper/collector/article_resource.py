@@ -17,7 +17,7 @@ MAX_DELAY = 15
 
 class ArticleResource:
     def __init__(self, user_input):
-        self.articles_df = pd.DataFrame()
+        self.articles_df = []
         self.today = datetime.date.today()
         self.time_constraint = self.today - datetime.timedelta(days=DEFAULT_ARTICLE_AGE)
         self.user_input = user_input

@@ -4,7 +4,6 @@ import logging
 import boto3
 import json
 import warnings
-
 from article_resource import ArticleResource
 from botocore.exceptions import ClientError
 
@@ -175,8 +174,9 @@ def handler(payload):
     gov.get_articles()  # Get government articles
 
     ans = gov.articles_df
-
-    save_to_s3(ans, topics)
+    
+    if ans is not None and len(ans) > 0:
+        save_to_s3(ans, topics)
 
     return {
         "statusCode": 200,

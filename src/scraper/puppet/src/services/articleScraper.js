@@ -47,7 +47,7 @@ class ArticleScraper {
     // Initialize browser if needed
     if (!await this.initBrowser()) {
       console.error('Browser not initialized. Cannot proceed.');
-      return '';
+      return { fullText: '', trueUrl: googleUrl};
     }
     
     let page = null;
@@ -60,7 +60,7 @@ class ArticleScraper {
       ]);
       if (!page) {
         console.error('Failed to create a new page within the timeout period.');
-        return '';
+        return { fullText: '', trueUrl: currentUrl};
       }
       
       // Load the Google News page with a timeout
@@ -89,7 +89,7 @@ class ArticleScraper {
           console.log('Closed browser...');
           this.browser = await initBrowser();
         }
-        return '';
+        return { fullText: '', trueUrl: currentUrl};
       }
 
       console.log('Starting URL redirect monitoring...');
@@ -149,15 +149,16 @@ class ArticleScraper {
           console.log('Closed browser...');
           this.browser = await initBrowser();
         }
-        return '';
+        return { fullText: '', trueUrl: currentUrl};
     }
       
+      let html = '';
       // Get the content
       try {
-        const html = await page.content();
+        html = await page.content();
       } catch (err) {
         console.log('Could not load page content. Execution context destroyed. Skipping link')
-        return ''
+        return { fullText: '', trueUrl: currentUrl};
       }
       const dom = new JSDOM(html, {
         url: currentUrl, // Provide the current URL for proper base URL resolution
@@ -199,9 +200,9 @@ class ArticleScraper {
       }
       if (!cleaned || cleaned.length === 0) {
         console.warn('No content extracted or cleaned text is empty.');
-        return '';
+        return { fullText: '', trueUrl: currentUrl};
       } else {
-        return cleaned; // '' if error, otherwise cleaned text
+        return { fullText: cleaned, trueUrl: currentUrl };
       }
     } catch (error) {
       console.error(`Error following URL ${googleUrl}:`, error);
@@ -246,7 +247,7 @@ class ArticleScraper {
       } catch (err) {
         console.error('Failed to reinitialize browser:', err);
       }
-      return '';
+      return { fullText: '', trueUrl: currentUrl};
     }
   }
   

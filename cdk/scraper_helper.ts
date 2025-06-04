@@ -81,7 +81,7 @@ export class ScraperHelperStack extends cdk.Stack {
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperHelperFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/scraper/collector'),
       timeout: cdk.Duration.minutes(5),
-      memorySize: 512,
+      memorySize: 1024,
       environment: {
         ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
         BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName,
@@ -89,6 +89,7 @@ export class ScraperHelperStack extends cdk.Stack {
         PUPPET_QUEUE_URL: props.coreStack.puppetSqsQueue.queueUrl,
         ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl,
         GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
+        DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
       },
       role: props.coreStack.ScraperLambdaRole,
       logGroup: logGroup
@@ -121,7 +122,7 @@ export class ScraperHelperStack extends cdk.Stack {
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
         new lambdaEventSources.SqsEventSource(props.coreStack.scraperSQSQueue, {
-        batchSize: 1, // Process one message at a time
+        batchSize: 5, // Process 5 messages at a time
         })
     );
 

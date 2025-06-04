@@ -51,33 +51,6 @@ export class ScraperStack extends cdk.Stack {
     RestartBrowserAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
     RestartBrowserAlarm.addAlarmAction(new cloudwatchActions.SnsAction(RestartBrowserAlarmTopic));
 
-    new logs.MetricFilter(this, 'TimeoutFilter', {
-      logGroup,
-      metricNamespace: 'Scraper/Metrics',
-      metricName: 'Timeout',
-      filterPattern: logs.FilterPattern.literal('timeout'),
-      metricValue: '1', // Value to emit when the pattern matches
-    });
-
-    const TimeoutMetric = new cloudwatch.Metric({
-      namespace: 'Scraper/Metrics',
-      metricName: 'Timeout',
-      statistic: 'Sum',
-      period: cdk.Duration.hours(20),
-    });
-
-    const TimeoutAlarm = new cloudwatch.Alarm(this, 'TimeoutAlarm', {
-      metric: TimeoutMetric,
-      threshold: 10,
-      evaluationPeriods: 1,
-      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-      alarmDescription: 'Alarm when there are many timeout events',
-    });
-
-    const TimeoutAlarmTopic = new sns.Topic(this, 'TimeoutAlarmTopic');
-    TimeoutAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
-    TimeoutAlarm.addAlarmAction(new cloudwatchActions.SnsAction(TimeoutAlarmTopic));
-
     new logs.MetricFilter(this, 'FailureFilter', {
       logGroup,
       metricNamespace: 'Scraper/Metrics',

@@ -20,7 +20,6 @@ db_access_url = os.environ.get('DB_ACCESS_URL')
 class ArticleClusterer:
     """Class for clustering news articles based on government documents"""
     def __init__(self, similarity_threshold=0.35, merge_threshold=0.80):
-        self.logger = logging.getLogger('pulse.clustering')
         self.model = voyageai.Client()
         self.nlp = spacy.load("en_core_web_sm")
         self.similarity_threshold = similarity_threshold
@@ -94,7 +93,7 @@ class ArticleClusterer:
                             if len(clusters[c1_id]['articles']) >= len(
                                 clusters[c2_id]['articles']
                             ):
-                                self.logger.info(f"Merging cluster {c2_id} into {c1_id}")
+                                print(f"Merging cluster {c2_id} into {c1_id}")
                                 # Add subdocument before merging
                                 if 'subdocuments' not in clusters[c1_id]:
                                     clusters[c1_id]['subdocuments'] = []
@@ -121,9 +120,9 @@ class ArticleClusterer:
                                 )
                                 del clusters[c2_id]
 
-                                self.logger.info(f"New cluster has {len(clusters[c1_id]['articles'])} articles")
+                                print(f"New cluster has {len(clusters[c1_id]['articles'])} articles")
                             else:
-                                self.logger.info(f"Merging cluster {c1_id} into {c2_id}")
+                                print(f"Merging cluster {c1_id} into {c2_id}")
                                 # Add subdocument before merging
                                 if 'subdocuments' not in clusters[c2_id]:
                                     clusters[c2_id]['subdocuments'] = []
@@ -151,11 +150,11 @@ class ArticleClusterer:
                                 )
                                 del clusters[c1_id]
 
-                                self.logger.info(f"New cluster has {len(clusters[c2_id]['articles'])} articles")
+                                print(f"New cluster has {len(clusters[c2_id]['articles'])} articles")
                             merged = True
                             break
                         except Exception as e:
-                            self.logger.error(f"Error merging clusters {c1_id} and {c2_id}: {e}")
+                            print(f"Error merging clusters {c1_id} and {c2_id}: {e}")
                 if merged:
                     break
         
@@ -185,7 +184,7 @@ class ArticleClusterer:
                 for article_idx, similarity in cluster_articles:
                     clusters[i]['similarities'][article_idx] = similarity
         
-        self.logger.info(f"Created {len(clusters)} initial clusters")
+        print(f"Created {len(clusters)} initial clusters")
         # Second pass: Assign articles to clusters based on highest similarity
         for article_idx in range(len(news_embeddings)):
             max_similarity = -1
@@ -202,7 +201,7 @@ class ArticleClusterer:
                 clusters[best_cluster]['articles'].append(article_idx)
                 used_articles.add(article_idx)
         
-        self.logger.info(f"Assigned {len(used_articles)} articles to clusters")
+        print(f"Assigned {len(used_articles)} articles to clusters")
         
         return clusters
     
@@ -217,7 +216,7 @@ class ArticleClusterer:
             key=lambda x: cluster['similarities'][x],
             reverse=True
         )[:5]
-        
+
         # Calculate average similarity of top 3 articles
         avg_similarity = sum(
             cluster['similarities'][idx] for idx in sorted_articles
@@ -237,7 +236,7 @@ class ArticleClusterer:
         # Truncate to float4 (4 decimal places)
         return float(f"{score:.4f}")
 
-    
+
     def create_cluster_dataframes(self, clusters, news_df, gov_df):
         """Create metadata for each cluster including dataframe, center, and score"""
         # Rank clusters by score
@@ -245,7 +244,7 @@ class ArticleClusterer:
         for cluster_id, cluster_data in clusters.items():
             score = self.calculate_cluster_score(cluster_data)
             ranked_clusters.append((cluster_id, cluster_data, score))
-        
+
         # Sort clusters by score in descending order
         ranked_clusters.sort(key=lambda x: x[2], reverse=True)
         
@@ -319,7 +318,7 @@ class ArticleClusterer:
                 })
                 
         except Exception as e:
-            self.logger.error(f"Error processing clusters: {e}")
+            print(f"Error processing clusters: {e}")
 
         return cluster_metadata
 
@@ -327,18 +326,19 @@ class ArticleClusterer:
         """Main method to cluster articles and generate report"""
         try:
             if news_df.empty:
-                self.logger.error("No Google News articles found")
+                print("No Google News articles found")
             
             if gov_df.empty:
-                self.logger.error("No federal documents found")
+                print("No federal documents found")
             
             # Embed Google News article titles
-            self.logger.info(f"Embedding {len(news_df)} Google News article titles...")
+            print(f"Embedding {len(news_df)} Google News article titles...")
             news_titles = news_df['title'].tolist()
             news_embeddings = self.model.embed(news_titles, model = "voyage-3.5-lite", input_type="document").embeddings
+            print(f'Embedded {len(news_embeddings)} news documents')
 
             # Embed federal documents
-            self.logger.info(f"Embedding {len(gov_df)} government document titles...")
+            print(f"Embedding {len(gov_df)} government document titles...")
             gov_texts = []
             for index, row in gov_df.iterrows():
                 title = row['title']
@@ -347,14 +347,14 @@ class ArticleClusterer:
                 gov_texts.append(content[:5000])
             
             gov_embeddings = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document").embeddings
-
+            print(f'Embedded {len(gov_embeddings)} news documents')
             # Create and merge clusters
             clusters = self.create_initial_clusters(gov_embeddings, news_embeddings)
 
-            self.logger.info(f"Number of clusters before merge: {len(clusters)}")
+            print(f"Number of clusters before merge: {len(clusters)}")
             clusters = self.merge_similar_clusters(clusters)
 
-            self.logger.info(f"Final number of clusters: {len(clusters)}")
+            print(f"Final number of clusters: {len(clusters)}")
             
             # add embeddings to dfs
             news_df['embeddings'] = news_embeddings
@@ -364,7 +364,7 @@ class ArticleClusterer:
             
             return dfs
         except Exception as e:
-            self.logger.error(f"Error in clustering process: {e}")
+            print(f"Error in clustering process: {e}")
 
 
 def load_df(type):
@@ -401,7 +401,14 @@ def handler(payload):
 
         # save to db
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+
         try:
+            # Delete all existing entries first
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM clusters")
+            conn.commit()
+            print("Deleted all existing clusters from db")
+
             for i, metadata in enumerate(clusters):
                 cursor = conn.cursor()
                 cursor.execute("""
@@ -413,7 +420,9 @@ def handler(payload):
             print(f"Inserted {len(clusters)} clusters into db")
         except Exception as e:
             print(f"Error inserting clusters into db: {e}")
-
+            conn.rollback()
+        finally:
+            conn.close()
     else:
         logging.error("No clusters generated")
 
@@ -466,6 +475,12 @@ if __name__ == "__main__":
         # save to db
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         try:
+            # Delete all existing entries first
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM clusters")
+            conn.commit()
+            print("Deleted all existing clusters from db")
+
             for i, metadata in enumerate(clusters):
                 cursor = conn.cursor()
                 cursor.execute("""
@@ -476,14 +491,16 @@ if __name__ == "__main__":
             conn.commit()
             print(f"Inserted {len(clusters)} clusters into db")
         except Exception as e:
-            print(f"Error inserting cluster {i+1} into db: {e}")
+            print(f"Error inserting clusters into db: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
 
         # print debugging
         print(f"{len(clusters)} clusters created")
         print("========== OUTPUT CLUSTERS ===========")
         for i, metadata in enumerate(clusters):
             print(f"----- Cluster {i+1} -------")
-            print(f"Center embedding shape: {metadata['center_embedding'].shape}")
             df = pd.read_json(metadata['articles'])
             print(f"Number of articles: {len(df)}")
             for idx, row in df.head().iterrows():
