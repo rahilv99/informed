@@ -30,7 +30,6 @@ class ArticleClusterer:
         if not isinstance(input_text, str):
             return ""
         
-        input_text = input_text[1000:]
         doc = self.nlp(input_text)
         
         entities = [ent.text.lower() for ent in doc.ents]
@@ -343,8 +342,10 @@ class ArticleClusterer:
             for index, row in gov_df.iterrows():
                 title = row['title']
                 text = row['full_text']
-                content = title + " " + self.extract_entities(text[1000:10000])
-                gov_texts.append(content[:5000])
+                sz = len(text)
+                mid = sz // 2
+                content = title + " " + self.extract_entities(text[mid:mid+2000]) # get text somewhere in the middle
+                gov_texts.append(content[:100])
             
             gov_embeddings = self.model.embed(gov_texts, model = "voyage-3.5-lite", input_type="document").embeddings
             print(f'Embedded {len(gov_embeddings)} news documents')

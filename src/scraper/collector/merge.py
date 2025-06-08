@@ -129,15 +129,15 @@ def handler(payload):
         )
         print(f"Sent clean request to Scraper SQS: {response.get('MessageId')}")
 
-    next_event = {
-        "action": "e_embed"
-    }
+    # next_event = {
+    #     "action": "e_embed"
+    # }
 
-    sqs = boto3.client('sqs')
-    ASTRA_QUEUE_URL = os.getenv("ASTRA_QUEUE_URL")
+    # sqs = boto3.client('sqs')
+    # ASTRA_QUEUE_URL = os.getenv("ASTRA_QUEUE_URL")
     
-    response = sqs.send_message(
-        QueueUrl=ASTRA_QUEUE_URL,
-        MessageBody=json.dumps(next_event)
-    )
-    print(f"Sent embedding request to Astra SQS: {response.get('MessageId')}")
+    # response = sqs.send_message(
+    #     QueueUrl=ASTRA_QUEUE_URL,
+    #     MessageBody=json.dumps(next_event)
+    # )
+    # print(f"Sent embedding request to Astra SQS: {response.get('MessageId')}")

@@ -44,7 +44,7 @@ export const podcasts = pgTable('podcasts', {
 
 export const clusters = pgTable('clusters', {
   id: serial('id').primaryKey(),
-  embedding: vector('embedding', { dimensions: 1024 }),
+  embedding: vector('embedding', { dimensions: 384 }),
   metadata: jsonb('metadata').notNull(),
   score: real('score').notNull().default(1)
 });

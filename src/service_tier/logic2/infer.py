@@ -1,36 +1,46 @@
 import psycopg2
-import voyageai
-import os
 import json
+from sentence_transformers import SentenceTransformer
+from contextlib import contextmanager
 
-import common.sqs
-import common.s3
+# import common.sqs
+# import common.s3
 
-# Connect to the database
-db_access_url = os.environ.get('DB_ACCESS_URL')
-# db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres' # local testing
+# Database connection parameters
+db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres'
 
-conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
-cur = conn.cursor()
-model = voyageai.Client()
+# Load model once globally
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
-def get_embedding(interest):
-    embedding = model.embed([interest], model = "voyage-3.5-lite", input_type="query").embeddings[0]
-    return embedding
-
+@contextmanager
+def get_db_connection():
+    conn = None
+    try:
+        conn = psycopg2.connect(
+            dsn=db_access_url,
+            client_encoding='utf8',
+            connect_timeout=10  # Add timeout
+        )
+        yield conn
+    finally:
+        if conn is not None:
+            conn.close()
 
 def search_documents(interest, limit=5):
-    # Uses pgvector cosine similarity
-    query_embedding = get_embedding(interest)
-    cur.execute("""
-        SELECT id, metadata, score, embedding <=> %s::vector AS distance
-        FROM clusters
-        ORDER BY distance
-        LIMIT %s
-    """, (query_embedding, limit))
-    rows = cur.fetchall()
-    return rows
-
+    query_embedding = model.encode(interest).tolist()
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            try:
+                cur.execute("""
+                    SELECT id, metadata, score, embedding <=> %s::vector AS distance
+                    FROM clusters
+                    ORDER BY distance
+                    LIMIT %s
+                """, (query_embedding, limit))
+                return cur.fetchall()
+            except psycopg2.Error as e:
+                print(f"Error executing query: {e}")
+                return []
 
 def main(interests):
     clusters = {}

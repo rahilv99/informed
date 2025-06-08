@@ -1,0 +1,5526 @@
+=== Cluster Metrics Report ===
+
+Total clusters: 788
+
+Total government documents: 822
+
+Total news articles: 584
+
+----------------------------------------
+
+Cluster ID: 31
+  Total documents: 12 (Gov: 2, News: 10)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4755 / 0.5900 / 0.3765
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 266
+  Total documents: 12 (Gov: 2, News: 10)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4110 / 0.4613 / 0.3609
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 13
+  Total documents: 11 (Gov: 1, News: 10)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4597 / 0.5327 / 0.3954
+  Aggregated Keywords: ai
+----------------------------------------
+
+Cluster ID: 16
+  Total documents: 11 (Gov: 1, News: 10)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4087 / 0.5911 / 0.3124
+  Aggregated Keywords: ai
+----------------------------------------
+
+Cluster ID: 41
+  Total documents: 11 (Gov: 1, News: 10)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4224 / 0.5122 / 0.3360
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 134
+  Total documents: 11 (Gov: 1, News: 10)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3565 / 0.3918 / 0.3047
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 18
+  Total documents: 10 (Gov: 1, News: 9)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4825 / 0.6073 / 0.4238
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 30
+  Total documents: 10 (Gov: 1, News: 9)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4263 / 0.4727 / 0.3892
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 257
+  Total documents: 9 (Gov: 1, News: 8)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3666 / 0.4349 / 0.3016
+  Aggregated Keywords: Economics
+----------------------------------------
+
+Cluster ID: 22
+  Total documents: 8 (Gov: 1, News: 7)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3897 / 0.4447 / 0.3167
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 211
+  Total documents: 8 (Gov: 1, News: 7)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4237 / 0.5097 / 0.3598
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 264
+  Total documents: 8 (Gov: 1, News: 7)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3989 / 0.4710 / 0.3608
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 566
+  Total documents: 8 (Gov: 1, News: 7)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3926 / 0.4666 / 0.3480
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 567
+  Total documents: 8 (Gov: 1, News: 7)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3977 / 0.4853 / 0.3145
+  Aggregated Keywords: Media Regulation
+----------------------------------------
+
+Cluster ID: 743
+  Total documents: 8 (Gov: 8, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Taxation, Corporate Taxes, Economy, Taxes, Wages
+----------------------------------------
+
+Cluster ID: 754
+  Total documents: 8 (Gov: 1, News: 7)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4292 / 0.6046 / 0.3514
+  Aggregated Keywords: Tech
+----------------------------------------
+
+Cluster ID: 262
+  Total documents: 7 (Gov: 1, News: 6)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3801 / 0.4388 / 0.3171
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 285
+  Total documents: 7 (Gov: 1, News: 6)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4193 / 0.4892 / 0.3266
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 492
+  Total documents: 7 (Gov: 1, News: 6)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5269 / 0.6368 / 0.4632
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 28
+  Total documents: 6 (Gov: 1, News: 5)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4296 / 0.4842 / 0.3509
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 36
+  Total documents: 6 (Gov: 1, News: 5)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4398 / 0.5377 / 0.3193
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 249
+  Total documents: 6 (Gov: 1, News: 5)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4893 / 0.5534 / 0.4196
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 34
+  Total documents: 5 (Gov: 2, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4745 / 0.5160 / 0.4044
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 126
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4574 / 0.5189 / 0.3851
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 201
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3982 / 0.4770 / 0.3244
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 287
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4147 / 0.4760 / 0.3786
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 403
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3613 / 0.3847 / 0.3377
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 459
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3689 / 0.4059 / 0.3042
+  Aggregated Keywords: HealthTech
+----------------------------------------
+
+Cluster ID: 525
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4435 / 0.4945 / 0.3757
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 544
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4459 / 0.5033 / 0.4056
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 623
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4203 / 0.4924 / 0.3741
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 644
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3904 / 0.4363 / 0.3163
+  Aggregated Keywords: Politics
+----------------------------------------
+
+Cluster ID: 681
+  Total documents: 5 (Gov: 2, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5390 / 0.5565 / 0.5096
+  Aggregated Keywords: Research Funding
+----------------------------------------
+
+Cluster ID: 727
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3652 / 0.3746 / 0.3467
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 730
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3916 / 0.4557 / 0.3184
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 742
+  Total documents: 5 (Gov: 1, News: 4)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5025 / 0.5459 / 0.4620
+  Aggregated Keywords: Taxation
+----------------------------------------
+
+Cluster ID: 6
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4896 / 0.6269 / 0.3434
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 8
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5526 / 0.6121 / 0.5110
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 17
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4079 / 0.4401 / 0.3846
+  Aggregated Keywords: ai
+----------------------------------------
+
+Cluster ID: 25
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4913 / 0.5737 / 0.4322
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 44
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4389 / 0.4701 / 0.4141
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 62
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4366 / 0.4925 / 0.3433
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 78
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3437 / 0.3478 / 0.3387
+  Aggregated Keywords: basketball
+----------------------------------------
+
+Cluster ID: 130
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3557 / 0.3958 / 0.3268
+  Aggregated Keywords: Christianity
+----------------------------------------
+
+Cluster ID: 138
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5407 / 0.6717 / 0.4021
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 254
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4515 / 0.4600 / 0.4428
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 316
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4749 / 0.5339 / 0.3906
+  Aggregated Keywords: Energy Policy
+----------------------------------------
+
+Cluster ID: 382
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5037 / 0.5274 / 0.4705
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 404
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4090 / 0.4539 / 0.3435
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 419
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3902 / 0.4762 / 0.3413
+  Aggregated Keywords: Government Budget
+----------------------------------------
+
+Cluster ID: 446
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4389 / 0.5302 / 0.3608
+  Aggregated Keywords: Healthcare
+----------------------------------------
+
+Cluster ID: 503
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4597 / 0.5654 / 0.3874
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 522
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3501 / 0.3814 / 0.3011
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 542
+  Total documents: 4 (Gov: 3, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3620 / 0.3620 / 0.3620
+  Aggregated Keywords: Marine Science, Biodiversity, Renewable Energy
+----------------------------------------
+
+Cluster ID: 554
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3468 / 0.3684 / 0.3238
+  Aggregated Keywords: Marketing
+----------------------------------------
+
+Cluster ID: 608
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5022 / 0.5322 / 0.4846
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 624
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3838 / 0.4647 / 0.3001
+  Aggregated Keywords: Palestine
+----------------------------------------
+
+Cluster ID: 799
+  Total documents: 4 (Gov: 1, News: 3)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4400 / 0.5646 / 0.3694
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 7
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4390 / 0.5011 / 0.3769
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 15
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4536 / 0.5064 / 0.4007
+  Aggregated Keywords: ai
+----------------------------------------
+
+Cluster ID: 33
+  Total documents: 3 (Gov: 2, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3362 / 0.3362 / 0.3362
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 39
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3917 / 0.4385 / 0.3449
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 40
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3859 / 0.4604 / 0.3114
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 42
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4082 / 0.4137 / 0.4027
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 68
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4479 / 0.4579 / 0.4380
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 71
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3822 / 0.4207 / 0.3438
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 72
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4364 / 0.4567 / 0.4161
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 92
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4759 / 0.5244 / 0.4274
+  Aggregated Keywords: Biotech
+----------------------------------------
+
+Cluster ID: 97
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3433 / 0.3732 / 0.3134
+  Aggregated Keywords: Brain injuries
+----------------------------------------
+
+Cluster ID: 104
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4988 / 0.5604 / 0.4371
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 105
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4554 / 0.4850 / 0.4258
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 109
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3789 / 0.3810 / 0.3767
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 135
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4364 / 0.4615 / 0.4112
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 137
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4656 / 0.4971 / 0.4341
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 141
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4209 / 0.4248 / 0.4169
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 145
+  Total documents: 3 (Gov: 3, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change, Science Policy
+----------------------------------------
+
+Cluster ID: 186
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4347 / 0.4393 / 0.4301
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 207
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3257 / 0.3431 / 0.3083
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 214
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3896 / 0.4154 / 0.3637
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 217
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3633 / 0.4245 / 0.3021
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 243
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3695 / 0.4155 / 0.3236
+  Aggregated Keywords: Economic Justice
+----------------------------------------
+
+Cluster ID: 252
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3749 / 0.4474 / 0.3023
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 275
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4770 / 0.5192 / 0.4348
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 304
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4838 / 0.5554 / 0.4121
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 324
+  Total documents: 3 (Gov: 2, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4113 / 0.4113 / 0.4113
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 336
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4945 / 0.5450 / 0.4440
+  Aggregated Keywords: Exercise science
+----------------------------------------
+
+Cluster ID: 351
+  Total documents: 3 (Gov: 2, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4469 / 0.4469 / 0.4469
+  Aggregated Keywords: Finance, Healthcare
+----------------------------------------
+
+Cluster ID: 371
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3931 / 0.4777 / 0.3086
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 437
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4745 / 0.4827 / 0.4663
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 445
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4870 / 0.5014 / 0.4727
+  Aggregated Keywords: Healthcare
+----------------------------------------
+
+Cluster ID: 504
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4001 / 0.4928 / 0.3074
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 511
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4606 / 0.4903 / 0.4309
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 546
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3988 / 0.4478 / 0.3499
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 557
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3985 / 0.4442 / 0.3529
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 568
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4043 / 0.4178 / 0.3908
+  Aggregated Keywords: Media Regulation
+----------------------------------------
+
+Cluster ID: 582
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4054 / 0.4511 / 0.3597
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 595
+  Total documents: 3 (Gov: 3, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: ML
+----------------------------------------
+
+Cluster ID: 628
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3536 / 0.3793 / 0.3279
+  Aggregated Keywords: Palestine
+----------------------------------------
+
+Cluster ID: 630
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3724 / 0.4085 / 0.3364
+  Aggregated Keywords: Political Movements
+----------------------------------------
+
+Cluster ID: 643
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3665 / 0.3808 / 0.3521
+  Aggregated Keywords: Politics
+----------------------------------------
+
+Cluster ID: 673
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3272 / 0.3358 / 0.3186
+  Aggregated Keywords: Refugee Policy
+----------------------------------------
+
+Cluster ID: 680
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4548 / 0.5351 / 0.3745
+  Aggregated Keywords: Research
+----------------------------------------
+
+Cluster ID: 690
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4415 / 0.4509 / 0.4321
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 776
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3961 / 0.4250 / 0.3671
+  Aggregated Keywords: Trade Policy
+----------------------------------------
+
+Cluster ID: 793
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4955 / 0.5300 / 0.4610
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 794
+  Total documents: 3 (Gov: 1, News: 2)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4825 / 0.5221 / 0.4428
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 4
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5414 / 0.5414 / 0.5414
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 5
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3168 / 0.3168 / 0.3168
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 9
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4043 / 0.4043 / 0.4043
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 14
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5902 / 0.5902 / 0.5902
+  Aggregated Keywords: ai
+----------------------------------------
+
+Cluster ID: 21
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4245 / 0.4245 / 0.4245
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 23
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3396 / 0.3396 / 0.3396
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 24
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3843 / 0.3843 / 0.3843
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 29
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4100 / 0.4100 / 0.4100
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 45
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3012 / 0.3012 / 0.3012
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 48
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3605 / 0.3605 / 0.3605
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 51
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3000 / 0.3000 / 0.3000
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 56
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4328 / 0.4328 / 0.4328
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 59
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3135 / 0.3135 / 0.3135
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 61
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4130 / 0.4130 / 0.4130
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 67
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3410 / 0.3410 / 0.3410
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 69
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3013 / 0.3013 / 0.3013
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 79
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3389 / 0.3389 / 0.3389
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 87
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4536 / 0.4536 / 0.4536
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 89
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4984 / 0.4984 / 0.4984
+  Aggregated Keywords: biology
+----------------------------------------
+
+Cluster ID: 96
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3977 / 0.3977 / 0.3977
+  Aggregated Keywords: Brain injuries
+----------------------------------------
+
+Cluster ID: 115
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4742 / 0.4742 / 0.4742
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 117
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3727 / 0.3727 / 0.3727
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 121
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3547 / 0.3547 / 0.3547
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 123
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4402 / 0.4402 / 0.4402
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 133
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3071 / 0.3071 / 0.3071
+  Aggregated Keywords: Christianity
+----------------------------------------
+
+Cluster ID: 142
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4304 / 0.4304 / 0.4304
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 143
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change, Climate
+----------------------------------------
+
+Cluster ID: 152
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3688 / 0.3688 / 0.3688
+  Aggregated Keywords: Climate Change
+----------------------------------------
+
+Cluster ID: 155
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4454 / 0.4454 / 0.4454
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 165
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3830 / 0.3830 / 0.3830
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 167
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4491 / 0.4491 / 0.4491
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 172
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3011 / 0.3011 / 0.3011
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 187
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4632 / 0.4632 / 0.4632
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 202
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4212 / 0.4212 / 0.4212
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 205
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3766 / 0.3766 / 0.3766
+  Aggregated Keywords: dermatology drugs
+----------------------------------------
+
+Cluster ID: 208
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4365 / 0.4365 / 0.4365
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 222
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3856 / 0.3856 / 0.3856
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 223
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4645 / 0.4645 / 0.4645
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 227
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4264 / 0.4264 / 0.4264
+  Aggregated Keywords: duke basketball
+----------------------------------------
+
+Cluster ID: 247
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4530 / 0.4530 / 0.4530
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 253
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4166 / 0.4166 / 0.4166
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 265
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5011 / 0.5011 / 0.5011
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 270
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4216 / 0.4216 / 0.4216
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 283
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4535 / 0.4535 / 0.4535
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 288
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3414 / 0.3414 / 0.3414
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 289
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5313 / 0.5313 / 0.5313
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 291
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4362 / 0.4362 / 0.4362
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 292
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3015 / 0.3015 / 0.3015
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 293
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4338 / 0.4338 / 0.4338
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 297
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4890 / 0.4890 / 0.4890
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 300
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3296 / 0.3296 / 0.3296
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 303
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4263 / 0.4263 / 0.4263
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 305
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3438 / 0.3438 / 0.3438
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 306
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation, Energy Markets
+----------------------------------------
+
+Cluster ID: 309
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4647 / 0.4647 / 0.4647
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 317
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4427 / 0.4427 / 0.4427
+  Aggregated Keywords: Energy Policy
+----------------------------------------
+
+Cluster ID: 318
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4137 / 0.4137 / 0.4137
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 323
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4180 / 0.4180 / 0.4180
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 326
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4035 / 0.4035 / 0.4035
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 330
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4600 / 0.4600 / 0.4600
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 338
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3941 / 0.3941 / 0.3941
+  Aggregated Keywords: Family Policy
+----------------------------------------
+
+Cluster ID: 339
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5513 / 0.5513 / 0.5513
+  Aggregated Keywords: Family Policy
+----------------------------------------
+
+Cluster ID: 343
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3481 / 0.3481 / 0.3481
+  Aggregated Keywords: film
+----------------------------------------
+
+Cluster ID: 347
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4308 / 0.4308 / 0.4308
+  Aggregated Keywords: film
+----------------------------------------
+
+Cluster ID: 348
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4778 / 0.4778 / 0.4778
+  Aggregated Keywords: film
+----------------------------------------
+
+Cluster ID: 349
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5003 / 0.5003 / 0.5003
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 362
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4505 / 0.4505 / 0.4505
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 363
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5058 / 0.5058 / 0.5058
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 364
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4474 / 0.4474 / 0.4474
+  Aggregated Keywords: Fintech
+----------------------------------------
+
+Cluster ID: 381
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4017 / 0.4017 / 0.4017
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 388
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 391
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 394
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4169 / 0.4169 / 0.4169
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 395
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3797 / 0.3797 / 0.3797
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 405
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4414 / 0.4414 / 0.4414
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 406
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3617 / 0.3617 / 0.3617
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 412
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4015 / 0.4015 / 0.4015
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 413
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3208 / 0.3208 / 0.3208
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 416
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3013 / 0.3013 / 0.3013
+  Aggregated Keywords: Government Budget
+----------------------------------------
+
+Cluster ID: 421
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4425 / 0.4425 / 0.4425
+  Aggregated Keywords: Government Budget
+----------------------------------------
+
+Cluster ID: 431
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4131 / 0.4131 / 0.4131
+  Aggregated Keywords: Government Operations and Politics
+----------------------------------------
+
+Cluster ID: 436
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4201 / 0.4201 / 0.4201
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 439
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4065 / 0.4065 / 0.4065
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 441
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Spending, Self-Help
+----------------------------------------
+
+Cluster ID: 442
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3973 / 0.3973 / 0.3973
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 443
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3987 / 0.3987 / 0.3987
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 450
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4755 / 0.4755 / 0.4755
+  Aggregated Keywords: Healthcare
+----------------------------------------
+
+Cluster ID: 452
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health, Healthcare
+----------------------------------------
+
+Cluster ID: 453
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4303 / 0.4303 / 0.4303
+  Aggregated Keywords: Healthcare Costs
+----------------------------------------
+
+Cluster ID: 458
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: software engineering, Healthcare Policy
+----------------------------------------
+
+Cluster ID: 462
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4394 / 0.4394 / 0.4394
+  Aggregated Keywords: Higher Education
+----------------------------------------
+
+Cluster ID: 471
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4555 / 0.4555 / 0.4555
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 479
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4544 / 0.4544 / 0.4544
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 482
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4409 / 0.4409 / 0.4409
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 489
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3457 / 0.3457 / 0.3457
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 501
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3135 / 0.3135 / 0.3135
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 502
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4264 / 0.4264 / 0.4264
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 506
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4219 / 0.4219 / 0.4219
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 507
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4661 / 0.4661 / 0.4661
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 532
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3211 / 0.3211 / 0.3211
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 538
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3695 / 0.3695 / 0.3695
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 539
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3417 / 0.3417 / 0.3417
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 547
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3605 / 0.3605 / 0.3605
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 549
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3293 / 0.3293 / 0.3293
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 556
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3548 / 0.3548 / 0.3548
+  Aggregated Keywords: Marketing
+----------------------------------------
+
+Cluster ID: 565
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4341 / 0.4341 / 0.4341
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 573
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4042 / 0.4042 / 0.4042
+  Aggregated Keywords: medical technology
+----------------------------------------
+
+Cluster ID: 574
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3970 / 0.3970 / 0.3970
+  Aggregated Keywords: medical technology
+----------------------------------------
+
+Cluster ID: 578
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4879 / 0.4879 / 0.4879
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 583
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3490 / 0.3490 / 0.3490
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 592
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3706 / 0.3706 / 0.3706
+  Aggregated Keywords: ML
+----------------------------------------
+
+Cluster ID: 607
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4294 / 0.4294 / 0.4294
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 615
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3988 / 0.3988 / 0.3988
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 621
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3079 / 0.3079 / 0.3079
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 625
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Palestine
+----------------------------------------
+
+Cluster ID: 627
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3506 / 0.3506 / 0.3506
+  Aggregated Keywords: Palestine
+----------------------------------------
+
+Cluster ID: 635
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4478 / 0.4478 / 0.4478
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 636
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3105 / 0.3105 / 0.3105
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 639
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3942 / 0.3942 / 0.3942
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 642
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5162 / 0.5162 / 0.5162
+  Aggregated Keywords: Politics
+----------------------------------------
+
+Cluster ID: 645
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4471 / 0.4471 / 0.4471
+  Aggregated Keywords: Politics
+----------------------------------------
+
+Cluster ID: 646
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4188 / 0.4188 / 0.4188
+  Aggregated Keywords: pope
+----------------------------------------
+
+Cluster ID: 650
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4013 / 0.4013 / 0.4013
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 653
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4698 / 0.4698 / 0.4698
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 656
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5044 / 0.5044 / 0.5044
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 658
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3697 / 0.3697 / 0.3697
+  Aggregated Keywords: Public Media
+----------------------------------------
+
+Cluster ID: 666
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3490 / 0.3490 / 0.3490
+  Aggregated Keywords: public relations
+----------------------------------------
+
+Cluster ID: 676
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wildlife Protection, Renewable Energy
+----------------------------------------
+
+Cluster ID: 687
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4141 / 0.4141 / 0.4141
+  Aggregated Keywords: Rural Policy
+----------------------------------------
+
+Cluster ID: 693
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3634 / 0.3634 / 0.3634
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 701
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3366 / 0.3366 / 0.3366
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 702
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3908 / 0.3908 / 0.3908
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 704
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5249 / 0.5249 / 0.5249
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 706
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3688 / 0.3688 / 0.3688
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 718
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3010 / 0.3010 / 0.3010
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 721
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3587 / 0.3587 / 0.3587
+  Aggregated Keywords: sports
+----------------------------------------
+
+Cluster ID: 722
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: sports, sports betting
+----------------------------------------
+
+Cluster ID: 726
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 735
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5642 / 0.5642 / 0.5642
+  Aggregated Keywords: Tariffs
+----------------------------------------
+
+Cluster ID: 737
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tariffs
+----------------------------------------
+
+Cluster ID: 740
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3591 / 0.3591 / 0.3591
+  Aggregated Keywords: Tariffs
+----------------------------------------
+
+Cluster ID: 746
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Taxation
+----------------------------------------
+
+Cluster ID: 752
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3449 / 0.3449 / 0.3449
+  Aggregated Keywords: Taxes
+----------------------------------------
+
+Cluster ID: 765
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4728 / 0.4728 / 0.4728
+  Aggregated Keywords: Technology
+----------------------------------------
+
+Cluster ID: 769
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3662 / 0.3662 / 0.3662
+  Aggregated Keywords: texas legislative session
+----------------------------------------
+
+Cluster ID: 773
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4857 / 0.4857 / 0.4857
+  Aggregated Keywords: Trade
+----------------------------------------
+
+Cluster ID: 774
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3028 / 0.3028 / 0.3028
+  Aggregated Keywords: Trade
+----------------------------------------
+
+Cluster ID: 779
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.5201 / 0.5201 / 0.5201
+  Aggregated Keywords: Trade Policy
+----------------------------------------
+
+Cluster ID: 787
+  Total documents: 2 (Gov: 2, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Transportation
+----------------------------------------
+
+Cluster ID: 792
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4936 / 0.4936 / 0.4936
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 804
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4079 / 0.4079 / 0.4079
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 806
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.4571 / 0.4571 / 0.4571
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 808
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3602 / 0.3602 / 0.3602
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 810
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3767 / 0.3767 / 0.3767
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 815
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3429 / 0.3429 / 0.3429
+  Aggregated Keywords: Wildlife Protection
+----------------------------------------
+
+Cluster ID: 816
+  Total documents: 2 (Gov: 1, News: 1)
+  Cluster score: N/A
+  News similarity (avg/max/min): 0.3837 / 0.3837 / 0.3837
+  Aggregated Keywords: Wildlife Protection
+----------------------------------------
+
+Cluster ID: 0
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Affirmative Action
+----------------------------------------
+
+Cluster ID: 1
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Affirmative Action
+----------------------------------------
+
+Cluster ID: 2
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Affirmative Action
+----------------------------------------
+
+Cluster ID: 3
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 10
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 11
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Agriculture
+----------------------------------------
+
+Cluster ID: 12
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: ai
+----------------------------------------
+
+Cluster ID: 19
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 20
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: AI agents
+----------------------------------------
+
+Cluster ID: 26
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: AI arch
+----------------------------------------
+
+Cluster ID: 27
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: AI arch
+----------------------------------------
+
+Cluster ID: 38
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 43
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Artificial Intelligence
+----------------------------------------
+
+Cluster ID: 46
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 47
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 49
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 50
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 52
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 53
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 54
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 55
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 57
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Arts & Culture
+----------------------------------------
+
+Cluster ID: 58
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 60
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 63
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 64
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 65
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 66
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Automation
+----------------------------------------
+
+Cluster ID: 70
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 73
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 74
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 75
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 76
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 77
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Banking
+----------------------------------------
+
+Cluster ID: 80
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 81
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 82
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 83
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 84
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 85
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Biodiversity
+----------------------------------------
+
+Cluster ID: 88
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: biology
+----------------------------------------
+
+Cluster ID: 90
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: biology
+----------------------------------------
+
+Cluster ID: 91
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: biology
+----------------------------------------
+
+Cluster ID: 93
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Brain injuries
+----------------------------------------
+
+Cluster ID: 94
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Brain injuries
+----------------------------------------
+
+Cluster ID: 95
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Brain injuries
+----------------------------------------
+
+Cluster ID: 98
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: brazil
+----------------------------------------
+
+Cluster ID: 99
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: brazil
+----------------------------------------
+
+Cluster ID: 100
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: brazil
+----------------------------------------
+
+Cluster ID: 101
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: brazil
+----------------------------------------
+
+Cluster ID: 102
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 103
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 106
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 107
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 108
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 110
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Campaign Finance
+----------------------------------------
+
+Cluster ID: 111
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 112
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 113
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 114
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 116
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 118
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 119
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 120
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 122
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 124
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 125
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 127
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 128
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 129
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: China
+----------------------------------------
+
+Cluster ID: 131
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Christianity
+----------------------------------------
+
+Cluster ID: 132
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Christianity
+----------------------------------------
+
+Cluster ID: 136
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 139
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 140
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 144
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate
+----------------------------------------
+
+Cluster ID: 147
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change
+----------------------------------------
+
+Cluster ID: 148
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change
+----------------------------------------
+
+Cluster ID: 150
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change
+----------------------------------------
+
+Cluster ID: 151
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change
+----------------------------------------
+
+Cluster ID: 153
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Climate Change
+----------------------------------------
+
+Cluster ID: 154
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 156
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 157
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 158
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 159
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 160
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 161
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 162
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 163
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 164
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Computer Science
+----------------------------------------
+
+Cluster ID: 166
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 168
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 169
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 170
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 171
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: consumer products
+----------------------------------------
+
+Cluster ID: 173
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 174
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 175
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 176
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 177
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 178
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Cooking
+----------------------------------------
+
+Cluster ID: 179
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Influence
+----------------------------------------
+
+Cluster ID: 180
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Influence
+----------------------------------------
+
+Cluster ID: 181
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Influence
+----------------------------------------
+
+Cluster ID: 182
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Influence
+----------------------------------------
+
+Cluster ID: 183
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Influence
+----------------------------------------
+
+Cluster ID: 184
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 185
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 188
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 189
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 190
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 191
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 192
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Law
+----------------------------------------
+
+Cluster ID: 194
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 195
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 197
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 198
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 199
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 200
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 203
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 204
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Corporate Taxes
+----------------------------------------
+
+Cluster ID: 206
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 209
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 210
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 212
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 213
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Digital Economy
+----------------------------------------
+
+Cluster ID: 215
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 216
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 218
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 219
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 220
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 221
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 224
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 225
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 226
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Domestic Policy
+----------------------------------------
+
+Cluster ID: 228
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: duke basketball
+----------------------------------------
+
+Cluster ID: 229
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: duke basketball
+----------------------------------------
+
+Cluster ID: 230
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 231
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 232
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 233
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 234
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 235
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 236
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 237
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Class
+----------------------------------------
+
+Cluster ID: 238
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Issues
+----------------------------------------
+
+Cluster ID: 239
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Issues
+----------------------------------------
+
+Cluster ID: 240
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Issues
+----------------------------------------
+
+Cluster ID: 241
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Issues
+----------------------------------------
+
+Cluster ID: 242
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Justice
+----------------------------------------
+
+Cluster ID: 244
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Justice
+----------------------------------------
+
+Cluster ID: 245
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Justice
+----------------------------------------
+
+Cluster ID: 246
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Justice
+----------------------------------------
+
+Cluster ID: 248
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 250
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 251
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 255
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 256
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economic Policy
+----------------------------------------
+
+Cluster ID: 258
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economics
+----------------------------------------
+
+Cluster ID: 259
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economics
+----------------------------------------
+
+Cluster ID: 260
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economics
+----------------------------------------
+
+Cluster ID: 261
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economics
+----------------------------------------
+
+Cluster ID: 263
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 267
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 268
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 269
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Economy
+----------------------------------------
+
+Cluster ID: 273
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 274
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 276
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 277
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 278
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 279
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 280
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 281
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 282
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 284
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Education Policy
+----------------------------------------
+
+Cluster ID: 286
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 290
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Elections
+----------------------------------------
+
+Cluster ID: 294
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 295
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 296
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 298
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 299
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy
+----------------------------------------
+
+Cluster ID: 301
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 302
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 307
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 308
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 310
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 311
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Markets
+----------------------------------------
+
+Cluster ID: 312
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Policy
+----------------------------------------
+
+Cluster ID: 313
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Policy
+----------------------------------------
+
+Cluster ID: 314
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Policy
+----------------------------------------
+
+Cluster ID: 315
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Policy
+----------------------------------------
+
+Cluster ID: 319
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 320
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 321
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 322
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 327
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 328
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Energy Production
+----------------------------------------
+
+Cluster ID: 329
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 331
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 332
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 333
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 334
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 335
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Environment
+----------------------------------------
+
+Cluster ID: 337
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Exercise science
+----------------------------------------
+
+Cluster ID: 340
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Family Policy
+----------------------------------------
+
+Cluster ID: 341
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Family Policy
+----------------------------------------
+
+Cluster ID: 342
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Family Policy
+----------------------------------------
+
+Cluster ID: 344
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: film
+----------------------------------------
+
+Cluster ID: 345
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: film
+----------------------------------------
+
+Cluster ID: 346
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: film
+----------------------------------------
+
+Cluster ID: 350
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 352
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 353
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 354
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 355
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 356
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 357
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 358
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 359
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 360
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 361
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Finance
+----------------------------------------
+
+Cluster ID: 365
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Food Safety
+----------------------------------------
+
+Cluster ID: 366
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Food Safety
+----------------------------------------
+
+Cluster ID: 367
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Food Safety
+----------------------------------------
+
+Cluster ID: 368
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Food Safety
+----------------------------------------
+
+Cluster ID: 369
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Food Safety
+----------------------------------------
+
+Cluster ID: 370
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 372
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 373
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 374
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 375
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 376
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 377
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 378
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 379
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 380
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Foreign Policy
+----------------------------------------
+
+Cluster ID: 383
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 384
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 385
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 386
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 387
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Conflict
+----------------------------------------
+
+Cluster ID: 390
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 393
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 396
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 397
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 398
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: global health
+----------------------------------------
+
+Cluster ID: 399
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 400
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 401
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 402
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Global Trade
+----------------------------------------
+
+Cluster ID: 407
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Globalization
+----------------------------------------
+
+Cluster ID: 408
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 409
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 410
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 411
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 414
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 415
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Governance
+----------------------------------------
+
+Cluster ID: 417
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Budget
+----------------------------------------
+
+Cluster ID: 418
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Budget
+----------------------------------------
+
+Cluster ID: 420
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Budget
+----------------------------------------
+
+Cluster ID: 422
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Ethics
+----------------------------------------
+
+Cluster ID: 423
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Ethics
+----------------------------------------
+
+Cluster ID: 424
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Ethics
+----------------------------------------
+
+Cluster ID: 425
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Ethics
+----------------------------------------
+
+Cluster ID: 426
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Ethics
+----------------------------------------
+
+Cluster ID: 427
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Ethics
+----------------------------------------
+
+Cluster ID: 428
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Operations and Politics
+----------------------------------------
+
+Cluster ID: 429
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Operations and Politics
+----------------------------------------
+
+Cluster ID: 430
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Operations and Politics
+----------------------------------------
+
+Cluster ID: 432
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Operations and Politics
+----------------------------------------
+
+Cluster ID: 433
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Operations and Politics
+----------------------------------------
+
+Cluster ID: 434
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 435
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 438
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 440
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 444
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Government Spending
+----------------------------------------
+
+Cluster ID: 447
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare
+----------------------------------------
+
+Cluster ID: 449
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare
+----------------------------------------
+
+Cluster ID: 451
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare
+----------------------------------------
+
+Cluster ID: 454
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare Costs
+----------------------------------------
+
+Cluster ID: 455
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare Policy
+----------------------------------------
+
+Cluster ID: 456
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare Policy
+----------------------------------------
+
+Cluster ID: 457
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Healthcare Policy
+----------------------------------------
+
+Cluster ID: 460
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Higher Education
+----------------------------------------
+
+Cluster ID: 461
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Higher Education
+----------------------------------------
+
+Cluster ID: 463
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Higher Education
+----------------------------------------
+
+Cluster ID: 464
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Higher Education
+----------------------------------------
+
+Cluster ID: 465
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 466
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 467
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 468
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 469
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 470
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Immigration
+----------------------------------------
+
+Cluster ID: 472
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation
+----------------------------------------
+
+Cluster ID: 473
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation
+----------------------------------------
+
+Cluster ID: 475
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation
+----------------------------------------
+
+Cluster ID: 476
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation
+----------------------------------------
+
+Cluster ID: 477
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation
+----------------------------------------
+
+Cluster ID: 478
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Inflation
+----------------------------------------
+
+Cluster ID: 480
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 481
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 483
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 484
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 485
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 486
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 487
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Infrastructure
+----------------------------------------
+
+Cluster ID: 488
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 490
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 491
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 493
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 494
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 495
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 496
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 497
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 498
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Affairs
+----------------------------------------
+
+Cluster ID: 499
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 500
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 505
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: International Relations
+----------------------------------------
+
+Cluster ID: 508
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 509
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 510
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 512
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 513
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 514
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 515
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 516
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 517
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 518
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: large language models
+----------------------------------------
+
+Cluster ID: 519
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 520
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 521
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 523
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 524
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 526
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 527
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Legislative developments
+----------------------------------------
+
+Cluster ID: 528
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Liquified Natural Gas
+----------------------------------------
+
+Cluster ID: 529
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Liquified Natural Gas
+----------------------------------------
+
+Cluster ID: 530
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: machine learning
+----------------------------------------
+
+Cluster ID: 531
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: machine learning
+----------------------------------------
+
+Cluster ID: 533
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 534
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 535
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 536
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 537
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 540
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 541
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 543
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marine Science
+----------------------------------------
+
+Cluster ID: 545
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 548
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 550
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 551
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: maritime business
+----------------------------------------
+
+Cluster ID: 552
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marketing
+----------------------------------------
+
+Cluster ID: 553
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marketing
+----------------------------------------
+
+Cluster ID: 555
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Marketing
+----------------------------------------
+
+Cluster ID: 558
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 559
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 560
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 561
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 562
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 563
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 564
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media
+----------------------------------------
+
+Cluster ID: 569
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Media Regulation
+----------------------------------------
+
+Cluster ID: 570
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: medical technology
+----------------------------------------
+
+Cluster ID: 571
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: medical technology
+----------------------------------------
+
+Cluster ID: 572
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: medical technology
+----------------------------------------
+
+Cluster ID: 575
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 576
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 577
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 580
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 581
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 584
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 585
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Mental Health
+----------------------------------------
+
+Cluster ID: 586
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Military Spending
+----------------------------------------
+
+Cluster ID: 587
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Military Spending
+----------------------------------------
+
+Cluster ID: 588
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Military Spending
+----------------------------------------
+
+Cluster ID: 589
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Military Spending
+----------------------------------------
+
+Cluster ID: 590
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Military Spending
+----------------------------------------
+
+Cluster ID: 591
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Military Spending
+----------------------------------------
+
+Cluster ID: 593
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: ML
+----------------------------------------
+
+Cluster ID: 594
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: ML
+----------------------------------------
+
+Cluster ID: 597
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: ML
+----------------------------------------
+
+Cluster ID: 599
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: ML
+----------------------------------------
+
+Cluster ID: 600
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Monetary Policy
+----------------------------------------
+
+Cluster ID: 601
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Monetary Policy
+----------------------------------------
+
+Cluster ID: 602
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Monetary Policy
+----------------------------------------
+
+Cluster ID: 603
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Monetary Policy
+----------------------------------------
+
+Cluster ID: 604
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Monetary Policy
+----------------------------------------
+
+Cluster ID: 605
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Monetary Policy
+----------------------------------------
+
+Cluster ID: 606
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 609
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 610
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 611
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 612
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: National Security
+----------------------------------------
+
+Cluster ID: 613
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: nba
+----------------------------------------
+
+Cluster ID: 614
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: nba
+----------------------------------------
+
+Cluster ID: 616
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 617
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 618
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 619
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 620
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 622
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Nuclear Weapons
+----------------------------------------
+
+Cluster ID: 629
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Palestine
+----------------------------------------
+
+Cluster ID: 631
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Movements
+----------------------------------------
+
+Cluster ID: 632
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Movements
+----------------------------------------
+
+Cluster ID: 633
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 634
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 637
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 638
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 640
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Political Trends
+----------------------------------------
+
+Cluster ID: 641
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Politics
+----------------------------------------
+
+Cluster ID: 647
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: probability
+----------------------------------------
+
+Cluster ID: 648
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: probability
+----------------------------------------
+
+Cluster ID: 649
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: probability
+----------------------------------------
+
+Cluster ID: 651
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 652
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 654
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 655
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 657
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Health
+----------------------------------------
+
+Cluster ID: 659
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Media
+----------------------------------------
+
+Cluster ID: 660
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Media
+----------------------------------------
+
+Cluster ID: 661
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Media
+----------------------------------------
+
+Cluster ID: 662
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Policy
+----------------------------------------
+
+Cluster ID: 663
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Policy
+----------------------------------------
+
+Cluster ID: 664
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Policy
+----------------------------------------
+
+Cluster ID: 665
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Public Policy
+----------------------------------------
+
+Cluster ID: 667
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: public relations
+----------------------------------------
+
+Cluster ID: 668
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: public relations
+----------------------------------------
+
+Cluster ID: 669
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: public relations
+----------------------------------------
+
+Cluster ID: 670
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: public relations
+----------------------------------------
+
+Cluster ID: 671
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: public relations
+----------------------------------------
+
+Cluster ID: 672
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Refugee Policy
+----------------------------------------
+
+Cluster ID: 674
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Refugee Policy
+----------------------------------------
+
+Cluster ID: 675
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Renewable Energy
+----------------------------------------
+
+Cluster ID: 678
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Renewable Energy
+----------------------------------------
+
+Cluster ID: 679
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Renewable Energy
+----------------------------------------
+
+Cluster ID: 682
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Research Funding
+----------------------------------------
+
+Cluster ID: 683
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Research Funding
+----------------------------------------
+
+Cluster ID: 685
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Research Funding
+----------------------------------------
+
+Cluster ID: 686
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: running
+----------------------------------------
+
+Cluster ID: 688
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 689
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 691
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 692
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 694
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 695
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 696
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 697
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science
+----------------------------------------
+
+Cluster ID: 698
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science Policy
+----------------------------------------
+
+Cluster ID: 699
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Science Policy
+----------------------------------------
+
+Cluster ID: 703
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 705
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 707
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 708
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 709
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Scientific Innovation
+----------------------------------------
+
+Cluster ID: 711
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Social Justice
+----------------------------------------
+
+Cluster ID: 712
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Social Justice
+----------------------------------------
+
+Cluster ID: 713
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 714
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 715
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 716
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 717
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 719
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Software
+----------------------------------------
+
+Cluster ID: 723
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: sports
+----------------------------------------
+
+Cluster ID: 724
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: sports
+----------------------------------------
+
+Cluster ID: 729
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 731
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 732
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 733
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 734
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Startups
+----------------------------------------
+
+Cluster ID: 736
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tariffs
+----------------------------------------
+
+Cluster ID: 738
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tariffs
+----------------------------------------
+
+Cluster ID: 739
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tariffs
+----------------------------------------
+
+Cluster ID: 744
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Taxation
+----------------------------------------
+
+Cluster ID: 748
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Taxes
+----------------------------------------
+
+Cluster ID: 749
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Taxes
+----------------------------------------
+
+Cluster ID: 753
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Taxes
+----------------------------------------
+
+Cluster ID: 755
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech
+----------------------------------------
+
+Cluster ID: 756
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech
+----------------------------------------
+
+Cluster ID: 757
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech
+----------------------------------------
+
+Cluster ID: 758
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech Policy
+----------------------------------------
+
+Cluster ID: 759
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech Policy
+----------------------------------------
+
+Cluster ID: 760
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech Regulation
+----------------------------------------
+
+Cluster ID: 761
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech Regulation
+----------------------------------------
+
+Cluster ID: 762
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Tech Regulation
+----------------------------------------
+
+Cluster ID: 763
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Technology
+----------------------------------------
+
+Cluster ID: 764
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Technology
+----------------------------------------
+
+Cluster ID: 766
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: texas legislative session
+----------------------------------------
+
+Cluster ID: 767
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: texas legislative session
+----------------------------------------
+
+Cluster ID: 768
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: texas legislative session
+----------------------------------------
+
+Cluster ID: 770
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: texas legislative session
+----------------------------------------
+
+Cluster ID: 771
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Trade
+----------------------------------------
+
+Cluster ID: 772
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Trade
+----------------------------------------
+
+Cluster ID: 775
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Trade
+----------------------------------------
+
+Cluster ID: 777
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Trade Policy
+----------------------------------------
+
+Cluster ID: 778
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Trade Policy
+----------------------------------------
+
+Cluster ID: 780
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 781
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 782
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 783
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 784
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 785
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 786
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: trade war
+----------------------------------------
+
+Cluster ID: 788
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Transportation
+----------------------------------------
+
+Cluster ID: 789
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Transportation
+----------------------------------------
+
+Cluster ID: 791
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Transportation
+----------------------------------------
+
+Cluster ID: 795
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 796
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 797
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 798
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Ukraine
+----------------------------------------
+
+Cluster ID: 800
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Vaccine Policy
+----------------------------------------
+
+Cluster ID: 801
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: venture capital
+----------------------------------------
+
+Cluster ID: 802
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: venture capital
+----------------------------------------
+
+Cluster ID: 803
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: venture capital
+----------------------------------------
+
+Cluster ID: 805
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 807
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 811
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 812
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 813
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 814
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wages
+----------------------------------------
+
+Cluster ID: 817
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wildlife Protection
+----------------------------------------
+
+Cluster ID: 818
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wildlife Protection
+----------------------------------------
+
+Cluster ID: 819
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wildlife Protection
+----------------------------------------
+
+Cluster ID: 820
+  Total documents: 1 (Gov: 1, News: 0)
+  Cluster score: N/A
+  No news similarity metrics available.
+  Aggregated Keywords: Wildlife Protection
+----------------------------------------
+
