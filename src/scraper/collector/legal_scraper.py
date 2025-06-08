@@ -3,7 +3,7 @@ import requests
 import logging
 import boto3
 import json
-import warnings
+import hashlib
 from article_resource import ArticleResource
 from botocore.exceptions import ClientError
 
@@ -18,6 +18,7 @@ class Gov(ArticleResource):
         super().__init__(user_topics_output)
         # In production, this should be moved to environment variables
         self.api_key = os.environ.get('GOVINFO_API_KEY')
+        self.fuzzy_threshold = 95
         self.search_url = f"https://api.govinfo.gov/search?api_key={self.api_key}"
         self.headers = {"Content-Type": "application/json"}
         self.logger = logging.getLogger('pulse.gov')
@@ -25,6 +26,8 @@ class Gov(ArticleResource):
     def get_articles(self):
         try:
             results = []
+
+            seen_titles = set()
             for topic in self.user_input:
                 # Create payload for API request with date range for last week
                 payload = {
@@ -84,11 +87,17 @@ class Gov(ArticleResource):
                             if 'v.' in title.lower():
                                 self.logger.info(f"Skipping court document: {title} ({doc_type})")
                                 continue
+
+                            if self._is_duplicate_title(title, seen_titles):
+                                self.logger.info(f"Skipping duplicate article: {title}")
+                                continue
+
                                 
                             url_with_key = f"{url}?api_key={self.api_key}"
                             full_text = self.get_document_text(url_with_key)
 
                             if len(full_text) < 5000:
+                                self.logger.info(f"Skipping document with insufficient text: {title} ({len(full_text)} characters)")
                                 continue
                             
                             date = item.get('dateIngested', '')
@@ -101,6 +110,8 @@ class Gov(ArticleResource):
                                 "full_text": full_text,
                                 "date": date
                             })
+
+                            seen_titles.add(title.lower().strip())
                     else:
                         self.logger.error(f"API request failed with status code: {response.status_code}")
                 except Exception as e:
@@ -116,33 +127,21 @@ class Gov(ArticleResource):
         except Exception as e:
             self.logger.error(f"Error in Gov integration: {e}")
 
-def save_to_s3(articles, topics):
+def save_to_s3(articles, hash_key):
     """
-    Save articles to S3 with a filename based on topics.
+    Save articles to S3.
     
     Args:
         articles: List or dict of articles to save
-        topics: List of topic strings
     """
     # Initialize S3 client
     s3_client = boto3.client(
         's3',
         region_name=os.getenv('AWS_REGION', 'us-east-1')
     )
-
-    # Create topics string and sanitize
-    topics_str = '-'.join(topics)
-    
-    # Truncate if too long
-    if len(topics_str) > 50:
-        warnings.warn(f'Topics string "{topics_str}" is too long, truncating to 50 characters')
-        topics_str = topics_str[:50]
-    
-    # Sanitize string for S3 compatibility
-    sanitized_topics = topics_str.lower().replace(' ', '_')
     
     # Create filename with path
-    filename = f"gov/{sanitized_topics}.json"
+    filename = f"gov/articles_{hash_key[:10]}.json"
     
     # Prepare upload parameters
     params = {
@@ -167,7 +166,7 @@ def handler(payload):
     """
     AWS Lambda handler function to process incoming events.
     """
-    topics = payload.get("topics", ["tariffs", "immigration", "foreign aid"])
+    topics = payload.get("topics")
     gov = Gov(topics)  # Add Gov instance
 
     # Retrieve articles from all sources
@@ -176,15 +175,10 @@ def handler(payload):
     ans = gov.articles_df
     
     if ans is not None and len(ans) > 0:
-        save_to_s3(ans, topics)
+        topics_str = json.dumps(topics, sort_keys=True)
+        topics_hash = hashlib.sha256(topics_str.encode('utf-8')).hexdigest()
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "Articles processed successfully",
-            "topics": topics
-        })
-    }
+        save_to_s3(ans, topics_hash)
 
 if __name__ == "__main__":
     topics = ["tariffs", "immigration", "foreign aid"]
@@ -194,10 +188,3 @@ if __name__ == "__main__":
     gov.get_articles()  # Get government articles
 
     final_df = gov.articles_df
-
-    for index, row in final_df.iterrows():
-        print(f"Title: {row['title']}")
-        print(f"Text: {row['text'][500:1500]}")
-        print(f"URL: {row['url']}")
-        print(f"Keyword: {row['keyword']}")
-        print("--------------------")

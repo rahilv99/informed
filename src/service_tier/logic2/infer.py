@@ -1,7 +1,6 @@
 import psycopg2
 import json
 from sentence_transformers import SentenceTransformer
-from contextlib import contextmanager
 
 # import common.sqs
 # import common.s3
@@ -12,49 +11,40 @@ db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-
 # Load model once globally
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-@contextmanager
-def get_db_connection():
-    conn = None
-    try:
-        conn = psycopg2.connect(
-            dsn=db_access_url,
-            client_encoding='utf8',
-            connect_timeout=10  # Add timeout
-        )
-        yield conn
-    finally:
-        if conn is not None:
-            conn.close()
 
-def search_documents(interest, limit=5):
+def search_documents(interest, conn, limit=5):
     query_embedding = model.encode(interest).tolist()
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            try:
-                cur.execute("""
-                    SELECT id, metadata, score, embedding <=> %s::vector AS distance
-                    FROM clusters
-                    ORDER BY distance
-                    LIMIT %s
-                """, (query_embedding, limit))
-                return cur.fetchall()
-            except psycopg2.Error as e:
-                print(f"Error executing query: {e}")
-                return []
+    cur =  conn.cursor() 
+    try:
+        cur.execute("""
+            SELECT id, metadata, score, embedding <=> %s::vector AS distance
+            FROM clusters
+            ORDER BY distance
+            LIMIT %s
+        """, (query_embedding, limit))
+        return cur.fetchall()
+    except psycopg2.Error as e:
+        print(f"Error executing query: {e}")
+        return []
 
 def main(interests):
     clusters = {}
-    for interest in interests:
-        rows = search_documents(interest)
-        for row in rows:
-            id, metadata, score, distance = row
+    try:
+        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+        for interest in interests:
+            rows = search_documents(interest, conn)
+            for row in rows:
+                id, metadata, score, distance = row
 
-            if id in clusters:
-                # add this distance to entry for cluster
-                clusters[id][0].append(distance)
-            else:
-                clusters[id] = ([distance], score, metadata) 
-    
+                if id in clusters:
+                    # add this distance to entry for cluster
+                    clusters[id][0].append(distance)
+                else:
+                    clusters[id] = ([distance], score, metadata) 
+    finally:
+        if conn:
+            conn.close()
+
     # sorting
     recommendations = []
     for id, (distances, score, metadata) in clusters.items():

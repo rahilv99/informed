@@ -4,6 +4,7 @@ import dispatch
 import json
 import traceback
 import legal_scraper
+import google_scraper
 
 def _handler(event, context):
     """
@@ -29,7 +30,8 @@ def _handler(event, context):
             "e_merge": merge.handler,
             "e_clean": clean.handler,
             "e_dispatch": dispatch.handler,
-            "e_gov": legal_scraper.handler
+            "e_gov": legal_scraper.handler,
+            "e_news": google_scraper.handler,
         }
 
         # Route to the appropriate function

@@ -122,7 +122,7 @@ export class ScraperHelperStack extends cdk.Stack {
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
         new lambdaEventSources.SqsEventSource(props.coreStack.scraperSQSQueue, {
-        batchSize: 5, // Process 5 messages at a time
+        batchSize: 1, // Process 5 messages at a time
         })
     );
 

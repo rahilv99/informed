@@ -1,5 +1,4 @@
 boto3
-pandas
 PyPDF2
 fuzzywuzzy
 python-Levenshtein

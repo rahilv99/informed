@@ -1,4 +1,3 @@
-import pandas as pd
 import datetime
 import time
 import random
@@ -7,6 +6,7 @@ from bs4 import BeautifulSoup
 import PyPDF2
 import io
 import re
+from fuzzywuzzy import fuzz
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
@@ -108,6 +108,26 @@ class ArticleResource:
         except Exception as e:
             self.logger.error(f"Error extracting text from PDF: {e}")
             return "Error extracting text from PDF"
+    
+    def _is_duplicate_title(self, title: str, seen_titles: set) -> bool:
+        """
+        Check if a title is duplicate using fuzzy matching
+        """
+        if not title or not seen_titles:
+            return False
+
+        # Check for exact match first (faster)
+        if title in seen_titles:
+            return True
+
+        # Check for fuzzy matches
+        for seen_title in seen_titles:
+            # Use token sort ratio to handle word order differences
+            ratio = fuzz.token_sort_ratio(title, seen_title)
+            if ratio >= self.fuzzy_threshold:
+                return True
+
+        return False
 
     def _clean_text(self, text):
         """
