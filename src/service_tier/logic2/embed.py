@@ -67,7 +67,7 @@ class Clusterer:
         for _, row in gov_df.iterrows():
             # Use title and beginning of text
             title = row['title']
-            text = row.get('full_text', '')
+            text = row.get('text', '')
             sz = len(text)
             mid = sz // 2
             content = title + " " + self.extract_entities(text[mid:mid+5000]) # get text somewhere in the middle
@@ -397,12 +397,12 @@ class Clusterer:
                 report_lines.append("  No keywords available.")
             report_lines.append("-" * 40 + "\n")
         
-        try:
-            with open(output_path, "w") as f:
-                f.writelines(line + "\n" for line in report_lines)
-            print(f"Metrics report saved to {output_path}")
-        except Exception as e:
-            print(f"Error writing metrics report: {e}")
+        # try:
+        #     with open(output_path, "w") as f:
+        #         f.writelines(line + "\n" for line in report_lines)
+        #     print(f"Metrics report saved to {output_path}")
+        # except Exception as e:
+        #     print(f"Error writing metrics report: {e}")
         
     def cluster_articles(self, news_df, gov_df):
         """

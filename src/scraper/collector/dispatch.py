@@ -43,11 +43,11 @@ def handler(payload):
     conn.close()
     
     sqs = boto3.client('sqs')
-    CHUNK_SIZE = 20
+    CHUNK_SIZE = 5
     
     # Split topics into chunks of 20
     topic_chunks = chunked_list(topics, CHUNK_SIZE)
-    
+    print(f"Total topics to dispatch: {len(topics)}")
     for chunk in topic_chunks:
         try:
             response = sqs.send_message(

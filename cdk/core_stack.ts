@@ -71,9 +71,9 @@ export class CoreStack extends cdk.Stack {
 
     // Create SQS queue
     this.scraperSQSQueue = new sqs.Queue(this, 'ScraperSqsQueue', {
-        visibilityTimeout: cdk.Duration.seconds(60*15),     // 15 minutes
+        visibilityTimeout: cdk.Duration.seconds(60*30),     // 15 minutes
         deadLetterQueue: {
-            maxReceiveCount: 2,
+            maxReceiveCount: 5,
             queue: new sqs.Queue(this, 'scraper_DLQ', {
                 queueName: 'ScraperSqsDLQ',
                 retentionPeriod: cdk.Duration.days(14), // Retain messages in DLQ for 14 days
@@ -133,9 +133,9 @@ export class CoreStack extends cdk.Stack {
 
     // Create SQS queue
     this.puppetSqsQueue = new sqs.Queue(this, 'puppetSqsQueue', {
-        visibilityTimeout: cdk.Duration.seconds(60*15),     // 15 minutes
+        visibilityTimeout: cdk.Duration.seconds(60*30),     // 15 minutes
         deadLetterQueue: {
-            maxReceiveCount: 2,
+            maxReceiveCount: 5,
             queue: new sqs.Queue(this, 'puppet_DLQ', {
                 queueName: 'puppetSqsDLQ',
                 retentionPeriod: cdk.Duration.days(14), // Retain messages in DLQ for 14 days

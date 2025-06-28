@@ -1,11 +1,14 @@
 import os
 import requests
 import logging
-import boto3
 import json
+import boto3
 import hashlib
-from article_resource import ArticleResource
 from botocore.exceptions import ClientError
+import datetime
+
+
+from article_resource import ArticleResource
 
 logging.basicConfig(
         level=logging.INFO,
@@ -16,23 +19,24 @@ logging.basicConfig(
 class Gov(ArticleResource):
     def __init__(self, user_topics_output):
         super().__init__(user_topics_output)
+        self.fuzzy_threshold = 95
         # In production, this should be moved to environment variables
         self.api_key = os.environ.get('GOVINFO_API_KEY')
-        self.fuzzy_threshold = 95
         self.search_url = f"https://api.govinfo.gov/search?api_key={self.api_key}"
         self.headers = {"Content-Type": "application/json"}
-        self.logger = logging.getLogger('pulse.gov')
+
+        self.today = datetime.date.today()
+        self.time_constraint = self.today - datetime.timedelta(days=7)
 
     def get_articles(self):
         try:
             results = []
-
-            seen_titles = set()
+            seen_titles = set()  # Track titles for fuzzy matching
             for topic in self.user_input:
                 # Create payload for API request with date range for last week
                 payload = {
-                    "query": f"{topic} lastModified:range({self.time_constraint.strftime('%Y-%m-%d')}T12:00:05Z,)",
-                    "pageSize": 20,
+                    "query": f"{topic} publishdate:range({self.time_constraint.strftime('%Y-%m-%d')},{self.today.strftime('%Y-%m-%d')})",
+                    "pageSize": 30,
                     "offsetMark": "*",
                     "sorts": [
                         {
@@ -46,7 +50,7 @@ class Gov(ArticleResource):
                 
                 # Make API request with retry mechanism for resilience
                 try:
-                    self.logger.info(f"Searching for government documents related to: {topic}")
+                    print(f"Searching for government documents related to: {topic}")
                     response = self.fetch_with_retry(
                         requests.post, 
                         self.search_url, 
@@ -56,13 +60,14 @@ class Gov(ArticleResource):
                     
                     if response.status_code == 200:
                         data = response.json()
-                        self.logger.info(f"Found {len(data.get('results', []))} documents for topic: {topic}")
+                        print(f"Found {len(data.get('results', []))} documents for topic: {topic}")
                         
                         if len(data.get('results', [])) == 0:
-                            self.logger.warning(f"No documents found for topic: {topic}")
+                            print(f"No documents found for topic: {topic}")
                             continue
 
-                        for item in data.get("results", []):
+                        for i, item in enumerate(data.get("results", [])):
+                            print(f"Processing document: {i + 1}/{len(data['results'])} for topic: {topic}")
                             links = item.get("download", {})
                             url = None
                             
@@ -76,56 +81,60 @@ class Gov(ArticleResource):
                                 url = links['modsLink']
                                 doc_type = 'mods'
                             else:
+                                print(f"No downloadable link found for document: {item.get('title','')}")
                                 continue
                                 
                             # Trash articles recognizing some BS - makeshift filter
                             if 'recognizing' in item.get('title','').lower():
-                                self.logger.info(f"Skipping document: {item.get('title','')} ({doc_type})")
+                                print(f"Skipping document: {item.get('title','')} ({doc_type})")
                                 continue
                                 
+                            # Check for duplicate titles using fuzzy matching
                             title = item.get('title', '')
-                            if 'v.' in title.lower():
-                                self.logger.info(f"Skipping court document: {title} ({doc_type})")
-                                continue
-
                             if self._is_duplicate_title(title, seen_titles):
-                                self.logger.info(f"Skipping duplicate article: {title}")
+                                print(f"Skipping duplicate document: {title}")
                                 continue
-
+                                
+                            if 'v.' in title.lower():
+                                print(f"Skipping court document: {title} ({doc_type})")
+                                continue
                                 
                             url_with_key = f"{url}?api_key={self.api_key}"
                             full_text = self.get_document_text(url_with_key)
 
-                            if len(full_text) < 5000:
-                                self.logger.info(f"Skipping document with insufficient text: {title} ({len(full_text)} characters)")
+                            if len(full_text) < 4000:
+                                print(f"Skipping document with insufficient text length: {title} ({len(full_text)} characters)")
                                 continue
                             
-                            date = item.get('dateIngested', '')
-                            self.logger.info(f"Retrieved document: {title} ({len(full_text)} characters) from {url_with_key}")
+                            print(f"Retrieved document: {title} ({len(full_text)} characters) from {url_with_key}")
 
+                            # Add title to seen titles after processing
+                            seen_titles.add(title.lower().strip())
+                            
                             results.append({
                                 "title": title,
+                                "text": full_text,
                                 "url": url_with_key,
-                                "keyword": topic,
-                                "full_text": full_text,
-                                "date": date
+                                "keyword": topic
                             })
-
-                            seen_titles.add(title.lower().strip())
                     else:
-                        self.logger.error(f"API request failed with status code: {response.status_code}")
+                        print(f"API request failed with status code: {response.status_code}")
                 except Exception as e:
-                    self.logger.error(f"Error processing GovInfo query for {topic}: {e}")
-
+                    print(f"Error processing GovInfo query for {topic}: {e}")
+                
             # Create DataFrame and normalize to match expected format
             if results:
-                self.logger.info(f"Retrieved {len(results)} government documents in total")
-                self.articles_df = results
+                print(f"Retrieved {len(results)} government documents in total")
+                df = results
+                return df
             else:
-                self.logger.warning("No government documents found matching the search criteria")
-
+                print("No government documents found matching the search criteria")
+                return None
+                
         except Exception as e:
-            self.logger.error(f"Error in Gov integration: {e}")
+            print(f"Error in Gov integration: {e}")
+
+
 
 def save_to_s3(articles, hash_key):
     """
@@ -167,24 +176,31 @@ def handler(payload):
     AWS Lambda handler function to process incoming events.
     """
     topics = payload.get("topics")
+    print("legal_scraper invoked with topics: ", topics)
     gov = Gov(topics)  # Add Gov instance
 
     # Retrieve articles from all sources
-    gov.get_articles()  # Get government articles
+    df = gov.get_articles()  # Get government articles
 
-    ans = gov.articles_df
+    print(f"Retrieved {len(df)} government articles")
     
-    if ans is not None and len(ans) > 0:
+    if df is not None and len(df) > 0:
         topics_str = json.dumps(topics, sort_keys=True)
         topics_hash = hashlib.sha256(topics_str.encode('utf-8')).hexdigest()
 
-        save_to_s3(ans, topics_hash)
+        print(f"Saving {len(df)} government articles to S3 with hash: {topics_hash}")
+        save_to_s3(df, topics_hash)
 
 if __name__ == "__main__":
-    topics = ["tariffs", "immigration", "foreign aid"]
-    gov = Gov(topics)  # Add Gov instance
+    keywords = ['tariffs']
+    gov = Gov(keywords)  # Add Gov instance
 
     # Retrieve articles from all sources
-    gov.get_articles()  # Get government articles
+    df = gov.get_articles()  # Get government articles
 
-    final_df = gov.articles_df
+    for entry in df:
+        print(f"Title: {entry['title']}")
+        print(f"Text: {entry['text'][1000:1050]}")
+        print(f"URL: {entry['url']}")
+        print(f"Keyword: {entry['keyword']}")
+        print("--------------------")

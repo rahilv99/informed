@@ -21,7 +21,8 @@ export class ServiceTierLambdaStack extends cdk.Stack {
     super(scope, id, props);
 
     const logGroup = new logs.LogGroup(this, "ServiceTierLogGroup", {
-      logGroupName: "ServiceTierLogGroup"
+      logGroupName: "ServiceTierLogGroup",
+      retention: cdk.aws_logs.RetentionDays.ONE_MONTH
     })
 
     new logs.MetricFilter(this, 'DBErrorFilter', {
@@ -81,7 +82,7 @@ export class ServiceTierLambdaStack extends cdk.Stack {
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ServiceTierFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/service_tier'),
       timeout: cdk.Duration.minutes(15),
-      memorySize: 3008,
+      memorySize: 2048,
       environment: {
         ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
         ASTRA_QUEUE_URL: props.coreStack.astraSQSQueue.queueUrl,

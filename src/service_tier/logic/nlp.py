@@ -591,7 +591,7 @@ def _create_line(client, host, line, num, chunk):
             )
         else:
             response = client.audio.speech.create(
-                model="tts-1",
+                model="gpt-4o-mini-tts",
                 voice=voice,
                 input=line,
                 response_format='mp3'

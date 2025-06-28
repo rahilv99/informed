@@ -3,17 +3,13 @@ Google News RSS scraping functionality to get article metadata
 """
 import logging
 from gnews import GNews
-import json
 import os
 import boto3
+import json
+import hashlib
 from botocore.exceptions import ClientError
 from article_resource import ArticleResource
-import hashlib
 
-logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
 
 class GoogleNewsScraper(ArticleResource):
     """
@@ -21,19 +17,18 @@ class GoogleNewsScraper(ArticleResource):
     """
     def __init__(self, user_topics_output):
         super().__init__(user_topics_output)
-        self.logger = logging.getLogger('pulse.gnews') 
+        self.fuzzy_threshold = 87
         # Set up GNews parameters
         self.period = '7d'  # Default to 7 days
-        self.fuzzy_threshold = 87
         self.language = 'en'
         self.country = 'US'
-        self.max_results = 75  # Limit results to avoid excessive processing
+        self.max_results = 25  # Limit results to avoid excessive processing
     
     def get_articles(self):
         """
         Search for news articles related to user topics and store metadata in a DataFrame.
         """
-        self.logger.info("Starting Google News article retrieval")
+        print("Starting Google News article retrieval")
     
         try:
             # Set up GNews
@@ -50,12 +45,12 @@ class GoogleNewsScraper(ArticleResource):
             seen_titles = set()
             for topic in self.user_input:
                 try:
-                    self.logger.info(f"Searching for news articles related to: {topic}")
+                    print(f"Searching for news articles related to: {topic}")
                     
                     # Get news articles from Google News
                     news_results = self.fetch_with_retry(gnews.get_news, topic)
                     
-                    self.logger.info(f"Found {len(news_results)} articles for topic: {topic}")
+                    print(f"Found {len(news_results)} articles for topic: {topic}")
                     
                     # Process each article
                     for article in news_results:
@@ -65,7 +60,7 @@ class GoogleNewsScraper(ArticleResource):
                         publisher = article.get("publisher", {}).get("title", "Unknown")
 
                         if self._is_duplicate_title(title, seen_titles):
-                            self.logger.info(f"Skipping duplicate article: {title}")
+                            print(f"Skipping duplicate article: {title}")
                             continue
 
                         # Add article to results
@@ -79,18 +74,19 @@ class GoogleNewsScraper(ArticleResource):
                         seen_titles.add(title.lower().strip())
                         
                 except Exception as e:
-                    self.logger.error(f"Error processing Google News query for {topic}: {e}")
+                    print(f"Error processing Google News query for {topic}: {e}")
             
             # Create DataFrame and save to CSV
             if results:
-                self.logger.info(f"Retrieved {len(results)} gnewsernment documents in total")
-                self.articles_df = results
+                print(f"Retrieved {len(results)} Google News articles in total")
+                df = results
+                return df
             else:
-                self.logger.warning("No Google News articles found matching the search criteria")
+                print("No Google News articles found matching the search criteria")
                 return None
                 
         except Exception as e:
-            self.logger.error(f"Error in Google News integration: {e}")
+            print(f"Error in Google News integration: {e}")
             return None
 
 
@@ -106,7 +102,7 @@ def save_to_s3(articles, hash_key):
         's3',
         region_name=os.getenv('AWS_REGION', 'us-east-1')
     )
-        
+
     # Create filename with path
     filename = f"gnews/articles_{hash_key[:10]}.json"
     
@@ -135,24 +131,34 @@ def handler(payload):
     AWS Lambda handler function to process incoming events.
     """
     topics = payload.get("topics")
+    print(f"google_scraper invoked with topics: {topics}")
     gnews = GoogleNewsScraper(topics)
     # Retrieve articles from all sources
-    gnews.get_articles()  # Get gnewsernment articles
+    df = gnews.get_articles()  # Get gnews articles
 
-    ans = gnews.articles_df
+    print(f"Retrieved {len(df)} Google News articles")
     
-    if ans is not None and len(ans) > 0:
+    if df is not None and len(df) > 0:
         topics_str = json.dumps(topics, sort_keys=True)
         topics_hash = hashlib.sha256(topics_str.encode('utf-8')).hexdigest()
 
-        save_to_s3(ans, topics_hash)
+        print(f"Saving {len(df)} Google News articles to S3 with hash: {topics_hash}")
+        save_to_s3(df, topics_hash)
 
+
+# Example usage
 if __name__ == "__main__":
-    topics = ["tariffs", "immigration", "foreign aid"]
-
-    gnews = GoogleNewsScraper(topics)
-
-    # Retrieve articles from all sources
-    gnews.get_articles()  # Get gnewsernment articles
-
-    final_df = gnews.articles_df
+    # Set up logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    # Example keywords
+    keywords = ['Ukraine', 'Defense spending', 'Military']
+    
+    # Create scraper instance
+    scraper = GoogleNewsScraper(keywords)
+    
+    # Get articles and save to CSV
+    df = scraper.get_articles()

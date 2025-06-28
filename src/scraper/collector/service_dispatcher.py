@@ -15,30 +15,39 @@ def _handler(event, context):
      # Check if the event is triggered by SQS
     json_message = None
     if "Records" in event and event["Records"][0].get("eventSource") == "aws:sqs":
-        print(f"Scraper Helper Lambda Invoked from SQS")
+        print(f"ServiceTier Lambda Invoked from SQS")
+        if len(event["Records"]) > 1:
+            print(f"Got {len(event['Records'])} messages, expected 1 - bailing")
+            return {
+                "statusCode": 400,
+                "body": f"Multiple messages unsupported"
+            }
+        record = event["Records"][0]
+        message_body = json.loads(record["body"])
+        json_message = message_body
+    else:
+        print(f"ServiceTier Lambda Invoked manually")
+        json_message = event
 
-    for record in event["Records"]:
-        json_message = json.loads(record["body"])
+    # Extract the action and payload
+    action = json_message.get('action')
+    payload = json_message.get('payload', {})
+    print(f"Scraper helper Lambda Invoked with action {action}")
 
-        # Extract the action and payload
-        action = json_message.get('action')
-        payload = json_message.get('payload', {})
-        print(f"Scraper helper Lambda Invoked with action {action}")
+    # Map actions to internal functions
+    action_map = {
+        "e_merge": merge.handler,
+        "e_clean": clean.handler,
+        "e_dispatch": dispatch.handler,
+        "e_gov": legal_scraper.handler,
+        "e_news": google_scraper.handler,
+    }
 
-        # Map actions to internal functions
-        action_map = {
-            "e_merge": merge.handler,
-            "e_clean": clean.handler,
-            "e_dispatch": dispatch.handler,
-            "e_gov": legal_scraper.handler,
-            "e_news": google_scraper.handler,
-        }
-
-        # Route to the appropriate function
-        if action in action_map:
-            result = action_map[action](payload)
-        else:
-            print(f"Unsupported Action {action}")
+    # Route to the appropriate function
+    if action in action_map:
+        result = action_map[action](payload)
+    else:
+        print(f"Unsupported Action {action}")
 
 def handler(event, context):
     try:

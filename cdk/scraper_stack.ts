@@ -21,7 +21,8 @@ export class ScraperStack extends cdk.Stack {
     super(scope, id, props);
 
     const logGroup = new logs.LogGroup(this, "ScraperLogGroup", {
-      logGroupName: "ScraperLogGroup"
+      logGroupName: "ScraperLogGroup",
+      retention: cdk.aws_logs.RetentionDays.ONE_MONTH
     });
 
     new logs.MetricFilter(this, 'RestartBrowserFilter', {

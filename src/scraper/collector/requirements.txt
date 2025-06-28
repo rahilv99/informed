@@ -5,3 +5,5 @@ python-Levenshtein
 requests
 beautifulsoup4
 psycopg2-binary
+pandas
+gnews

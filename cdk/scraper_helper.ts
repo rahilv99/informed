@@ -21,7 +21,8 @@ export class ScraperHelperStack extends cdk.Stack {
     super(scope, id, props);
 
     const logGroup = new logs.LogGroup(this, "ScraperHelperLogGroup", {
-      logGroupName: "ScraperHelperLogGroup"
+      logGroupName: "ScraperHelperLogGroup",
+      retention: cdk.aws_logs.RetentionDays.ONE_MONTH
     })
 
     new logs.MetricFilter(this, 'ErrorFilter', {
@@ -80,8 +81,8 @@ export class ScraperHelperStack extends cdk.Stack {
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperHelperFunction', {
       code: lambda.DockerImageCode.fromImageAsset('src/scraper/collector'),
-      timeout: cdk.Duration.minutes(5),
-      memorySize: 1024,
+      timeout: cdk.Duration.minutes(15),
+      memorySize: 2048,
       environment: {
         ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
         BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName,
@@ -122,7 +123,7 @@ export class ScraperHelperStack extends cdk.Stack {
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
         new lambdaEventSources.SqsEventSource(props.coreStack.scraperSQSQueue, {
-        batchSize: 1, // Process 5 messages at a time
+        batchSize: 1, // Process 1 message at a time
         })
     );
 

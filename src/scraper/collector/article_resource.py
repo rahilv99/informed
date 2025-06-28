@@ -1,4 +1,4 @@
-import datetime
+import pandas as pd
 import time
 import random
 import requests
@@ -17,12 +17,30 @@ MAX_DELAY = 15
 
 class ArticleResource:
     def __init__(self, user_input):
-        self.articles_df = []
-        self.today = datetime.date.today()
-        self.time_constraint = self.today - datetime.timedelta(days=DEFAULT_ARTICLE_AGE)
         self.user_input = user_input
 
- 
+    
+    def _is_duplicate_title(self, new_title, seen_titles):
+        if not new_title or not seen_titles:
+            return False
+
+        # Normalize the new title
+        new_title = new_title.lower().strip()
+
+        # Check for exact match first (faster)
+        if new_title in seen_titles:
+            return True
+
+        # Check for fuzzy matches
+        for seen_title in seen_titles:
+            # Use token sort ratio to handle word order differences
+            ratio = fuzz.token_sort_ratio(new_title, seen_title)
+            if ratio >= self.fuzzy_threshold:
+                print(f"Fuzzy match found: '{new_title}' matches '{seen_title}' with ratio {ratio}")
+                return True
+
+        return False
+    
     def get_document_text(self, url):
         try:
             response = self.fetch_with_retry(requests.get, url)
@@ -37,11 +55,11 @@ class ArticleResource:
                 # Clean the extracted text
                 return self._clean_text(text)
             else:
-                self.logger.error(f"Failed to retrieve document: {response.status_code}")
+                print(f"Failed to retrieve document: {response.status_code}")
                 return f"Failed to retrieve document: {response.status_code}"
                 
         except Exception as e:
-            self.logger.error(f"Error retrieving document: {e}")
+            print(f"Error retrieving document: {e}")
             return f"Error retrieving document: {e}"
 
 
@@ -68,9 +86,9 @@ class ArticleResource:
                         if response.status_code == 200:
                             text += f"\n{self._extract_text_from_pdf(response.content)}"
                         else:
-                            self.logger.error(f"Failed to retrieve linked document: {response.status_code}")
+                            print(f"Failed to retrieve linked document: {response.status_code}")
                     except Exception as e:
-                        self.logger.error(f"Error retrieving linked document: {e}")
+                        print(f"Error retrieving linked document: {e}")
 
             
             # Clean up text: break into lines and remove leading/trailing space
@@ -84,7 +102,7 @@ class ArticleResource:
             
             return text
         except Exception as e:
-            self.logger.error(f"Error extracting text from HTML: {e}")
+            print(f"Error extracting text from HTML: {e}")
             return html_content  # Return original content as fallback
     
     def _extract_text_from_pdf(self, pdf_content):
@@ -94,7 +112,7 @@ class ArticleResource:
             
             # Check if PDF is encrypted
             if pdf_reader.is_encrypted:
-                self.logger.warning("PDF is encrypted, cannot extract text")
+                print("PDF is encrypted, cannot extract text")
                 return "PDF is encrypted, cannot extract text"
             
             # Extract text from all pages
@@ -106,28 +124,8 @@ class ArticleResource:
             return text
             
         except Exception as e:
-            self.logger.error(f"Error extracting text from PDF: {e}")
+            print(f"Error extracting text from PDF: {e}")
             return "Error extracting text from PDF"
-    
-    def _is_duplicate_title(self, title: str, seen_titles: set) -> bool:
-        """
-        Check if a title is duplicate using fuzzy matching
-        """
-        if not title or not seen_titles:
-            return False
-
-        # Check for exact match first (faster)
-        if title in seen_titles:
-            return True
-
-        # Check for fuzzy matches
-        for seen_title in seen_titles:
-            # Use token sort ratio to handle word order differences
-            ratio = fuzz.token_sort_ratio(title, seen_title)
-            if ratio >= self.fuzzy_threshold:
-                return True
-
-        return False
 
     def _clean_text(self, text):
         """

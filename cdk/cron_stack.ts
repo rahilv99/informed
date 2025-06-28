@@ -20,7 +20,8 @@ export class CronStack extends cdk.Stack {
     super(scope, id, props);
 
     const logGroup = new LogGroup(this, "CronLogGroup", {
-      logGroupName: "CronLogGroup"
+      logGroupName: "CronLogGroup",
+      retention: cdk.aws_logs.RetentionDays.ONE_MONTH
     })
 
 

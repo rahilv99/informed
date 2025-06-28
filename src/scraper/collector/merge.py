@@ -18,6 +18,12 @@ def read_json_from_s3(bucket_name: str, prefix: str) -> List[Dict]:
     # Initialize S3 client
     s3 = boto3.client('s3')
     all_articles = []
+    all_titles = set()
+
+    if 'gnews/' in prefix:
+        threshold = 87
+    else:
+        threshold = 95
 
     # List all objects in the folder
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
@@ -35,13 +41,41 @@ def read_json_from_s3(bucket_name: str, prefix: str) -> List[Dict]:
                     # Parse JSON array
                     articles = json.loads(content)
                     if isinstance(articles, list):
-                        all_articles.extend(articles)
+                        for article in articles:
+                            title = article.get('title', '').strip()
+                            if not title:
+                                continue
+                            # Check for duplicates
+                            if not is_duplicate_title(title, all_titles, threshold):
+                                all_articles.append(article)
+                                all_titles.add(title.lower())
                     
                 except Exception as e:
                     print(f"Error processing file {key}: {str(e)}")
                     continue
 
     return all_articles
+
+def is_duplicate_title(new_title, seen_titles, fuzzy_threshold=95):
+        if not new_title or not seen_titles:
+            return False
+
+        # Normalize the new title
+        new_title = new_title.lower().strip()
+
+        # Check for exact match first (faster)
+        if new_title in seen_titles:
+            return True
+
+        # Check for fuzzy matches
+        for seen_title in seen_titles:
+            # Use token sort ratio to handle word order differences
+            ratio = fuzz.token_sort_ratio(new_title, seen_title)
+            if ratio >= 95:
+                print(f"Fuzzy match found: '{new_title}' matches '{seen_title}' with ratio {ratio}")
+                return True
+
+        return False
 
 def handler(payload):
     # Read all JSON files and combine them
@@ -88,15 +122,15 @@ def handler(payload):
         )
         print(f"Sent clean request to Scraper SQS: {response.get('MessageId')}")
 
-    # next_event = {
-    #     "action": "e_embed"
-    # }
+    next_event = {
+        "action": "e_embed"
+    }
 
-    # sqs = boto3.client('sqs')
-    # ASTRA_QUEUE_URL = os.getenv("ASTRA_QUEUE_URL")
+    sqs = boto3.client('sqs')
+    ASTRA_QUEUE_URL = os.getenv("ASTRA_QUEUE_URL")
     
-    # response = sqs.send_message(
-    #     QueueUrl=ASTRA_QUEUE_URL,
-    #     MessageBody=json.dumps(next_event)
-    # )
-    # print(f"Sent embedding request to Astra SQS: {response.get('MessageId')}")
+    response = sqs.send_message(
+        QueueUrl=ASTRA_QUEUE_URL,
+        MessageBody=json.dumps(next_event)
+    )
+    print(f"Sent embedding request to Astra SQS: {response.get('MessageId')}")
