@@ -13,8 +13,7 @@ import common.sqs
 import common.s3
 
 from logic.legal_scraper import Gov
-from logic.scraper import Scraper
-from logic.tavily_scraper import TavilyScraper
+from logic.google_scraper import GoogleNewsScraper
 
 
 class ArticleClusterer:
@@ -254,8 +253,6 @@ class ArticleClusterer:
 
         cluster_dfs = []
 
-        scraper = Scraper()
-
         try:
             for rank, (cluster_id, cluster_data, score) in enumerate(top_clusters, 1):
                 rows = []
@@ -301,20 +298,11 @@ class ArticleClusterer:
                 start = len(rows)
                 for article_idx in sorted_articles:
                     article = news_df.iloc[article_idx]
-                    try:
-                        article_text = scraper.scrape(article['url'])
-                        
-                        # Skip if no meaningful text was retrieved
-                        if not article_text or len(article_text) < 100:
-                            continue
-                    except Exception as e:
-                        self.logger.error(f"Error scraping article {article['url']}: {e}")
-                        continue
                     rows.append({
-                        'source': 'tavily',
+                        'source': 'google_news',
                         'type': 'news',
                         'title': article['title'],
-                        'text': article_text,
+                        'text': '',  # No content available
                         'url': article['url'],
                         'keyword': article['keyword'],
                         'publisher': article['publisher'],
@@ -391,8 +379,8 @@ def handler(payload):
     if not user_id or not keywords:
         raise ValueError("Invalid payload: user_id, episode and keywords are required")
 
-    tavily = TavilyScraper(keywords)
-    news_df = tavily.get_articles()
+    google_news = GoogleNewsScraper(keywords)
+    news_df = google_news.get_articles()
 
     gov = Gov(keywords)
     gov.get_articles()  # Get government articles
@@ -453,11 +441,8 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    #news = GoogleNewsScraper(keywords)
-    #news_df = news.get_articles()
-
-    tavily = TavilyScraper(keywords)
-    news_df = tavily.get_articles()
+    google_news = GoogleNewsScraper(keywords)
+    news_df = google_news.get_articles()
 
     gov = Gov(keywords)
     gov.get_articles()  # Get government articles
@@ -478,4 +463,3 @@ if __name__ == "__main__":
             print( df.head(2))
     else:
         logging.error("No clusters generated.")
-

@@ -149,40 +149,40 @@ def underwriter_research(cluster_df):
     news_articles = cluster_df[cluster_df['type'] == 'news']
     for _, article in news_articles.iterrows():
 
-        news_prompt = f"""
-        You are a research analyst for a podcast about government documents and their impact on current events.
+    #     news_prompt = f"""
+    #     You are a research analyst for a podcast about government documents and their impact on current events.
         
-        Analyze this news article and create research notes that will help a podcast script writer.
+    #     Analyze this news article and create research notes that will help a podcast script writer.
         
-        ARTICLE:
-        Title: {article['title']}
-        Publisher: {article['publisher']}
-        Text: {article['text'][:30000]}
+    #     ARTICLE:
+    #     Title: {article['title']}
+    #     Publisher: {article['publisher']}
+    #     Text: {article['text'][:30000]}
         
-        Create research notes with the following sections:
-        1. Key Points: Main ideas and decisions in the document
-        2. Important Figures: Key people, organizations, or entities mentioned
-        3. Metrics & Deadlines: Any specific numbers, amounts, or timeframes
-        4. Implications: Potential impact or consequences of this document
-        5. Context: Historical or policy context that would help listeners understand
+    #     Create research notes with the following sections:
+    #     1. Key Points: Main ideas and decisions in the document
+    #     2. Important Figures: Key people, organizations, or entities mentioned
+    #     3. Metrics & Deadlines: Any specific numbers, amounts, or timeframes
+    #     4. Implications: Potential impact or consequences of this document
+    #     5. Context: Historical or policy context that would help listeners understand
         
-        Format your response as a structured set of notes, not as a narrative. Be concise.
-        Keep your response less than 200 tokens.
-        """
+    #     Format your response as a structured set of notes, not as a narrative. Be concise.
+    #     Keep your response less than 200 tokens.
+    #     """
         
-        news_response = summary_model.generate_content(
-            news_prompt,
-            generation_config=genai.GenerationConfig(
-                max_output_tokens=200,
-                temperature=0.2
-            )
-        )
+    #     news_response = summary_model.generate_content(
+    #         news_prompt,
+    #         generation_config=genai.GenerationConfig(
+    #             max_output_tokens=200,
+    #             temperature=0.2
+    #         )
+    #     )
 
         research_notes['news_articles'].append({
             'title': article['title'],
             'publisher': article['publisher'],
             'url': article['url'],
-            'notes': news_response.text
+            'notes': '' # news_response.text
         })
     
     return research_notes

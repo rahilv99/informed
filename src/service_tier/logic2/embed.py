@@ -24,7 +24,7 @@ class Clusterer:
     A simple clusterer that groups news articles around government documents
     based on semantic similarity. Each cluster must have at least one government document.
     """
-    def __init__(self, similarity_threshold=0.3, merge_threshold=0.8):
+    def __init__(self, similarity_threshold=0.35, merge_threshold=0.7):
         """
         Initialize the clusterer with similarity thresholds.
         
@@ -124,7 +124,7 @@ class Clusterer:
     
     def merge_similar_gov_docs(self, gov_gov_sim):
         """
-        Merge similar government documents into clusters using a more efficient approach.
+        Merge similar government documents into clusters, limiting to at most 10 gov docs per cluster.
         
         Parameters:
         - gov_gov_sim: Similarity matrix between government documents
@@ -162,7 +162,12 @@ class Clusterer:
             # Skip if documents are already in the same cluster
             if c1_id == c2_id:
                 continue
-                
+
+            # Check if merging would exceed the limit
+            total_size = len(gov_clusters[c1_id]) + len(gov_clusters[c2_id])
+            if total_size > 10:
+                continue  # Skip merging if it would exceed 10 docs
+            
             # Merge smaller cluster into larger one
             if len(gov_clusters[c1_id]) < len(gov_clusters[c2_id]):
                 c1_id, c2_id = c2_id, c1_id
@@ -301,9 +306,46 @@ class Clusterer:
         
         return organized_clusters
     
+    def filter_irrelevant_clusters(self, organized_clusters):
+        """
+        Filter out irrelevant clusters based on the criteria:
+        - Drop clusters with exactly 1 government document AND less than 2 news articles with similarity > 0.4
+        
+        Parameters:
+        - organized_clusters: List of organized cluster dictionaries
+        
+        Returns:
+        - filtered_clusters: List of relevant clusters only
+        """
+        filtered_clusters = []
+        dropped_count = 0
+        
+        for cluster in organized_clusters:
+            # Check if cluster has exactly 1 government document
+            if cluster['gov_count'] == 1:
+                # Count news articles with similarity > 0.4
+                high_similarity_news_count = 0
+                for doc in cluster['documents']:
+                    if (doc.get('source') == 'gnews' and 
+                        'similarity' in doc and 
+                        doc['similarity'] > 0.4):
+                        high_similarity_news_count += 1
+                
+                # Drop cluster if it has < 1 news articles with similarity > 0.4
+                if high_similarity_news_count < 1:
+                    dropped_count += 1
+                    print(f"Dropping cluster {cluster['id']}: 1 gov doc, {high_similarity_news_count} news articles with similarity > 0.4")
+                    continue
+            
+            # Keep the cluster if it doesn't meet the drop criteria
+            filtered_clusters.append(cluster)
+        
+        print(f"Filtered out {dropped_count} irrelevant clusters. Remaining: {len(filtered_clusters)}")
+        return filtered_clusters
+    
     def format_output(self, organized_clusters):
         """
-        Format clusters for output.
+        Format clusters for output with improved scoring algorithm.
         
         Parameters:
         - organized_clusters: List of organized cluster dictionaries
@@ -313,21 +355,115 @@ class Clusterer:
         """
         output = []
         
+        # Calculate global statistics for normalization
+        all_news_similarities = []
+        max_news_count = 0
+        max_gov_count = 0
+        
+        for cluster in organized_clusters:
+            max_news_count = max(max_news_count, cluster['news_count'])
+            max_gov_count = max(max_gov_count, cluster['gov_count'])
+            
+            # Collect all news similarities for normalization
+            for doc in cluster['documents']:
+                if doc.get('source') == 'gnews' and 'similarity' in doc:
+                    all_news_similarities.append(doc['similarity'])
+        
+        # Calculate similarity statistics
+        if all_news_similarities:
+            avg_global_similarity = np.mean(all_news_similarities)
+            std_global_similarity = np.std(all_news_similarities)
+        else:
+            avg_global_similarity = 0.5
+            std_global_similarity = 0.1
+        
         for cluster in organized_clusters:
             # Create a dataframe from the documents
             df = pd.DataFrame(cluster['documents'])
             
-            # Calculate a simple score based on document count and government document count
-            score = 1.0 + min(cluster['total_count'] / 10, 1.0) + (cluster['gov_count'] * 0.2)
+            # Extract news articles for similarity analysis
+            news_docs = [doc for doc in cluster['documents'] if doc.get('source') == 'gnews']
+            gov_docs = [doc for doc in cluster['documents'] if doc.get('source') == 'gov']
+            
+            # Calculate similarity-based metrics
+            similarities = [doc.get('similarity', 0) for doc in news_docs if 'similarity' in doc]
+            
+            if similarities:
+                avg_similarity = np.mean(similarities)
+                max_similarity = np.max(similarities)
+                high_similarity_count = sum(1 for sim in similarities if sim > 0.45)
+                very_high_similarity_count = sum(1 for sim in similarities if sim > 0.55)
+                
+            else:
+                avg_similarity = 0
+                max_similarity = 0
+                high_similarity_count = 0
+                very_high_similarity_count = 0
+            
+            # Calculate diversity metrics
+            unique_keywords = set()
+            for doc in cluster['documents']:
+                keyword = doc.get('keyword', '')
+                if keyword:
+                    unique_keywords.add(keyword.lower())
+            keyword_diversity = len(unique_keywords)
+            
+            # Calculate recency bonus (if articles have timestamps)
+            recency_bonus = 0  # Could be enhanced if timestamp data is available
+            
+            # Simplified semantic scoring algorithm based on grounded principles
+            
+            # Core principle: Score should reflect semantic coherence and information value
+            # Higher scores for clusters with:
+            # 1. Multiple related documents (coherence through volume)
+            # 2. Strong semantic connections (high similarity scores)
+            # 3. Balanced gov/news representation (comprehensive coverage)
+            
+            # Base score starts from total document count (information volume)
+            base_score = cluster['total_count']
+            
+            # Semantic quality multiplier based on news article similarities
+            if similarities:
+                # Reward high average similarity and consistency
+                semantic_quality = avg_similarity * 2.0
+                
+                # Bonus for multiple high-quality connections
+                if high_similarity_count >= 2:
+                    semantic_quality += 0.5
+                if very_high_similarity_count >= 1:
+                    semantic_quality += 0.3
+                    
+                # Consistency bonus: reward clusters where most articles are well-connected
+                consistency_ratio = high_similarity_count / len(similarities)
+                if consistency_ratio > 0.5:  # More than half are high similarity
+                    semantic_quality += 0.4
+            else:
+                # No news articles - minimal semantic quality
+                semantic_quality = 0.2
+            
+            # Government authority factor (more gov docs = more authoritative)
+            gov_factor = 1.0 + (cluster['gov_count'] - 1) * 0.3
+            
+            # Calculate final score
+            final_score = base_score * semantic_quality * gov_factor
+            
+            # Apply penalties for edge cases
+            if cluster['news_count'] == 0:
+                final_score *= 0.4  # Penalty for no supporting news
+            elif cluster['news_count'] == 1 and avg_similarity < 0.4:
+                final_score *= 0.7  # Penalty for single weak connection
             
             # Create metadata
             metadata = {
                 'center_embedding': cluster['center_embedding'],
-                'score': float(f"{score:.4f}"),
+                'score': round(float(final_score), 4),
                 'articles': df.to_json()
             }
             
             output.append(metadata)
+        
+        # Sort by score (descending) to prioritize highest-scoring clusters
+        output.sort(key=lambda x: x['score'], reverse=True)
         
         return output
     
@@ -403,6 +539,104 @@ class Clusterer:
         #     print(f"Metrics report saved to {output_path}")
         # except Exception as e:
         #     print(f"Error writing metrics report: {e}")
+
+    def generate_cluster_report(self, output, output_path="tmp/cluster_titles_report.txt"):
+        """
+        Generate a neat report showing all article titles organized by cluster,
+        separating government documents from news articles.
+        
+        Parameters:
+        - output: List of cluster metadata dictionaries containing score and articles JSON
+        - output_path: Path for the output text file
+        """
+        report_lines = []
+        report_lines.append("=" * 80 + "\n")
+        report_lines.append("CLUSTER TITLES REPORT\n")
+        report_lines.append("=" * 80 + "\n\n")
+        
+        total_gov_docs = 0
+        total_news_articles = 0
+        
+        for i, cluster_metadata in enumerate(output):
+            # Extract score and parse articles JSON
+            score = cluster_metadata.get('score', 0)
+            articles_json = cluster_metadata.get('articles', '[]')
+            
+            try:
+                # Parse the JSON articles
+                articles_df = pd.read_json(articles_json)
+                articles = articles_df.to_dict('records') if not articles_df.empty else []
+            except Exception as e:
+                print(f"Error parsing articles JSON for cluster {i+1}: {e}")
+                articles = []
+            
+            # Count government and news documents
+            gov_count = len([doc for doc in articles if doc.get('source') == 'gov'])
+            news_count = len([doc for doc in articles if doc.get('source') == 'gnews'])
+            
+            total_gov_docs += gov_count
+            total_news_articles += news_count
+            
+            # Cluster header
+            report_lines.append(f"CLUSTER {i+1} - Score: {score:.4f}\n")
+            report_lines.append(f"Government Documents: {gov_count} | News Articles: {news_count}\n")
+            report_lines.append("-" * 80 + "\n")
+            
+            # Separate government and news documents
+            gov_docs = []
+            news_docs = []
+            
+            for doc in articles:
+                if doc.get('source') == 'gov':
+                    doc_type = doc.get('type', 'unknown')
+                    title = doc.get('title', 'No title')
+                    keyword = doc.get('keyword', '')
+                    gov_docs.append((doc_type, title, keyword))
+                elif doc.get('source') == 'gnews':
+                    title = doc.get('title', 'No title')
+                    similarity = doc.get('similarity', 'N/A')
+                    keyword = doc.get('keyword', '')
+                    news_docs.append((title, similarity, keyword))
+            
+            # Print government documents
+            if gov_docs:
+                report_lines.append("GOVERNMENT DOCUMENTS:\n")
+                for j, (doc_type, title, keyword) in enumerate(gov_docs, 1):
+                    type_label = f"[{doc_type.upper()}]" if doc_type else "[GOV]"
+                    keyword_text = f" (Keyword: {keyword})" if keyword else ""
+                    report_lines.append(f"  {j}. {type_label} {title}{keyword_text}\n")
+                report_lines.append("\n")
+            
+            # Print news articles
+            if news_docs:
+                report_lines.append("NEWS ARTICLES:\n")
+                for j, (title, similarity, keyword) in enumerate(news_docs, 1):
+                    sim_text = f" (Similarity: {similarity})" if similarity != 'N/A' else ""
+                    keyword_text = f" (Keyword: {keyword})" if keyword else ""
+                    report_lines.append(f"  {j}. {title}{sim_text}{keyword_text}\n")
+                report_lines.append("\n")
+            
+            report_lines.append("=" * 80 + "\n\n")
+    
+        # Summary
+        report_lines.append("SUMMARY:\n")
+        report_lines.append(f"Total Clusters: {len(output)}\n")
+        report_lines.append(f"Total Government Documents: {total_gov_docs}\n")
+        report_lines.append(f"Total News Articles: {total_news_articles}\n")
+        report_lines.append(f"Total Documents: {total_gov_docs + total_news_articles}\n")
+        
+        # Write to file
+        try:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            with open(output_path, "w", encoding='utf-8') as f:
+                f.writelines(report_lines)
+            print(f"Cluster titles report saved to {output_path}")
+        except Exception as e:
+            print(f"Error writing cluster titles report: {e}")
+            # Print to console if file writing fails
+            print("".join(report_lines))
         
     def cluster_articles(self, news_df, gov_df):
         """
@@ -443,23 +677,27 @@ class Clusterer:
             # Step 6: Organize clusters
             organized_clusters = self.organize_clusters(final_clusters, gov_df, news_df, gov_embeddings)
             
-            # Step 7: Format output
-            output = self.format_output(organized_clusters)
+            # Step 7: Filter out irrelevant clusters
+            filtered_clusters = self.filter_irrelevant_clusters(organized_clusters)
+            
+            # Step 8: Format output
+            output = self.format_output(filtered_clusters)
             
             # Print summary
             print("========== CLUSTERING SUMMARY ===========")
             print(f"Total government documents: {len(gov_df)}")
             print(f"Total news articles: {len(news_df)}")
-            print(f"Total clusters created: {len(organized_clusters)}")
+            print(f"Total clusters before filtering: {len(organized_clusters)}")
+            print(f"Total clusters after filtering: {len(filtered_clusters)}")
             
-            gov_in_clusters = sum(cluster['gov_count'] for cluster in organized_clusters)
-            news_in_clusters = sum(cluster['news_count'] for cluster in organized_clusters)
+            gov_in_clusters = sum(cluster['gov_count'] for cluster in filtered_clusters)
+            news_in_clusters = sum(cluster['news_count'] for cluster in filtered_clusters)
             
-            print(f"Government documents in clusters: {gov_in_clusters}/{len(gov_df)} ({gov_in_clusters/max(1, len(gov_df))*100:.1f}%)")
-            print(f"News articles in clusters: {news_in_clusters}/{len(news_df)} ({news_in_clusters/max(1, len(news_df))*100:.1f}%)")
+            print(f"Government documents in final clusters: {gov_in_clusters}/{len(gov_df)} ({gov_in_clusters/max(1, len(gov_df))*100:.1f}%)")
+            print(f"News articles in final clusters: {news_in_clusters}/{len(news_df)} ({news_in_clusters/max(1, len(news_df))*100:.1f}%)")
             
             print("========== OUTPUT CLUSTERS ===========")
-            for i, cluster in enumerate(organized_clusters[:10]):  # Show top 10 clusters
+            for i, cluster in enumerate(filtered_clusters[:10]):  # Show top 10 clusters
                 print(f"----- Cluster {i+1} -------")
                 print(f"Documents: {cluster['total_count']} ({cluster['gov_count']} gov, {cluster['news_count']} news)")
                 for j, doc in enumerate(cluster['documents'][:5]):  # Show top 5 documents
@@ -468,8 +706,11 @@ class Clusterer:
                         break
                 print()
             
-            # Generate metrics report
-            self.generate_metrics_report(organized_clusters, gov_df, news_df)
+            # Generate metrics report (using filtered clusters)
+            self.generate_metrics_report(filtered_clusters, gov_df, news_df)
+
+            # Generate cluster titles report (using filtered clusters)
+            self.generate_cluster_report(output)
             
             return output
             
@@ -551,31 +792,31 @@ if __name__ == "__main__":
     clusterer = Clusterer()
     clusters = clusterer.cluster_articles(news_df, gov_df)
     
-    if clusters and len(clusters) > 0:
+    # if clusters and len(clusters) > 0:
 
-        # save to db
-        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+    #     # save to db
+    #     conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
 
-        try:
-            # Delete all existing entries first
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM clusters")
-            conn.commit()
-            print("Deleted all existing clusters from db")
+    #     try:
+    #         # Delete all existing entries first
+    #         cursor = conn.cursor()
+    #         cursor.execute("DELETE FROM clusters")
+    #         conn.commit()
+    #         print("Deleted all existing clusters from db")
 
-            for i, metadata in enumerate(clusters):
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO clusters (embedding, score, metadata)
-                    VALUES (%s, %s, %s::jsonb)
-                    RETURNING id
-                """, (metadata['center_embedding'], metadata['score'], json.dumps(metadata['articles'])))
-            conn.commit()
-            print(f"Inserted {len(clusters)} clusters into db")
-        except Exception as e:
-            print(f"Error inserting clusters into db: {e}")
-            conn.rollback()
-        finally:
-            conn.close()
-    else:
-        logging.error("No clusters generated")
+    #         for i, metadata in enumerate(clusters):
+    #             cursor = conn.cursor()
+    #             cursor.execute("""
+    #                 INSERT INTO clusters (embedding, score, metadata)
+    #                 VALUES (%s, %s, %s::jsonb)
+    #                 RETURNING id
+    #             """, (metadata['center_embedding'], metadata['score'], json.dumps(metadata['articles'])))
+    #         conn.commit()
+    #         print(f"Inserted {len(clusters)} clusters into db")
+    #     except Exception as e:
+    #         print(f"Error inserting clusters into db: {e}")
+    #         conn.rollback()
+    #     finally:
+    #         conn.close()
+    # else:
+    #     logging.error("No clusters generated")
