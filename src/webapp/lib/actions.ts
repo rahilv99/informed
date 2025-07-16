@@ -13,7 +13,7 @@ import {
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { getUserByEmail, createUser, getUser, updateUser, addEmailToNewsletter, updateListened } from '@/lib/db/queries';
+import { getUserByEmail, createUser, getUser, updateUser, addEmailToNewsletter, updateListened, getArticles, getArticle } from '@/lib/db/queries';
 import {
   validatedAction,
 } from '@/lib/auth/middleware';
@@ -682,4 +682,19 @@ export async function setListened(podcastId: number) {
     return { success: 'Podcast marked as listened.' };
   }
 }
-//MARK: THIS IS WHERE YOU WRITE SERVER SIDE QUERIES
+
+// Get all articles
+export async function getAllArticles() {
+  return await getArticles();
+}
+
+// Get a single article by ID
+export async function getArticleById(id: number) {
+  const result = await getArticle(id);
+  
+  if (result.length === 0) {
+    return null;
+  }
+  
+  return result[0];
+}

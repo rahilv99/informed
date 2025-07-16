@@ -22,6 +22,25 @@ def get_s3_url(user_id, episode_number, type):
     object_key = s3LocationMapping(user_id, episode_number, type)
     return f'https://{bucket_name}.s3.us-east-1.amazonaws.com/{object_key}'
 
+def save_metadata(object, key):
+    """
+    Save metadata to S3.
+    :param object: The metadata object to save.
+    :param key: The S3 key where the metadata will be stored.
+    """
+
+    s3 = boto3.client('s3')
+    
+    try:
+        s3.put_object(
+            Bucket=bucket_name,
+            Key=f"metadata/{key}",
+            Body=pickle.dumps(object)
+        )
+        print(f"Metadata saved to {key}.")
+    except Exception as e:
+        print(f"Error saving metadata to bucket: {e}")
+
 def save_serialized(user_id, episode_number, type, data):
     object_key = s3LocationMapping(user_id, episode_number, type)
     # Serialize the data
@@ -94,3 +113,19 @@ def restore_from_system(type, f_path):
     except Exception as e:
         print(f"Error reading from bucket: {e}")
         return {}
+
+def get_metadata(key):
+    """
+    Retrieve metadata from S3.
+    :param key: The S3 key where the metadata is stored.
+    :return: The deserialized metadata object.
+    """
+    s3 = boto3.client('s3')
+    try:
+        response = s3.get_object(Bucket=bucket_name, Key=f"metadata/{key}")
+        metadata = pickle.loads(response['Body'].read())
+        print(f"Metadata retrieved from {key}")
+        return metadata
+    except Exception as e:
+        print(f"Error retrieving metadata from bucket: {e}")
+        return None

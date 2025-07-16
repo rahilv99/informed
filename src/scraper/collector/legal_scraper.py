@@ -115,7 +115,8 @@ class Gov(ArticleResource):
                                 "title": title,
                                 "text": full_text,
                                 "url": url_with_key,
-                                "keyword": topic
+                                "keyword": topic,
+                                "source": "govinfo"
                             })
                     else:
                         print(f"API request failed with status code: {response.status_code}")

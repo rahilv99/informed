@@ -1,6 +1,6 @@
 import { db } from './drizzle';
-import { users, emails, podcasts } from './schema';
-import { eq } from 'drizzle-orm';
+import { users, emails, podcasts, articles } from './schema';
+import { eq, sql } from 'drizzle-orm';
 import type { User, NewUser } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
@@ -111,4 +111,46 @@ export async function fetchUserPodcasts(userId: number) {
 // Update a podcast's listened status
 export async function updateListened(podcastId: number) {
   return await db.update(podcasts).set({ completed: true }).where(eq(podcasts.id, podcastId)).returning();
+}
+
+// Get all articles
+export async function getArticles() {
+  return await db.select().from(articles);
+}
+
+// Get a single article by ID
+export async function getArticle(id: number) {
+  return await db.select().from(articles).where(eq(articles.id, id)).limit(1);
+}
+
+export async function getSimilarArticles(currentEmbedding: number[]) {
+  // Convert the embedding array to Postgres vector literal
+  const embeddingLiteral = `array[${currentEmbedding.join(",")}]`;
+
+  const result = await db.execute(
+    sql`
+      SELECT
+        *,
+        embedding <=> ${sql.raw(embeddingLiteral)}::vector AS distance
+      FROM articles
+      ORDER BY distance ASC
+      OFFSET 1
+      LIMIT 2
+    `
+  );
+
+  return result;
+}
+
+export async function getTop3Articles() {
+  const result = await db.execute(
+    sql`
+      SELECT *
+      FROM articles
+      ORDER BY score DESC
+      LIMIT 3
+    `
+  );
+
+  return result;
 }

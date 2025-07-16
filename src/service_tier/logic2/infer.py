@@ -1,12 +1,15 @@
+import os
 import psycopg2
 import json
 from sentence_transformers import SentenceTransformer
 
-# import common.sqs
-# import common.s3
+import common.sqs
+import common.s3
 
 # Database connection parameters
-db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres'
+
+db_access_url = os.environ.get('DB_ACCESS_URL')
+# db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres'
 
 # Load model once globally
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -18,7 +21,7 @@ def search_documents(interest, conn, limit=5):
     try:
         cur.execute("""
             SELECT id, metadata, score, embedding <=> %s::vector AS distance
-            FROM clusters
+            FROM articles
             ORDER BY distance
             LIMIT %s
         """, (query_embedding, limit))

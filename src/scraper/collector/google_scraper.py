@@ -67,7 +67,7 @@ class GoogleNewsScraper(ArticleResource):
                         results.append({
                             "title": title,
                             "url": url,
-                            "publisher": publisher,
+                            "source": publisher,
                             "keyword": topic
                         })
 

@@ -23,7 +23,7 @@ def read_json_from_s3(bucket_name: str, prefix: str) -> List[Dict]:
     if 'gnews/' in prefix:
         threshold = 87
     else:
-        threshold = 95
+        threshold = 90
 
     # List all objects in the folder
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
@@ -71,7 +71,7 @@ def is_duplicate_title(new_title, seen_titles, fuzzy_threshold=95):
         for seen_title in seen_titles:
             # Use token sort ratio to handle word order differences
             ratio = fuzz.token_sort_ratio(new_title, seen_title)
-            if ratio >= 95:
+            if ratio >= fuzzy_threshold:
                 print(f"Fuzzy match found: '{new_title}' matches '{seen_title}' with ratio {ratio}")
                 return True
 

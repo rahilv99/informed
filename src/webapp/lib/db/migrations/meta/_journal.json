@@ -204,6 +204,48 @@
       "when": 1749327778971,
       "tag": "0028_round_mojo",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1751251899220,
+      "tag": "0029_rapid_arachne",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1751251940456,
+      "tag": "0030_hard_moon_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1752543357583,
+      "tag": "0031_faulty_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1752545493845,
+      "tag": "0032_grey_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1752546881985,
+      "tag": "0033_busy_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1752635151394,
+      "tag": "0034_plain_stephen_strange",
+      "breakpoints": true
     }
   ]
 }

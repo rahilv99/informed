@@ -8,8 +8,12 @@ import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select"
 
-export default function PopupWidget() {
-  const [isExpanded, setIsExpanded] = useState(false)
+interface PopupWidgetProps {
+  isExpanded?: boolean
+  onToggle?: () => void
+}
+
+export default function PopupWidget({ isExpanded = false, onToggle }: PopupWidgetProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -110,7 +114,9 @@ export default function PopupWidget() {
   }
 
   const toggleExpanded = () => {
-    setIsExpanded(!isExpanded)
+    if (onToggle) {
+      onToggle()
+    }
 
     // Pause audio when collapsing
     if (isExpanded && isPlaying) {

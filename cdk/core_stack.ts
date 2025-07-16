@@ -96,7 +96,7 @@ export class CoreStack extends cdk.Stack {
         schedule: events.Schedule.cron({
         minute: '0',
         hour: '10',
-        day: '*',
+        day: '1',
         month: '*',
         year: '*',
         }),
@@ -115,7 +115,7 @@ export class CoreStack extends cdk.Stack {
         schedule: events.Schedule.cron({
         minute: '16',
         hour: '10',
-        day: '*',
+        day: '1',
         month: '*',
         year: '*',
         }),

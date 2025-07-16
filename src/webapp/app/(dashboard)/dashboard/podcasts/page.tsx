@@ -2,7 +2,6 @@ import { getKeywords, getAccountStatus } from "@/lib/actions";
 import { getUser, fetchUserPodcasts } from "@/lib/db/queries";
 import { redirect } from "next/navigation";
 import LearningProgress from "./history";
-import { toast } from "@/hooks/use-toast"; // Import the toast function
 
 
 export default async function Page() {

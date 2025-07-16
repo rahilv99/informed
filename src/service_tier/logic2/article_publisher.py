@@ -4,17 +4,19 @@ import os
 import psycopg2 
 import json
 from datetime import datetime
-
+import pandas as pd
+from io import StringIO
 import common.s3
 
-db_access_url = os.environ.get('DB_ACCESS_URL')
 
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
-summary_model = genai.GenerativeModel('gemini-1.5-flash')  # $0.075 /M input  $0.30 /M output tokens 
+summary_model = genai.GenerativeModel('gemini-2.0-flash')  # $0.075 /M input  $0.30 /M output tokens 
 article_model = genai.GenerativeModel('gemini-2.0-flash')  # $0.10 /M input $0.40 /M output tokens
 
+db_access_url = os.environ.get('DB_ACCESS_URL')
+# db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres' # local testing
 
 ### Underwriter - Researches documents in a cluster
 def underwriter_research(cluster_df):
@@ -24,7 +26,7 @@ def underwriter_research(cluster_df):
     
     Args:
         cluster_df: DataFrame containing documents in a cluster with columns:
-                   'source', 'type', 'title', 'text', 'url', 'keyword', 'publisher'
+                   'source', 'type', 'title', 'text', 'url', 'keyword'
     
     Returns:
         Dictionary with research notes for each document type
@@ -113,7 +115,7 @@ def underwriter_research(cluster_df):
     for _, article in news_articles.iterrows():
         research_notes['news_articles'].append({
             'title': article['title'],
-            'publisher': article['publisher'],
+            #'publisher': article['publisher'],
             'url': article['url'],
             'notes': ''  # Keeping empty for now as in nlp.py, can be filled with news response text if needed
         })
@@ -133,7 +135,7 @@ def create_cluster_article(research_notes):
         Dictionary containing the article title and content
     """
 
-    tokens = 500 # less than 500 words  
+    tokens = 3500  
 
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
@@ -149,9 +151,9 @@ def create_cluster_article(research_notes):
 
     Output exactly:
     "Title": <Descriptive, attention-grabbing title of the article>,
-    "People": <List of specific full names of the top (at most) 3 people related to the documents>
+    "People": <List of specific names of the top (at most) 3 real people related to the documents>
     "Keywords": <List the top (at most) 5 keywords related to the article>,
-    "Article": <Content of the article in paragraph format without meta-comments or introductions>
+    "Article": <Content of the article in html format without meta-comments or introductions, only <p> tags for paragraphs>
     
     **WRITING GUIDELINES:**
     * Write in a clear, professional, yet engaging tone
@@ -159,6 +161,7 @@ def create_cluster_article(research_notes):
     * Include specific details, numbers, and quotes when relevant
     * Connect government actions (primary + secondary articles) to real-world impacts (news articles)
     * Be charismatic and engaging while maintaining credibility
+    * Write in html format, using only <p> tags for paragraphs
     
     **ARTICLE STRUCTURE:**
     1. Start with a compelling hook that highlights why this matters
@@ -202,7 +205,6 @@ def create_cluster_article(research_notes):
         system_prompt += f"""
         Article {i+1}:
         Title: {article['title']}
-        Publisher: {article['publisher']}
         {article['notes']}
         """
 
@@ -215,13 +217,13 @@ def create_cluster_article(research_notes):
                 "type": "string"
             },
             "People": {
-                "type": "list",
+                "type": "array",
                 "items": {
                     "type": "string"
                 }
             },
             "Keywords": {
-                "type": "list",
+                "type": "array",
                 "items": {
                     "type": "string"
                 }
@@ -248,10 +250,10 @@ def create_cluster_article(research_notes):
     article_json = json.loads(response.text)
     title = article_json.get("Title", "Auxiom Article").strip()
     content = article_json.get("Article", "").strip()
-    people = article_json.get("People", "").strip()
+    people = article_json.get("People", [])
     keywords = article_json.get("Keywords", [])
 
-    time = round(len(content.split()) / 225)  # Average reading speed is 225 words per minute, rounded to 2 decimals
+    time = round(len(content.split()) / 175)  # Average reading speed is 175 words per minute
 
     return {
         'title': title,
@@ -263,7 +265,7 @@ def create_cluster_article(research_notes):
     }
 
 
-def generate_summary(article_title, article_content, research_notes):
+def generate_summary(article_title, article_content):
     """
     Generates a newsletter blurb about the article for email delivery.
     
@@ -284,7 +286,7 @@ def generate_summary(article_title, article_content, research_notes):
     Create a concise newsletter blurb about this article for an email newsletter.
     
     Article Title: {article_title}
-    Article Content: {article_content[:2000]}
+    Article Content: {article_content[:2500]}
     
     Write a brief, engaging summary that:
     - Captures the key points of the article
@@ -310,7 +312,33 @@ def generate_summary(article_title, article_content, research_notes):
     
     return summary
 
-def update_db(user_id, article_title, article_content, summary, people, time, topics, tags, cluster_id):
+def parse_sources(cluster_df):
+    """
+    Process the cluster_df object and extract source information.
+    
+    Args:
+        cluster_df: DataFrame containing documents in a cluster with columns:
+                   'source', 'type', 'title', 'text', 'url', 'keyword'
+    
+    Returns:
+        List of dictionaries containing source information with keys:
+        'type', 'url', 'publisher', 'title'
+    """
+    sources = []
+    
+    for _, row in cluster_df.iterrows():
+        source_info = {
+            'type': 'primary' if row['type'] in ['primary', 'secondary'] else 'news',
+            'url': row['url'],
+            'source': row['source'],
+            'title': row['title']
+        }
+        sources.append(source_info)
+    
+    return sources
+
+
+def update_db(article_title, article_content, summary, people, time, topics, tags, cluster_id, sources):
     """
     Update database with single article information.
     """
@@ -319,13 +347,24 @@ def update_db(user_id, article_title, article_content, summary, people, time, to
         cursor = conn.cursor()
         
         cursor.execute("""
-            INSERT INTO articles (title, user_id, cluster_id, content, summary, people, duration, topics, tags, date, completed)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, (article_title, user_id, cluster_id, article_content, summary, people, time, topics, tags, datetime.now(), False))
+            UPDATE articles 
+            SET title = %s, content = %s, summary = %s, people = %s::jsonb, duration = %s, topics = %s::jsonb, tags = %s::jsonb, date = %s, sources = %s::jsonb
+            WHERE id = %s
+        """, (
+            article_title,
+            article_content,
+            summary,
+            json.dumps(people),
+            time,
+            json.dumps(topics),
+            json.dumps(tags),
+            datetime.now(),
+            json.dumps(sources),
+            cluster_id
+        ))
 
         conn.commit()
-        print(f"Successfully updated articles table for user {user_id}, cluster {cluster_id}")
+        print(f"Successfully updated cluster {cluster_id} with article information")
 
     except psycopg2.Error as e:
         print(f"Database error: {e}")
@@ -338,45 +377,127 @@ def update_db(user_id, article_title, article_content, summary, people, time, to
             conn.close()
 
 
+def get_cluster_metadata(cluster_id):
+    """
+    Retrieve cluster metadata from database and S3.
+    
+    Args:
+        cluster_id: The cluster ID to retrieve metadata for
+        
+    Returns:
+        DataFrame containing cluster documents or None if error
+    """
+    try:
+        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT key FROM articles WHERE id = %s", (cluster_id,))
+        result = cursor.fetchone()
+        
+        if not result:
+            print(f"No cluster found with ID {cluster_id}")
+            return None
+            
+        cluster_key = result[0]
+        
+        # Retrieve metadata from S3
+        articles_json = common.s3.get_metadata(cluster_key)
+        if articles_json is None:
+            print(f"Failed to retrieve metadata for cluster {cluster_id}")
+            return None
+            
+        # Parse JSON to DataFrame
+        import pandas as pd
+        cluster_df = pd.read_json(StringIO(articles_json))
+        
+        return cluster_df
+        
+    except Exception as e:
+        print(f"Error retrieving cluster metadata for {cluster_id}: {e}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+def process_single_cluster(cluster_id):
+    """
+    Process a single cluster and generate an article.
+    
+    Args:
+        cluster_id: The cluster ID to process
+        
+    Returns:
+        Boolean indicating success or failure
+    """
+    try:
+        print(f"Processing cluster {cluster_id}")
+        
+        # Step 1: Retrieve cluster metadata from S3
+        cluster_df = get_cluster_metadata(cluster_id)
+        if cluster_df is None or cluster_df.empty:
+            print(f"Failed to retrieve metadata for cluster {cluster_id}")
+            return False
+        
+        # Step 2: Underwriter researches the cluster
+        research_notes = underwriter_research(cluster_df)
+        
+        # Step 3: Article writer creates an article for the cluster
+        article = create_cluster_article(research_notes)
+        
+        # Step 4: Generate newsletter blurb
+        summary = generate_summary(
+            article['title'], 
+            article['content']
+        )
+
+        topics = cluster_df['keyword'].unique().tolist()
+
+        sources = parse_sources(cluster_df)
+
+        # Step 5: Update database
+        update_db(article['title'], article['content'], summary, article['people'], article['time'], topics, article['tags'], cluster_id, sources)
+        
+        print(f"Successfully processed cluster {cluster_id}")
+        return True
+        
+    except Exception as e:
+        print(f"Error processing cluster {cluster_id}: {e}")
+        return False
+
+
 # Main Execution
 def handler(payload):
-    """
-    Main handler function for processing a single cluster and generating an article.
-
-    Args:
-        payload: Dictionary containing user information and cluster data
-    """
-    user_id = payload.get("user_id")
-    cluster_df = payload.get("cluster_df")  # Single cluster DataFrame
-    cluster_id = payload.get("cluster_id")  # Unique identifier for this cluster
+    cluster_ids = payload.get("clusters", [])
     
-    print(f"Processing cluster {cluster_id} for user {user_id}")
+    print(f"Processing {len(cluster_ids)} clusters: {cluster_ids}")
     
-    # Step 1: Underwriter researches the cluster
-    research_notes = underwriter_research(cluster_df)
+    successful_clusters = []
+    failed_clusters = []
     
-    # Step 2: Article writer creates an article for the cluster
-    article = create_cluster_article(research_notes)
+    # Process each cluster in the chunk
+    for cluster_id in cluster_ids:
+        success = process_single_cluster(cluster_id)
+        if success:
+            successful_clusters.append(cluster_id)
+        else:
+            failed_clusters.append(cluster_id)
     
-    # Step 3: Generate newsletter blurb
-    summary = generate_summary(
-        article['title'], 
-        article['content']
-    )
-
-    topics = cluster_df['keyword'].unique().tolist()
-
-    # Step 6: Update database
-    update_db(user_id, article['title'], article['content'], summary, article['people'], article['time'], topics, article['tags'], cluster_id)
-    
-    print(f"Successfully processed cluster {cluster_id}")
+    print(f"Processing complete. Successful: {len(successful_clusters)}, Failed: {len(failed_clusters)}")
+    if failed_clusters:
+        print(f"Failed clusters: {failed_clusters}")
 
 
 if __name__ == "__main__":
     import pickle as pkl
     
     # Test with sample data - use first cluster as example
-    cluster_df = pkl.loads(open("/tmp/cluster_dfs.pkl", "rb").read())
+    cluster = pkl.loads(open("tmp/example_cluster.pkl", "rb").read())
+    cluster_id = 3887
+
+    cluster_df = pd.read_json(StringIO(cluster))
         
     # Step 1: Underwriter researches the cluster
     research_notes = underwriter_research(cluster_df)
@@ -391,13 +512,16 @@ if __name__ == "__main__":
     )
 
     topics = cluster_df['keyword'].unique().tolist()
-        
+    sources = parse_sources(cluster_df)
+
+    update_db(article['title'], article['content'], summary, article['people'], article['time'], topics, article['tags'], cluster_id, sources)
+
     print("---- GENERATED ARTICLE ----")
     print(f"Title: {article['title']}")
     print(f"Content: {article['content']}")
     print(f"Summary: {summary}")
     print(f"People: {article['people']}")
     print(f"Time to read: {article['time']} minutes")
-    print(f"Tag: {article['tags']}")
+    print(f"Tags: {article['tags']}")
     print(f"Topics: {topics}")
     print("\n" + "-"*50)

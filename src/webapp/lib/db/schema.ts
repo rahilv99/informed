@@ -9,7 +9,7 @@ export const users = pgTable('users', {
   deliveryDay: integer('delivery_day').notNull().default(1),
   delivered: timestamp('delivered').notNull().default(new Date(0)),
   active: boolean('active').notNull().default(false),
-  keywords: jsonb('keywords').notNull(),
+  keywords: jsonb('keywords').notNull().default([]),
   role: varchar('role', { length: 255 }).notNull().default('Other'),
   occupation: varchar('occupation', { length: 255 }),
   industry: varchar('industry', { length: 255 }),
@@ -19,6 +19,7 @@ export const users = pgTable('users', {
   plan: varchar('plan', { length: 50 }).notNull().default('free'),
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
+  feedIndex: jsonb('feed_index').notNull().default([]),
 });
 
 // Email table for newsletter
@@ -42,11 +43,21 @@ export const podcasts = pgTable('podcasts', {
   script: jsonb('script').notNull().default([]),
 });
 
-export const clusters = pgTable('clusters', {
+export const articles = pgTable('articles', {
   id: serial('id').primaryKey(),
-  embedding: vector('embedding', { dimensions: 384 }),
-  metadata: jsonb('metadata').notNull(),
-  score: real('score').notNull().default(1)
+  embedding: vector('embedding', { dimensions: 384 }).notNull(),
+  key: varchar('key').notNull(),
+  score: real('score').notNull().default(1),
+  title: varchar('title', { length: 255 }).notNull().default(''),
+  content: text('content').notNull().default(''),
+  summary: text('summary').notNull().default(''),
+  people: jsonb('people').notNull().default([]),
+  duration: integer('duration').notNull().default(0),
+  topics: jsonb('topics').notNull().default([]),
+  tags: jsonb('tags').notNull().default([]),
+  sources: jsonb('sources').notNull().default([]),
+  featured: boolean('featured').notNull().default(false),
+  date: timestamp('date').notNull(),
 });
 
 export type User = typeof users.$inferSelect;
