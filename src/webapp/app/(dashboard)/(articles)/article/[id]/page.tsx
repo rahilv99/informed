@@ -4,8 +4,7 @@ import ArticlePage from "./article";
 
 export default async function Page({ params }: { params: { id: string } }) {
 
-  const { id } = params;
-  const ID = parseInt(id, 10)
+  const ID = parseInt(params.id, 10)
   const article = await getArticleById(ID);
 
   let formattedArticle;
