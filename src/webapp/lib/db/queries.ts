@@ -103,7 +103,6 @@ export async function addEmailToNewsletter(email: string) {
 
 
 // Get podcasts for user by id
-// MARK: THIS IS WHAT YOU'LL NEED TO EDIT
 export async function fetchUserPodcasts(userId: number) {
   return await db.select().from(podcasts).where(eq(podcasts.user_id, userId));
 }

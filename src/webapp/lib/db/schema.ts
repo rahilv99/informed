@@ -1,6 +1,8 @@
 import { pgTable, serial, text, varchar, jsonb, integer, boolean, timestamp, vector, real } from 'drizzle-orm/pg-core';
 
 // Define the user table schema
+const DEFAULT_EMBEDDING = Array(384).fill(0);
+
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
@@ -19,7 +21,7 @@ export const users = pgTable('users', {
   plan: varchar('plan', { length: 50 }).notNull().default('free'),
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
-  feedIndex: jsonb('feed_index').notNull().default([]),
+  embedding: vector('embedding', { dimensions: 384 }),
 });
 
 // Email table for newsletter

@@ -3,6 +3,7 @@ import logic.nlp
 import logic2.embed
 import logic2.infer
 import logic2.article_publisher
+import logic2.represent_user
 import email_delivery.ses
 import email_delivery.notify
 import json
@@ -45,7 +46,8 @@ def _handler(event, context):
         "e_notify": email_delivery.notify.handler,
         "e_embed": logic2.embed.handler,
         "e_infer": logic2.infer.handler,
-        "e_publish": logic2.article_publisher.handler
+        "e_publish": logic2.article_publisher.handler,
+        "e_represent_user": logic2.represent_user.handler
     }
 
     # Route to the appropriate function

@@ -4,15 +4,6 @@ import ArticlesPage from "../../(articles)/feed/content";
 
 export default async function Page() {
 
-  const user = await getUser();
-  let feedIndex;
-
-  if (!user) {
-    feedIndex = null;
-  } else {
-    feedIndex = user.feedIndex;
-  }
-
   const articles = await getAllArticles();
   
   const formattedArticles = articles.map((article) => ({

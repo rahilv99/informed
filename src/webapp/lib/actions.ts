@@ -18,6 +18,7 @@ import {
   validatedAction,
 } from '@/lib/auth/middleware';
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -146,6 +147,36 @@ async function sendVerificationEmail(email: string, userId: number) {
   } catch (error) {
     console.error("Error sending email:", error);
     return { error: "Failed to send verification email. Please try again later." };
+  }
+}
+
+const sqs = new SQSClient({
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: process.env.ACCESS_KEY!,
+    secretAccessKey: process.env.SECRET_KEY!
+  }
+});
+
+export async function sendKeywordsToSQS(userId: number, keywords: string[]) {
+  const queueUrl = process.env.QUEUE_URL!;
+  const messageBody = JSON.stringify({
+    action: "e_represent_user",
+    payload: {
+      user_id: userId,
+      keywords: keywords
+    }
+  });
+
+  try {
+    await sqs.send(new SendMessageCommand({
+      QueueUrl: queueUrl,
+      MessageBody: messageBody
+    }));
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending SQS message:", error);
+    return { error: "Failed to send keywords to SQS." };
   }
 }
 

@@ -246,6 +246,20 @@
       "when": 1752635151394,
       "tag": "0034_plain_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1752720102157,
+      "tag": "0035_friendly_whirlwind",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1752720353291,
+      "tag": "0036_heavy_black_panther",
+      "breakpoints": true
     }
   ]
 }
