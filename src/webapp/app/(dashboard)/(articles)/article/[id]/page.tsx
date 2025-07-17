@@ -4,7 +4,7 @@ import ArticlePage from "./article";
 
 export default async function Page({ params }: { params: { id: string } }) {
 
-  const { id } = await params;
+  const { id } = params;
   const ID = parseInt(id, 10)
   const article = await getArticleById(ID);
 
