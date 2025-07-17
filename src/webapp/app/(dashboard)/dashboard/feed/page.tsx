@@ -1,7 +1,6 @@
 import { getAllArticles } from "@/lib/actions";
 import { getUser } from "@/lib/db/queries";
-import ArticlesPage from "./content";
-
+import ArticlesPage from "../../(articles)/feed/content";
 
 export default async function Page() {
 
@@ -45,7 +44,7 @@ export default async function Page() {
     duration: article.duration,
     featured: article.featured
   }));
-
+  
   return (
     <div>
       <ArticlesPage articles = {formattedArticles} />

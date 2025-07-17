@@ -175,7 +175,7 @@ export async function verifyEmail(token: string) {
   if (user[0].active === false) {
     redirect('/identity');
   } else {
-    redirect('/dashboard/podcasts');
+    redirect('/feed');
   }
 }
 
@@ -383,7 +383,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   if (!foundUser.active) {
     redirect('/keywords');
   } else {
-    redirect(redirectUrl || '/dashboard/podcasts');
+    redirect(redirectUrl || '/dashboard/feed');
   }
 });
 

@@ -36,7 +36,7 @@ function NavDropdown({ user }: { user: any }) {
         </DropdownMenuItem>
         <DropdownMenuItem>
           {user ? (
-            <Link href="/dashboard/podcasts" className="flex items-center">
+            <Link href="/dashboard/feed" className="flex items-center">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
             </Link>
@@ -78,7 +78,7 @@ function Header() {
                   asChild
                   className="bg-gray-800 hover:bg-gray-600 text-white text-sm px-4 py-2 rounded-full transition duration-300"
                 >
-                  <ActionLink href="/dashboard/podcasts" icon={LayoutDashboard}>Dashboard</ActionLink>
+                  <ActionLink href="/dashboard/feed" icon={LayoutDashboard}>Dashboard</ActionLink>
                 </Button>
               ) : (
                 <Button

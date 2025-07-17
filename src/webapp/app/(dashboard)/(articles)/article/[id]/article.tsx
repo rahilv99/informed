@@ -194,13 +194,12 @@ export default function ArticlePage({article, related}: {
                 )}
               </div>
               <div className="text-sm">
-                <p className="font-medium text-foreground">
-                  {article.people.length === 1 ? article.people[0] : 
-                   article.people.length === 2 ? `${article.people[0]} and ${article.people[1]}` :
-                   article.people.length === 3 ? `${article.people[0]}, ${article.people[1]}, and ${article.people[2]}` :
-                   `${article.people[0]}, ${article.people[1]}, and ${article.people.length - 2} others`}
+                <p className="font-medium">
+                  {article.people.join(", ")}
                 </p>
-                <p className="text-xs text-muted-foreground">People mentioned in this article</p>
+                {article.people.length > 0 && (
+                  <p className="text-xs text-muted-foreground">People mentioned in this article</p>
+                )}
               </div>
             </div>
           </div>

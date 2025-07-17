@@ -616,7 +616,7 @@ export default function LearningProgress({
     <div className="min-h-screen py-6 sm:py-12 px-2 sm:px-4">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Learning Progress</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Podcasts</h1>
           <p className="text-gray-600">
             Track your podcast history and explore related articles to deepen your knowledge.
           </p>

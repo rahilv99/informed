@@ -135,7 +135,7 @@ def create_cluster_article(research_notes):
         Dictionary containing the article title and content
     """
 
-    tokens = 3500  
+    tokens = 2500  
 
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
