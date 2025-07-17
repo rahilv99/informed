@@ -26,6 +26,7 @@ def main(interests, user_id):
         )
         conn.commit()
         cur.close()
+        print("User embedding updated successfully")
     except Exception as e:
         if conn:
             conn.rollback()

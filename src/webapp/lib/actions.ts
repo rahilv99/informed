@@ -581,6 +581,7 @@ export async function updateInterests(keywords: string[]) {
 
   // Update the user's keywords in the database
   await updateUser(user.id, { keywords: keywords });
+  await sendKeywordsToSQS(user.id, keywords);
 
   return { success: true, message: 'Interests updated successfully' };
 }

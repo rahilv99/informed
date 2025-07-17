@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const navItems = [
-  { name: "Feed", href: "/feed", icon: TextSearch },
+  { name: "Feed", href: "/dashboard/feed", icon: TextSearch },
   { name: "Podcasts", href: "/dashboard/podcasts", icon: LibraryBig },
   { name: "Pulse", href: "/dashboard/pulse", icon: Activity },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
