@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Calendar, Clock, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +17,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { useRouter } from "next/navigation"
+import { useUser } from "@/lib/auth"
 
 
 export default function ArticlesPage({articles}: {
@@ -33,9 +34,10 @@ export default function ArticlesPage({articles}: {
   }>
 }) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedTopic, setSelectedTopic] = useState("All")
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([])
   const [filteredArticles, setFilteredArticles] = useState(articles)
   const [currentPage, setCurrentPage] = useState(1)
+  const { user, setUser } = useUser();
 
   const router = useRouter()
   
@@ -51,19 +53,35 @@ export default function ArticlesPage({articles}: {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
-    filterArticles(query, selectedTopic)
+    // Filter will be handled by useEffect
   }
 
   const handleTopicFilter = (topic: string) => {
-    setSelectedTopic(topic)
-    filterArticles(searchQuery, topic)
+    if (topic === "All") {
+      setSelectedTopics([])
+    } else {
+      setSelectedTopics(prev => {
+        const isSelected = prev.includes(topic)
+        if (isSelected) {
+          // Remove topic if already selected (toggle off)
+          return prev.filter(t => t !== topic)
+        } else {
+          // Add topic if not selected (toggle on)
+          return [...prev, topic]
+        }
+      })
+    }
+    
+    // Filter will be handled by useEffect
   }
 
-  const filterArticles = (query: string, topic: string) => {
+  const filterArticles = (query: string, selectedTopics: string[]) => {
     let filtered = articles
 
-    if (topic !== "All") {
-      filtered = filtered.filter((article) => article.topics.includes(topic))
+    if (selectedTopics.length > 0) {
+      filtered = filtered.filter((article) => 
+        selectedTopics.some(topic => article.topics.includes(topic))
+      )
     }
 
     if (query) {
@@ -80,6 +98,11 @@ export default function ArticlesPage({articles}: {
     setFilteredArticles(filtered)
     setCurrentPage(1) // Reset to first page when filtering
   }
+
+  // Update filtered articles when search query or selected topics change
+  useEffect(() => {
+    filterArticles(searchQuery, selectedTopics)
+  }, [searchQuery, selectedTopics, articles])
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE)
@@ -122,17 +145,24 @@ export default function ArticlesPage({articles}: {
             {/* Filter Topics */}
             <div className="overflow-x-auto whitespace-nowrap py-1 px-0">
               <div className="inline-flex gap-2">
-              {topics.map((topic) => (
-                <Button
-                key={topic}
-                variant={selectedTopic === topic ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleTopicFilter(topic)}
-                className="rounded-full text-xs font-medium bg-primary text-primary-foreground"
-                >
-                {topic}
-                </Button>
-              ))}
+              {topics.map((topic) => {
+                const isSelected = topic === "All" ? selectedTopics.length === 0 : selectedTopics.includes(topic)
+                return (
+                  <Button
+                    key={topic}
+                    variant={isSelected ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleTopicFilter(topic)}
+                    className={`rounded-full text-xs font-medium transition-all duration-200 ${
+                      isSelected 
+                        ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+                        : "hover:bg-primary/10 hover:text-primary hover:border-primary/50"
+                    }`}
+                  >
+                    {topic}
+                  </Button>
+                )
+              })}
               </div>
             </div>
           </div>
@@ -148,19 +178,22 @@ export default function ArticlesPage({articles}: {
               {filteredArticles.length > 0 && (
                 <>
                   Showing {startIndex + 1}-{Math.min(endIndex, filteredArticles.length)} of {filteredArticles.length} {filteredArticles.length === 1 ? "article" : "articles"}
-                  {selectedTopic !== "All" && ` in ${selectedTopic}`}
+                  {selectedTopics.length > 0 && ` in ${selectedTopics.join(", ")}`}
                   {searchQuery && ` matching "${searchQuery}"`}
                 </>
               )}
               {filteredArticles.length === 0 && (
                 <>
                   0 articles
-                  {selectedTopic !== "All" && ` in ${selectedTopic}`}
+                  {selectedTopics.length > 0 && ` in ${selectedTopics.join(", ")}`}
                   {searchQuery && ` matching "${searchQuery}"`}
                 </>
               )}
             </div>
           </div>
+
+          {/* Page Title */}
+            <h1 className="text-5xl mb-10">{user?.name?.split(" ")[0]}'s Feed</h1>
 
           {/* Articles Feed */}
           <div className="space-y-8">
@@ -349,7 +382,7 @@ export default function ArticlesPage({articles}: {
                 variant="outline"
                 onClick={() => {
                   setSearchQuery("")
-                  setSelectedTopic("All")
+                  setSelectedTopics([])
                   setFilteredArticles(articles)
                 }}
               >

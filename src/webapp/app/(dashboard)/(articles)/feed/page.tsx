@@ -8,9 +8,9 @@ export default async function Page() {
   const articles = await getAllArticles();
   
   const formattedArticles = articles.map((article) => ({
-    id: article.id,
-    title: article.title,
-    summary: article.summary,
+    id: Number(article.id),
+    title: String(article.title),
+    summary: String(article.summary),
     people: Array.isArray(article.people)
     ? article.people
       .filter((name: string) => name && name.toLowerCase() !== "none")
@@ -32,9 +32,9 @@ export default async function Page() {
         .toLowerCase()
         .replace(/(^\w{1})|(\s+\w{1})/g, (letter) => letter.toUpperCase())
       ) : [],
-    date: article.date.toISOString(),
-    duration: article.duration,
-    featured: article.featured
+    date: (article.date instanceof Date ? article.date.toISOString() : String(article.date)),
+    duration: Number(article.duration),
+    featured: Boolean(article.featured)
   }));
 
   return (

@@ -13,7 +13,7 @@ import {
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { getUserByEmail, createUser, getUser, updateUser, addEmailToNewsletter, updateListened, getArticles, getArticle } from '@/lib/db/queries';
+import { getUserByEmail, createUser, getUser, updateUser, addEmailToNewsletter, updateListened, getArticles, getArticle, getRecommendedArticles } from '@/lib/db/queries';
 import {
   validatedAction,
 } from '@/lib/auth/middleware';
@@ -714,8 +714,14 @@ export async function setListened(podcastId: number) {
   }
 }
 
-// Get all articles
+// Get all articles, with recommended articles if user exists
 export async function getAllArticles() {
+  const user = await getUser();
+  if (user && user.embedding) {
+    // If user exists, get recommended articles for the user
+    return await getRecommendedArticles(user.embedding);
+  }
+  // If no user, get all articles
   return await getArticles();
 }
 

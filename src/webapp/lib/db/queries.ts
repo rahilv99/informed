@@ -141,6 +141,22 @@ export async function getSimilarArticles(currentEmbedding: number[]) {
   return result;
 }
 
+export async function getRecommendedArticles(userEmbedding: number[]) {
+  const embeddingLiteral = `array[${userEmbedding.join(",")}]`;
+
+  const result = await db.execute(
+    sql`
+      SELECT
+        *,
+        embedding <=> ${sql.raw(embeddingLiteral)}::vector AS distance
+      FROM articles
+      ORDER BY distance ASC
+    `
+  );
+
+  return result;
+}
+
 export async function getTop3Articles() {
   const result = await db.execute(
     sql`
