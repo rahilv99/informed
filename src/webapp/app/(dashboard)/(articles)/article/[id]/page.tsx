@@ -2,9 +2,10 @@ import { getArticleById } from "@/lib/actions";
 import { getSimilarArticles } from "@/lib/db/queries";
 import ArticlePage from "./article";
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({params}: {params: Promise<{ id: string }>}) {
 
-  const ID = parseInt(params.id, 10)
+  const { id } = await params;
+  const ID = parseInt(id, 10)
   const article = await getArticleById(ID);
 
   let formattedArticle;
