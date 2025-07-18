@@ -637,12 +637,12 @@ def write_to_s3(num_turns, user_id, episode_number):
     
     print("Audio file uploaded to S3.")
 
-def update_db(user_id, episode_title, topics, episode_number, episode_type, s3_url, script):
+def update_db(user_id, episode_title, topics, episode_number, s3_url, script):
     try:
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO podcasts (title, user_id, articles, episode_number, episode_type, audio_file_url, script, date, completed)
+            INSERT INTO podcasts (title, user_id, articles, episode_number, audio_file_url, script, date, completed)
             VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s::jsonb, %s, %s)
             RETURNING id
         """, (episode_title, user_id, json.dumps(topics), episode_number, episode_type, s3_url, json.dumps(script), datetime.now(), False))
@@ -681,7 +681,6 @@ def handler(payload):
     user_email = payload.get("user_email")
     plan = payload.get("plan")
     episode = payload.get("episode")
-    ep_type = payload.get("ep_type")
     user_name = payload.get("user_name")
 
     pulse = PulseOutput(user_id, episode)
@@ -703,7 +702,7 @@ def handler(payload):
         "episode_title": episode_title
     })
 
-    update_db(user_id, episode_title, topics, episode, ep_type, s3_url, script)
+    update_db(user_id, episode_title, topics, episode, s3_url, script)
 
 
     # Send message to SQS
