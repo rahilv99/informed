@@ -178,7 +178,7 @@ def update_db(user_id, episode_title, topics, episode_number, s3_url, script):
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO podcasts (title, user_id, articles, episode_number, audio_file_url, script, date, completed)
-            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s::jsonb, %s, %s)
+            VALUES (%s, %s, %s::jsonb, %s, %s, %s::jsonb, %s, %s)
             RETURNING id
         """, (episode_title, user_id, json.dumps(topics), episode_number, s3_url, json.dumps(script), datetime.now(), False))
         
@@ -238,7 +238,7 @@ def get_articles_from_db(article_ids):
                 'summary': row[3],
                 'topics': row[4],
                 'tags': row[5],
-                'url': f"https://auxiomai.com/articles/{row[0]}"
+                'url': f"https://auxiomai.com/article/{row[0]}"
             })
         
         print(f"Retrieved {len(articles)} articles from database")
@@ -254,9 +254,172 @@ def get_articles_from_db(article_ids):
             conn.close()
 
 
-def create_podcast_from_articles(articles, plan= "paid"):
+### Segment writer - Creates a script segment for an individual article
+def create_article_segment(article, plan='free'):
     """
-    Creates a podcast script directly from articles, skipping the underwriting step.
+    Creates a podcast segment for an individual article.
+    
+    Args:
+        article: Article dictionary with keys: 'id', 'title', 'content', 'summary', 'topics', 'tags', 'url'
+        plan: 'free' or 'premium' to determine segment length
+    
+    Returns:
+        String containing the podcast segment script
+    """
+    if plan == 'free':
+        tokens = 400
+    else:  # premium
+        tokens = 500
+    
+    # Create a prompt for the segment writer
+    system_prompt = f"""
+    You are a professional podcast script writer for "Auxiom," a podcast that discusses articles published on our website and their impact on current events.
+    
+    Your task is to write an engaging segment of a script for a text-to-speech model. This segment will feature a dialogue between **HOST 1** and **HOST 2**, discussing a single article from our website.
+
+    **FORMAT:**
+    * Mark each conversational turn with **HOST 1** or **HOST 2**.
+    * This is an intermediate segment. Do not include introductions, summaries, or meta-comments. Jump directly into the dialogue.
+    * Focus on explaining the core information from the article in an engaging way.
+    * Clearly reference the article and its key points.
+    * Explain the potential impact and implications discussed in the article.
+    
+    **STRUCTURE:**
+    1. Begin with a brief introduction to the article's topic
+    2. Discuss the article's key points and insights
+    3. Explore the implications and broader context
+    4. Conclude with reflections or next steps
+    
+    **SPEECH TIPS:**
+    * Hosts are charismatic, professional, and genuinely interested in the topic.
+    * Use short, clear sentences suitable for text-to-speech. Avoid complex phrasing, jargon, and acronyms (unless absolutely necessary and explained).
+    * Aim for a natural, dynamic conversational flow.
+    * Speak intelligently, with rich content and depth.
+    * Incorporate filler words ("uh," "like," "you know") and occasional repetitions for a more human-like sound.
+    * Create a dynamic range of responses.
+    
+    **Example:**
+    **HOST 1:** Today we're looking at a significant development in...
+    **HOST 2:** Yes, I've been following this closely. Our latest article just covered...
+    **HOST 1:** Right, and what's interesting is how this connects to...
+    **HOST 2:** Exactly. And we're already seeing the impact in...
+    
+    Remember: This segment must be approximately {tokens} tokens long.
+    
+    **ARTICLE:**
+    Title: {article['title']}
+    Content: {article.get('content', article.get('summary', ''))}
+    Topics: {', '.join(article.get('topics', []))}
+    """
+    
+    # Generate the segment
+    response = script_model.generate_content(
+        system_prompt,
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=tokens*2,
+            temperature=0.3
+        )
+    )
+    
+    return response.text
+
+
+### Senior editor - Combines segments into a cohesive podcast
+def make_podcast_script(articles, plan='free'):
+    """
+    Creates a complete podcast script from individual articles.
+    
+    Args:
+        articles: List of article dictionaries
+        plan: 'free' or 'premium' to determine podcast length
+    
+    Returns:
+        Complete podcast script
+    """
+    if plan == 'paid':
+        tokens = 900
+        # Limit articles for free plan
+        articles = articles[:3]
+    else:  # premium
+        tokens = 2000
+        articles = articles[:5]
+    
+    # Process each article to create segments
+    segments = []
+    for i, article in enumerate(articles):
+        print(f"Processing article {i+1}/{len(articles)}: {article['title']}")
+        
+        # Segment writer creates a script for each article
+        segment = create_article_segment(article, plan)
+        segments.append(segment)
+    
+    print(f'Processed {len(segments)} article segments')
+    
+    # Senior editor combines segments
+    system_prompt = f"""
+    You are a senior editor for a podcast "Auxiom," a podcast that discusses articles published on our website and their impact on current events.
+    
+    Your task is to take the segments written by other agents, refine their content, and merge them into a consistent flow.
+    
+    INPUT:
+    - Your agents have written multiple segments, each covering a different article
+    - The scripts should be marked with **HOST 1** and **HOST 2** for each conversational turn
+    - Make the output conversation {tokens} tokens long.
+    
+    TASK:
+    - Merge the components, ensure the format of **HOST 1** and **HOST 2** is consistent
+    - Refine the content to be more engaging
+    - Ensure the tone and style is consistent
+    - Allow each segment an equal amount of time
+    - Add smooth transitions between articles
+    - Start with a brief welcome and introduction to the episode
+    - CLOSE WITH: 'Thanks for listening, stay tuned for more episodes.'
+    
+    SPEECH TIPS:
+    - Since this is for a text-to-speech model, use short sentences, omit any non-verbal cues, complex sentences/phrases, or acronyms.
+    
+    Example: 
+    **HOST 1**: Welcome to Auxiom! Today we're covering several important articles from our website...
+    **HOST 2**: That's right. We have some fascinating stories to discuss...
+    **HOST 1**: [First segment content]
+    **HOST 2**: [First segment content]
+    ...
+    **HOST 1**: Now, let's move on to our next article...
+    **HOST 2**: Yes, this is another significant development...
+    **HOST 1**: [Second segment content]
+    **HOST 2**: [Second segment content]
+    ...
+    **HOST 1**: Finally, let's discuss...
+    **HOST 2**: This is particularly interesting because...
+    **HOST 1**: [Third segment content]
+    **HOST 2**: [Third segment content]
+    ...
+    **HOST 1**: We hope you've learned something new today. Thanks for listening, stay tuned for more episodes.
+    
+    Remember: This segment must be approximately {tokens} tokens long.
+    
+    SEGMENTS:
+    """
+    
+    # Add all segments to the prompt
+    for i, segment in enumerate(segments):
+        system_prompt += f"\n\nSEGMENT {i+1}:\n{segment}\n"
+    
+    # Generate the complete podcast script
+    response = script_model.generate_content(
+        system_prompt,
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=tokens*2,
+            temperature=0.15
+        )
+    )
+    
+    return response.text
+
+
+def create_podcast_from_articles(articles, plan="paid"):
+    """
+    Creates a podcast script using the segment writer + senior writer architecture.
     
     Args:
         articles: List of article dictionaries
@@ -266,81 +429,22 @@ def create_podcast_from_articles(articles, plan= "paid"):
         Tuple of (script_turns, episode_title)
     """
     if plan == 'paid':
-        tokens = 1000
-        # Limit articles for free plan
-        articles = articles[:5]
+        # Limit articles for paid plan
+        articles = articles[:3]
     else:  # premium
-        tokens = 2000
-        articles = articles[:10]
+        articles = articles[:5]
     
-    # Create episode title from article titles
+    # Generate the script using the new architecture
+    script = make_podcast_script(articles, plan)
+    
+    # Clean the script for TTS
+    turns = clean_text_for_conversational_tts(script)
+    
+    # Generate episode title from article titles
     article_titles = [article['title'] for article in articles]
     episode_title = summarize("", article_titles, use='title')
     episode_title = re.sub(r'\*', '', episode_title)
     episode_title = re.sub(r'\s+', ' ', episode_title.replace('\n', ' ').replace('\\', '')).strip()
-    
-    # Create podcast script prompt
-    system_prompt = f"""
-    You are a professional podcast script writer for "Auxiom," a podcast that breaks down complex government documents and their impact on current events.
-    
-    Your task is to write an engaging podcast script for a text-to-speech model. This script will feature a dialogue between **HOST 1** and **HOST 2**, discussing topics based on the provided articles.
-
-    **FORMAT:**
-    * Mark each conversational turn with **HOST 1** or **HOST 2**.
-    * Start with a brief welcome and introduction to the episode.
-    * Focus on explaining the core information from the articles in an engaging way.
-    * Clearly attribute information to specific sources when relevant.
-    * End with: 'Thanks for listening, stay tuned for more episodes.'
-    
-    **STRUCTURE:**
-    1. Welcome and brief introduction to today's topics
-    2. Discuss each article's key points and implications
-    3. Connect related articles and themes
-    4. Conclude with reflections and closing
-    
-    **SPEECH TIPS:**
-    * Hosts are charismatic, professional, and genuinely interested in the topics.
-    * Use short, clear sentences suitable for text-to-speech. Avoid complex phrasing, jargon, and acronyms (unless absolutely necessary and explained).
-    * Aim for a natural, dynamic conversational flow.
-    * Speak intelligently, with rich content and depth.
-    * Incorporate filler words ("uh," "like," "you know") and occasional repetitions for a more human-like sound.
-    * Create a dynamic range of responses.
-    
-    **Example:**
-    **HOST 1:** Welcome to Auxiom! Today we're covering several important developments...
-    **HOST 2:** That's right. We have some fascinating stories to discuss...
-    **HOST 1:** Let's start with...
-    **HOST 2:** This is particularly interesting because...
-    
-    Remember: This script must be approximately {tokens} tokens long.
-    
-    **ARTICLES:**
-    """
-    
-    # Add articles to the prompt
-    for i, article in enumerate(articles):
-        # Use content if available, otherwise use summary
-        article_text = article.get('content', article.get('summary', ''))
-        system_prompt += f"""
-        
-        Article {i+1}:
-        Title: {article['title']}
-        Content: {article_text}
-        Topics: {', '.join(article.get('topics', []))}
-        """
-    
-    # Generate the podcast script
-    response = script_model.generate_content(
-        system_prompt,
-        generation_config=genai.GenerationConfig(
-            max_output_tokens=tokens*2,
-            temperature=0.3
-        )
-    )
-    
-    # Clean the script for TTS
-    script_text = response.text
-    turns = clean_text_for_conversational_tts(script_text)
     
     return turns, episode_title
 
@@ -367,7 +471,7 @@ def handler(payload):
         print("No articles found for the given recommendations")
         return
     
-    # Create podcast script directly from articles
+    # Create podcast script using the new segment writer + senior writer architecture
     script_turns, episode_title = create_podcast_from_articles(articles, plan)
     
     # Create TTS audio files
@@ -411,7 +515,7 @@ def handler(payload):
     s3_url = common.s3.get_s3_url(user_id, episode, "PODCAST")
     
     # Update database with podcast information
-    article_info = [{"title": article['title'], "description" : article["summary"], "url": article['url']} for article in articles]
+    article_info = [{"title": article['title'], "description": article["summary"], "url": article['url']} for article in articles]
     update_db(user_id, episode_title, article_info, episode, s3_url, script_turns)
     
     print(f"Podcast generation completed for user {user_id}, episode {episode}")

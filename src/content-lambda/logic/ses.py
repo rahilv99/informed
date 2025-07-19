@@ -78,7 +78,7 @@ def generate_html(episode_title, articles, episode, name):
         articles_html = ''
         for article in articles:
             articles_template = _load_template('logic/templates/article.html')
-            url = f"https://auxiomai.com/articles/{article['id']}"
+            url = f"https://auxiomai.com/article/{article['id']}"
             articles_html += articles_template.substitute(
                 title=article['title'], 
                 description=article['summary'], 
