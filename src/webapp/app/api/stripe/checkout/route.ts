@@ -65,13 +65,23 @@ export async function GET(request: NextRequest) {
       throw new Error('User not found in database.');
     }
 
+    const productName = (plan.product as Stripe.Product).name;
+    
+    // Map Stripe product names to internal plan names
+    let internalPlanName = 'free';
+    if (productName === 'Paid') {
+      internalPlanName = 'paid';
+    } else if (productName === 'Plus') {
+      internalPlanName = 'plus';
+    }
+
     await db
       .update(users)
       .set({
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
         stripeProductId: productId,
-        plan: (plan.product as Stripe.Product).name
+        plan: internalPlanName
       })
       .where(eq(users.id, user[0].id));
 

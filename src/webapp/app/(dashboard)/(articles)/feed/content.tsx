@@ -193,7 +193,9 @@ export default function ArticlesPage({articles}: {
           </div>
 
           {/* Page Title */}
-            <h1 className="text-5xl mb-10">{user?.name?.split(" ")[0]}'s Feed</h1>
+            {user && (
+              <h1 className="text-5xl mb-10">{user.name?.split(" ")[0]}'s Feed</h1>
+            )}
 
           {/* Articles Feed */}
           <div className="space-y-8">

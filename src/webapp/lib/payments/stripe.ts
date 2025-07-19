@@ -136,11 +136,21 @@ export async function handleSubscriptionChange(
 
   if (status === 'active' || status === 'trialing') {
     const plan = subscription.items.data[0]?.plan;
+    const productName = (plan?.product as Stripe.Product).name;
+    
+    // Map Stripe product names to internal plan names
+    let internalPlanName = 'free';
+    if (productName === 'Paid') {
+      internalPlanName = 'paid';
+    } else if (productName === 'Plus') {
+      internalPlanName = 'plus';
+    }
+    
     await updateUserSubscription(subject.id, {
       stripeCustomerId: customerId,
       stripeSubscriptionId: subscriptionId,
       stripeProductId: plan?.product as string,
-      plan: (plan?.product as Stripe.Product).name
+      plan: internalPlanName
     });
   } else if (status === 'canceled' || status === 'unpaid') {
     await updateUserSubscription(subject.id, {

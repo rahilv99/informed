@@ -1,5 +1,5 @@
 {
-  "name": "astra-app",
+  "name": "auxiom-app",
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",

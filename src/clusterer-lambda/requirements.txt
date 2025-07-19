@@ -1,0 +1,7 @@
+sentence-transformers
+boto3
+pandas
+psycopg2-binary
+numpy
+hf_xet
+spacy

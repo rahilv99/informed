@@ -1,6 +1,0 @@
-**/docker-compose*
-**/Dockerfile*
-__pycache__
-*.pyc
-venv
-tmp

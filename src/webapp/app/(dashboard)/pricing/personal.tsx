@@ -20,23 +20,38 @@ export default async function PricingPage() {
     plan = 'free';
   }
   
+  const paidPlan = products.find((product) => product.name === 'Paid');
   const plusPlan = products.find((product) => product.name === 'Plus');
 
+  const paidPrice = prices.find((price) => price.productId === paidPlan?.id);
   const plusPrice = prices.find((price) => price.productId === plusPlan?.id);
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-4 lg:px-6 py-8">
-      <div className="grid md:grid-cols-2 gap-8 w-full mx-auto">
+    <main className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-6 py-8">
+      <div className="grid md:grid-cols-3 gap-8 w-full mx-auto">
         <PricingCard
           name={'Base'}
           price={0}
           interval={'month'}
           features={[
-        'Great option to try out Auxiom',
-        'Short pulse podcast',
-        'Direct email delivery',
+            'Personal AI journalist',
+            '100s of articles per week',
+            'Weekly newsletter',
           ]}
           currentPlan={plan === 'free'}
+          action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
+        />
+        <PricingCard
+          name={paidPlan?.name || 'Paid'}
+          price={paidPrice?.unitAmount || 100}
+          interval={paidPrice?.interval || 'month'}
+          features={[
+            'Everything in Base',
+            'Weekly pulse podcast',
+            'Personalized AI hosts',
+          ]}
+          priceId={paidPrice?.id}
+          currentPlan={plan === 'paid' || plan === 'Paid'}
           action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
         />
         <PricingCard
@@ -45,9 +60,9 @@ export default async function PricingPage() {
           interval={plusPrice?.interval || 'month'}
           trialDays={7}
           features={[
-        'Get the full Auxiom experience',
-        '8-10 minute pulse podcast',
-        'Access to premium sources',
+            'Everything in Paid',
+            '8-10 minute podcast',
+            'Access to premium sources',
           ]}
           priceId={plusPrice?.id}
           currentPlan={plan === 'plus' || plan === 'Plus'}
