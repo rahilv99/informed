@@ -3,8 +3,7 @@ from sentence_transformers import SentenceTransformer
 import os
 
 # Database connection parameters
-
- db_access_url = os.environ.get('DB_ACCESS_URL')'
+db_access_url = os.environ.get('DB_ACCESS_URL')
 
 # Load model once globally
 model = SentenceTransformer('all-MiniLM-L6-v2')

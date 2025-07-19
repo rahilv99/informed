@@ -53,7 +53,7 @@ def main(interests):
         # Lower distance means higher similarity
         dist = min(distances) / len(distances)
         score = dist / max(1, score)
-        recommendations.append(score, id)
+        recommendations.append((score, id))
     
     recommendations.sort(key = lambda x: x[0])
     # only return metadata

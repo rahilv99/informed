@@ -236,8 +236,8 @@ def get_articles_from_db(article_ids):
                 'title': row[1],
                 'content': row[2],
                 'summary': row[3],
-                'topics': json.loads(row[4]) if row[4] else [],
-                'tags': json.loads(row[5]) if row[5] else [],
+                'topics': row[4],
+                'tags': row[5],
                 'url': f"https://auxiomai.com/articles/{row[0]}"
             })
         

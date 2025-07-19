@@ -657,9 +657,6 @@ def handler(payload):
     
     clusterer = Clusterer()
     clusters = clusterer.cluster_articles(news_df, gov_df)
-
-    # temp: limit 100
-    clusters = clusters[:10] if clusters and len(clusters) > 10 else clusters
     
     if clusters and len(clusters) > 0:
 
@@ -696,7 +693,7 @@ def handler(payload):
 
             chunk_size = 10
             sqs = boto3.client('sqs')
-            CLUSTERER_QUEUE_URL = os.getenv("CLUSTERER_QUEUE_URL")
+            CONTENT_QUEUE_URL = os.getenv("CONTENT_QUEUE_URL")
 
             for i in range(0, len(cluster_ids), chunk_size):
                 chunk = cluster_ids[i:i+chunk_size]
@@ -707,12 +704,10 @@ def handler(payload):
                     }
                 }
                 response = sqs.send_message(
-                    QueueUrl=CLUSTERER_QUEUE_URL,
+                    QueueUrl=CONTENT_QUEUE_URL,
                     MessageBody=json.dumps(next_event)
                 )
                 print(f"Sent publishing request to Astra SQS for clusters {chunk}: {response.get('MessageId')}")
-
-                break  # temp
 
         except Exception as e:
             print(f"Error inserting clusters into db: {e}")
@@ -769,7 +764,6 @@ if __name__ == "__main__":
                 returned_id = cursor.fetchone()[0]
                 cluster_ids.append(returned_id)
 
-                break # temp
 
             conn.commit()
             print(f"Inserted {len(clusters)} clusters into db")
