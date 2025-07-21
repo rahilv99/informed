@@ -17,7 +17,12 @@ import spacy
 import hashlib
 from datetime import datetime
 from io import StringIO
-import common.s3 as s3
+import sys
+import os
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'scraper-lambda'))
+#import common.s3 as s3
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
 
@@ -341,7 +346,123 @@ class Clusterer:
         
         print(f"Filtered out {dropped_count} irrelevant clusters. Remaining: {len(filtered_clusters)}")
         return filtered_clusters
-    
+           
+    def find_bills_for_gov_articles(self, filtered_clusters):
+        """
+        Find related bills for the top 3 government articles using congress scraper.
+        
+        Parameters:
+        - filtered_clusters: List of filtered cluster dictionaries
+        
+        Returns:
+        - bills_data: Dictionary mapping gov article titles to found bills
+        """
+        try:
+            # Check if Congress API key is available
+            import os
+            congress_api_key = os.environ.get('CONGRESS_API_KEY')
+            if not congress_api_key:
+                print("CONGRESS_API_KEY not set - skipping bill search")
+                print("To enable bill search, set the CONGRESS_API_KEY environment variable")
+                return {}
+            
+            # Import congress scraper functionality
+            from logic.congress_scraper import Congress
+            
+            # Get top 3 government articles from all clusters
+            all_gov_articles = []
+            for cluster in filtered_clusters:
+                for doc in cluster['documents']:
+                    if doc.get('source') == 'gov' and doc.get('type') == 'primary':
+                        all_gov_articles.append(doc)
+            
+            # Sort by cluster score and take top 3
+            top_gov_articles = all_gov_articles[:3]
+            
+            if not top_gov_articles:
+                print("No government articles found for bill search")
+                return {}
+            
+            print(f"========== FINDING BILLS FOR TOP {len(top_gov_articles)} GOV ARTICLES ===========")
+            
+            bills_data = {}
+            
+            for i, gov_article in enumerate(top_gov_articles):
+                title = gov_article.get('title', '')
+                
+                # Extract key terms from title for better search results
+                # Remove common words and use key terms
+                search_terms = self.extract_search_terms_from_title(title)
+                
+                print(f"Searching for bills related to: '{title}'")
+                print(f"Using search terms: {search_terms}")
+                
+                try:
+                    # Create Congress instance with extracted search terms
+                    congress = Congress(search_terms)
+                    bills = congress.get_bills()
+                    
+                    if bills and len(bills) > 0:
+                        print(f"Found {len(bills)} bills for '{title}'")
+                        bills_data[title] = bills
+                        
+                        # Print first few bills for debugging
+                        for j, bill in enumerate(bills[:3]):
+                            print(f"  Bill {j+1}: {bill.get('title', 'No title')}")
+                            print(f"    Bill ID: {bill.get('bill_id', 'No ID')}")
+                    else:
+                        print(f"No bills found for '{title}'")
+                        bills_data[title] = []
+                        
+                except Exception as e:
+                    print(f"Error finding bills for '{title}': {e}")
+                    bills_data[title] = []
+            
+            return bills_data
+            
+        except ImportError as e:
+            print(f"Could not import congress scraper: {e}")
+            return {}
+        except Exception as e:
+            print(f"Error in find_bills_for_gov_articles: {e}")
+            return {}
+
+    def extract_search_terms_from_title(self, title):
+        """
+        Extract meaningful search terms from government document titles.
+        
+        Parameters:
+        - title: Government document title
+        
+        Returns:
+        - search_terms: List of key terms for searching
+        """
+        # Common words to filter out
+        stop_words = {
+            'act', 'of', 'the', 'and', 'for', 'in', 'to', 'a', 'an', 'is', 'are', 
+            'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 
+            'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can',
+            'update', 'bill', 'legislation', '2024', '2023', '2025'
+        }
+        
+        # Split title into words and filter
+        words = title.lower().split()
+        key_terms = []
+        
+        for word in words:
+            # Remove punctuation and check if it's a meaningful term
+            clean_word = ''.join(c for c in word if c.isalnum())
+            if (len(clean_word) > 2 and 
+                clean_word not in stop_words and 
+                not clean_word.isdigit()):
+                key_terms.append(clean_word)
+        
+        # Return top 3 most meaningful terms, or original title if no good terms found
+        if key_terms:
+            return key_terms[:3]
+        else:
+            return [title]
+
     def format_output(self, organized_clusters):
         """
         Format clusters for output with improved scoring algorithm.
@@ -595,7 +716,10 @@ class Clusterer:
             # Step 7: Filter out irrelevant clusters
             filtered_clusters = self.filter_irrelevant_clusters(organized_clusters)
             
-            # Step 8: Format output
+            # Step 8: Find bills for top government articles
+            bills_data = self.find_bills_for_gov_articles(filtered_clusters)
+            
+            # Step 9: Format output
             output = self.format_output(filtered_clusters)
             
             # Print summary
