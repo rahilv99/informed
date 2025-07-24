@@ -21,7 +21,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'scraper-lambda'))
-import common.s3 as s3
+#import common.s3 as s3
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
 
@@ -790,12 +790,92 @@ def handler(payload):
 
 
 
+def test_get_bills():
+    """
+    Simple test function to test the get_bills functionality directly
+    """
+    try:
+        # Import congress scraper functionality
+        from logic.congress_scraper import Congress
+        
+        print("=" * 60)
+        print("TESTING GET_BILLS FUNCTIONALITY")
+        print("=" * 60)
+        
+        # Test topics
+        test_topics = [
+            'climate change',
+            'healthcare reform', 
+            'infrastructure spending',
+            'renewable energy'
+        ]
+        
+        for topic in test_topics:
+            print(f"\n🔍 Testing topic: '{topic}'")
+            print("-" * 40)
+            
+            try:
+                # Create Congress instance
+                congress = Congress([topic])
+                
+                # Test get_bills method
+                bills = congress.get_bills()
+                
+                if bills and len(bills) > 0:
+                    print(f"✅ Found {len(bills)} relevant bills (similarity ≥ 0.3)")
+                    print("\nTop 3 most relevant bills:")
+                    
+                    for i, bill in enumerate(bills[:3]):
+                        similarity = bill.get('similarity_score', 0)
+                        title = bill.get('title', 'No title')
+                        bill_id = bill.get('bill_id', 'No ID')
+                        text_length = len(bill.get('text', ''))
+                        
+                        print(f"\n  {i+1}. {title}")
+                        print(f"     Bill ID: {bill_id}")
+                        print(f"     Similarity Score: {similarity:.4f}")
+                        print(f"     Text Length: {text_length} characters")
+                        
+                        # Show a snippet of the bill text
+                        if text_length > 0:
+                            snippet = bill.get('text', '')[:200] + "..." if text_length > 200 else bill.get('text', '')
+                            print(f"     Text Preview: {snippet}")
+                        
+                else:
+                    print(f"❌ No bills found for '{topic}' (or none met similarity threshold)")
+                    
+            except Exception as e:
+                print(f"❌ Error testing '{topic}': {e}")
+                import traceback
+                traceback.print_exc()
+        
+        print("\n" + "=" * 60)
+        print("✅ GET_BILLS TEST COMPLETED")
+        print("=" * 60)
+        
+    except ImportError as e:
+        print(f"❌ Could not import congress scraper: {e}")
+        print("Make sure you're running from the project root directory")
+    except Exception as e:
+        print(f"❌ Error in test: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 if __name__ == "__main__":
 
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
+
+    # Test get_bills functionality directly
+    print("🚀 TESTING GET_BILLS FUNCTIONALITY")
+    test_get_bills()
+    
+    print("\n" + "="*60)
+    print("🔧 RUNNING FULL CLUSTERING PIPELINE")
+    print("="*60)
 
     # Load real data from S3 instead of mock pickle files
     try:

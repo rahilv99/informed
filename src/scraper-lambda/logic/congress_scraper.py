@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
-from logic.article_resource import ArticleResource # Assuming this class is defined elsewhere
+from article_resource import ArticleResource
 
 logging.basicConfig(
         level=logging.INFO,
@@ -22,7 +22,7 @@ class Congress(ArticleResource):
         self.api_key = os.environ.get('CONGRESS_API_KEY')
         self.headers = {"Content-Type": "application/json"}
 
-        self.today = datetime.date.today()
+        self.today = datetime.datetime.now()
         self.time_constraint = self.today - datetime.timedelta(days=7)
         
         # Initialize semantic similarity model
@@ -41,7 +41,12 @@ class Congress(ArticleResource):
             MIN_FULL_TEXT_LENGTH = 50
 
             for topic in self.user_input:
+                from_date = self.time_constraint.strftime('%Y-%m-%dT%H:%M:%SZ')
+                to_date = self.today.strftime('%Y-%m-%dT%H:%M:%SZ')
+                
                 url = (f"https://api.congress.gov/v3/bill?query={topic}"
+                       f"&fromDateTime={from_date}"
+                       f"&toDateTime={to_date}"
                        f"&limit=30"
                        f"&api_key={self.api_key}")
 
@@ -59,13 +64,14 @@ class Congress(ArticleResource):
 
                         for i, bill in enumerate(bills):
                             title = bill.get('title', '')
-                            if not title:
-                                continue
 
-                            if self._is_duplicate_title(title, seen_titles):
+                            if title and self._is_duplicate_title(title, seen_titles):
                                 print(f"Skipping duplicate bill: {title}")
                                 continue
-                            seen_titles.add(title.lower().strip())
+                            
+                           
+                            if title:
+                                seen_titles.add(title.lower().strip())
 
                             congress_num = bill.get('congress')
                             bill_type = bill.get('type').lower()
@@ -94,41 +100,32 @@ class Congress(ArticleResource):
                                     else:
                                         print(f"Expected 'summaries' to be a list for bill ID: {bill_identifier}, but got {type(summaries_list)}")
                                      
-                                    if not full_text:
-                                        print(f"No meaningful text extracted from summaries for bill ID: {bill_identifier}.")
                                 else:
                                     print(f"Failed to fetch summaries for {bill_identifier}. Status code: {text_resp.status_code}")
                                     print(f"Response content for summaries request: {text_resp.text}")
                             else:
                                 print(f"Missing components (congress, type, number) for bill '{title}'. Cannot fetch summaries.")
 
-                            # --- ADDED LENGTH CHECK LOGIC HERE ---
-                            if len(full_text) < MIN_FULL_TEXT_LENGTH:
-                                print(f"Skipping bill '{title}' ({bill_identifier}) due to insufficient text length from summaries: {len(full_text)} characters (min required: {MIN_FULL_TEXT_LENGTH})")
-                                continue # Skip to the next bill if text is too short
 
-                            # Calculate semantic similarity between topic and bill text
+                            # Calculate semantic similarity between topic and bill (title + text)
                             try:
-                                topic_embedding = self.model.encode([topic])
-                                bill_embedding = self.model.encode([full_text])
+                                topic_embedding = self.model.encode([topic])               
+                                combined_text = f"{title}\n\n{full_text}"
+                                bill_embedding = self.model.encode([combined_text])
                                 
                                 similarity_score = cosine_similarity(topic_embedding, bill_embedding)[0][0]
                                 
                                 print(f"Semantic similarity for '{title}': {similarity_score:.4f}")
                                 
-                                # Only include bills that meet the similarity threshold
-                                if similarity_score >= self.similarity_threshold:
-                                    print(f"Retrieved bill: '{title}' ({len(full_text)} characters) - Similarity: {similarity_score:.4f}")
-                                    results.append({
-                                        "title": title,
-                                        "text": full_text,
-                                        "url": text_url, # This URL points to the bill's summaries endpoint.
-                                        "keyword": topic,
-                                        "bill_id": bill_identifier,
-                                        "similarity_score": float(similarity_score)
-                                    })
-                                else:
-                                    print(f"Skipping bill '{title}' due to low semantic similarity: {similarity_score:.4f} < {self.similarity_threshold}")
+                                print(f"Retrieved bill: '{title}' ({len(full_text)} characters) - Similarity: {similarity_score:.4f}")
+                                results.append({
+                                    "title": title,
+                                    "text": full_text,
+                                    "url": text_url, # This URL points to the bill's summaries endpoint.
+                                    "keyword": topic,
+                                    "bill_id": bill_identifier,
+                                    "similarity_score": float(similarity_score)
+                                })
                                     
                             except Exception as e:
                                 print(f"Error calculating semantic similarity for '{title}': {e}")
