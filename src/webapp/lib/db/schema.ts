@@ -22,6 +22,7 @@ export const users = pgTable('users', {
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
   embedding: vector('embedding', { dimensions: 384 }),
+  auth_user_id: text('auth_user_id').unique()
 });
 
 // Email table for newsletter
