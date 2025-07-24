@@ -20,10 +20,6 @@ class Congress(ArticleResource):
         super().__init__(user_topics_output)
         self.fuzzy_threshold = 95
         self.api_key = os.environ.get('CONGRESS_API_KEY')
-        # Note: self.search_url is currently not used in get_bills.
-        # It points to an NREL API, not the Congress.gov API.
-        # Consider removing it if it's not used elsewhere.
-        self.search_url = f"https://developer.nrel.gov/api/alt-fuel-stations/v1.json?limit=1&api_key={self.api_key}"
         self.headers = {"Content-Type": "application/json"}
 
         self.today = datetime.date.today()
@@ -42,13 +38,11 @@ class Congress(ArticleResource):
         try:
             results = []
             seen_titles = set()
-            # Define the minimum character length for full_text
-            MIN_FULL_TEXT_LENGTH = 50 # You can adjust this value as needed
+            MIN_FULL_TEXT_LENGTH = 50
 
             for topic in self.user_input:
-                # Remove datetime restrictions to search all bills
                 url = (f"https://api.congress.gov/v3/bill?query={topic}"
-                       f"&limit=30" # Using the original pageSize value as limit
+                       f"&limit=30"
                        f"&api_key={self.api_key}")
 
                 try:
@@ -68,14 +62,13 @@ class Congress(ArticleResource):
                             if not title:
                                 continue
 
-                            # Fuzzy duplicate check (retained as per original code)
                             if self._is_duplicate_title(title, seen_titles):
                                 print(f"Skipping duplicate bill: {title}")
                                 continue
                             seen_titles.add(title.lower().strip())
 
                             congress_num = bill.get('congress')
-                            bill_type = bill.get('type').lower() # Ensure bill_type is lowercase for consistency
+                            bill_type = bill.get('type').lower()
                             bill_number = bill.get('number')
 
                             bill_identifier = None
@@ -84,23 +77,19 @@ class Congress(ArticleResource):
                                 bill_identifier = f"{bill_type}{bill_number}-{congress_num}"
                             
                             text_url = None
-                            full_text = '' # Initialize full_text as an empty string
+                            full_text = ''
 
                             if bill_identifier and congress_num and bill_type and bill_number:
-                                # Current URL points to the summaries endpoint, as per your last snippet
                                 text_url = (f"https://api.congress.gov/v3/bill/{congress_num}/"
                                             f"{bill_type}/{bill_number}/summaries?api_key={self.api_key}")
                                 
-                                #print(f"Attempting to fetch summaries for bill ID: {bill_identifier} from URL: {text_url}")
                                 text_resp = requests.get(text_url, headers=self.headers)
 
                                 if text_resp.status_code == 200:
                                     text_data = text_resp.json()
-                                    # --- FIX: Process the 'summaries' list to get a single string ---
                                     summaries_list = text_data.get('summaries', [])
                                     
                                     if isinstance(summaries_list, list):
-                                        # Concatenate all 'text' fields from the summaries list
                                         full_text = "\n\n".join([s.get('text', '') for s in summaries_list if s.get('text')])
                                     else:
                                         print(f"Expected 'summaries' to be a list for bill ID: {bill_identifier}, but got {type(summaries_list)}")
@@ -120,11 +109,9 @@ class Congress(ArticleResource):
 
                             # Calculate semantic similarity between topic and bill text
                             try:
-                                # Generate embeddings for both topic and bill text
                                 topic_embedding = self.model.encode([topic])
                                 bill_embedding = self.model.encode([full_text])
                                 
-                                # Calculate cosine similarity
                                 similarity_score = cosine_similarity(topic_embedding, bill_embedding)[0][0]
                                 
                                 print(f"Semantic similarity for '{title}': {similarity_score:.4f}")
@@ -198,7 +185,7 @@ def handler(payload):
         for entry in bills:
             print(f"Title: {entry['title']}")
             print(f"Bill ID: {entry['bill_id']}") 
-            print(f"Text: {entry['text']}") # Print first 150 chars of text
+            print(f"Text: {entry['text']}")
             print(f"URL: {entry['url']}")
             print(f"Keyword: {entry['keyword']}")
             print("--------------------")
