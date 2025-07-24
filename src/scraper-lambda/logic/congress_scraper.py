@@ -3,7 +3,9 @@ import requests
 import logging
 import json
 import datetime
-
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
 
 from logic.article_resource import ArticleResource # Assuming this class is defined elsewhere
 
@@ -26,6 +28,10 @@ class Congress(ArticleResource):
 
         self.today = datetime.date.today()
         self.time_constraint = self.today - datetime.timedelta(days=7)
+        
+        # Initialize semantic similarity model
+        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.similarity_threshold = 0.3  # Minimum similarity score to include bill
 
     def get_bills(self):
         """
@@ -40,13 +46,8 @@ class Congress(ArticleResource):
             MIN_FULL_TEXT_LENGTH = 50 # You can adjust this value as needed
 
             for topic in self.user_input:
-                # Use fromDateTime and toDateTime with ISO 8601 format and 'limit' parameter
-                start_datetime_str = self.time_constraint.strftime('%Y-%m-%dT00:00:00Z')
-                end_datetime_str = self.today.strftime('%Y-%m-%dT23:59:59Z')
-
+                # Remove datetime restrictions to search all bills
                 url = (f"https://api.congress.gov/v3/bill?query={topic}"
-                       f"&fromDateTime={start_datetime_str}"
-                       f"&toDateTime={end_datetime_str}"
                        f"&limit=30" # Using the original pageSize value as limit
                        f"&api_key={self.api_key}")
 
@@ -90,7 +91,7 @@ class Congress(ArticleResource):
                                 text_url = (f"https://api.congress.gov/v3/bill/{congress_num}/"
                                             f"{bill_type}/{bill_number}/summaries?api_key={self.api_key}")
                                 
-                                print(f"Attempting to fetch summaries for bill ID: {bill_identifier} from URL: {text_url}")
+                                #print(f"Attempting to fetch summaries for bill ID: {bill_identifier} from URL: {text_url}")
                                 text_resp = requests.get(text_url, headers=self.headers)
 
                                 if text_resp.status_code == 200:
@@ -103,7 +104,7 @@ class Congress(ArticleResource):
                                         full_text = "\n\n".join([s.get('text', '') for s in summaries_list if s.get('text')])
                                     else:
                                         print(f"Expected 'summaries' to be a list for bill ID: {bill_identifier}, but got {type(summaries_list)}")
-                                    
+                                     
                                     if not full_text:
                                         print(f"No meaningful text extracted from summaries for bill ID: {bill_identifier}.")
                                 else:
@@ -117,14 +118,43 @@ class Congress(ArticleResource):
                                 print(f"Skipping bill '{title}' ({bill_identifier}) due to insufficient text length from summaries: {len(full_text)} characters (min required: {MIN_FULL_TEXT_LENGTH})")
                                 continue # Skip to the next bill if text is too short
 
-                            print(f"Retrieved bill: '{title}' ({len(full_text)} characters) from {text_url}")
-                            results.append({
-                                "title": title,
-                                "text": full_text,
-                                "url": text_url, # This URL points to the bill's summaries endpoint.
-                                "keyword": topic,
-                                "bill_id": bill_identifier 
-                            })
+                            # Calculate semantic similarity between topic and bill text
+                            try:
+                                # Generate embeddings for both topic and bill text
+                                topic_embedding = self.model.encode([topic])
+                                bill_embedding = self.model.encode([full_text])
+                                
+                                # Calculate cosine similarity
+                                similarity_score = cosine_similarity(topic_embedding, bill_embedding)[0][0]
+                                
+                                print(f"Semantic similarity for '{title}': {similarity_score:.4f}")
+                                
+                                # Only include bills that meet the similarity threshold
+                                if similarity_score >= self.similarity_threshold:
+                                    print(f"Retrieved bill: '{title}' ({len(full_text)} characters) - Similarity: {similarity_score:.4f}")
+                                    results.append({
+                                        "title": title,
+                                        "text": full_text,
+                                        "url": text_url, # This URL points to the bill's summaries endpoint.
+                                        "keyword": topic,
+                                        "bill_id": bill_identifier,
+                                        "similarity_score": float(similarity_score)
+                                    })
+                                else:
+                                    print(f"Skipping bill '{title}' due to low semantic similarity: {similarity_score:.4f} < {self.similarity_threshold}")
+                                    
+                            except Exception as e:
+                                print(f"Error calculating semantic similarity for '{title}': {e}")
+                                # Fallback: include without similarity score
+                                print(f"Retrieved bill (no similarity): '{title}' ({len(full_text)} characters)")
+                                results.append({
+                                    "title": title,
+                                    "text": full_text,
+                                    "url": text_url,
+                                    "keyword": topic,
+                                    "bill_id": bill_identifier,
+                                    "similarity_score": 0.0
+                                })
                     else:
                         print(f"Congress API main search failed for topic '{topic}'. Status code: {response.status_code}")
                         print(f"Response content: {response.text}")
@@ -136,7 +166,12 @@ class Congress(ArticleResource):
                     print(f"An unexpected error occurred processing Congress API query for '{topic}': {e}")
 
             if results:
+                # Sort results by similarity score (highest first)
+                results.sort(key=lambda x: x.get('similarity_score', 0), reverse=True)
                 print(f"Successfully retrieved {len(results)} bills in total.")
+                print("Bills ranked by semantic similarity:")
+                for i, bill in enumerate(results[:5]):  # Show top 5
+                    print(f"  {i+1}. {bill['title']} - Similarity: {bill.get('similarity_score', 0):.4f}")
                 return results
             else:
                 print("No bills found matching the search criteria across all topics.")
