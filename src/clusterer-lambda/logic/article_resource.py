@@ -30,7 +30,7 @@ class ArticleResource:
                     raise e
                 print(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay} seconds...")
                 time.sleep(delay)
-                delay *= 2  # Exponential backoff
+                delay *= 2
         
     def get_document_text(self, url):
         """Get document text from URL"""
