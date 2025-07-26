@@ -41,14 +41,20 @@ class Congress(ArticleResource):
             MIN_FULL_TEXT_LENGTH = 50
 
             for topic in self.user_input:
-                from_date = self.time_constraint.strftime('%Y-%m-%dT%H:%M:%SZ')
-                to_date = self.today.strftime('%Y-%m-%dT%H:%M:%SZ')
-                
-                url = (f"https://api.congress.gov/v3/bill?query={topic}"
-                       f"&fromDateTime={from_date}"
-                       f"&toDateTime={to_date}"
-                       f"&limit=30"
-                       f"&api_key={self.api_key}")
+                # Build URL - include time constraints only if time_constraint is set
+                if self.time_constraint:
+                    from_date = self.time_constraint.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    to_date = self.today.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    url = (f"https://api.congress.gov/v3/bill/119?query={topic}"
+                           f"&fromDateTime={from_date}"
+                           f"&toDateTime={to_date}"
+                           f"&limit=30"
+                           f"&api_key={self.api_key}")
+                else:
+                    # Search all available bills without time constraints
+                    url = (f"https://api.congress.gov/v3/bill/119?query={topic}"
+                           f"&limit=30"
+                           f"&api_key={self.api_key}")
 
                 try:
                     print(f"Searching for bills related to: '{topic}' using URL: {url}")
