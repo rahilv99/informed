@@ -136,36 +136,6 @@ def get_bills(cluster_df):
         return enhanced_df
 
 
-def process_cluster_with_bills(cluster_id):
-    """
-    Process a cluster by retrieving its metadata and adding bill information.
-    
-    Args:
-        cluster_id: The cluster ID to process
-        
-    Returns:
-        Enhanced DataFrame with bills column or None if error
-    """
-    try:
-        print(f"Processing cluster {cluster_id} with bill information")
-        
-        # Step 1: Retrieve cluster metadata
-        cluster_df = get_cluster_metadata(cluster_id)
-        if cluster_df is None or cluster_df.empty:
-            print(f"Failed to retrieve metadata for cluster {cluster_id}")
-            return None
-        
-        # Step 2: Add bill information for primary sources
-        enhanced_df = get_bills(cluster_df)
-        
-        print(f"Successfully processed cluster {cluster_id} with bill information")
-        return enhanced_df
-        
-    except Exception as e:
-        print(f"Error processing cluster {cluster_id} with bills: {e}")
-        return None
-
-
 def test_get_bills(cluster_df):
     """
     Test function to test the get_bills functionality using primary document titles from cluster_df
@@ -193,7 +163,7 @@ def test_get_bills(cluster_df):
             print(f"  {i}. {title}")
         
         for title in primary_titles:
-            print(f"\n🔍 Testing with primary document title: '{title}'")
+            print(f"\nTesting with primary document title: '{title}'")
             print("-" * 40)
             
             try:

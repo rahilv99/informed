@@ -341,7 +341,7 @@ class Clusterer:
         
         print(f"Filtered out {dropped_count} irrelevant clusters. Remaining: {len(filtered_clusters)}")
         return filtered_clusters
-
+    
     def format_output(self, organized_clusters):
         """
         Format clusters for output with improved scoring algorithm.
