@@ -340,7 +340,7 @@ class Clusterer:
             filtered_clusters.append(cluster)
         
         print(f"Filtered out {dropped_count} irrelevant clusters. Remaining: {len(filtered_clusters)}")
-        return filtered_clusters       
+        return filtered_clusters
 
     def format_output(self, organized_clusters):
         """
@@ -542,6 +542,8 @@ class Clusterer:
         
         # Write to file
         try:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
             with open(output_path, "w", encoding='utf-8') as f:
                 f.writelines(report_lines)
