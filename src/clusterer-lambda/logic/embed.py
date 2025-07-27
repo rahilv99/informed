@@ -17,10 +17,6 @@ import spacy
 import hashlib
 from datetime import datetime
 from io import StringIO
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'scraper-lambda'))
 import common.s3 as s3
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
@@ -344,8 +340,7 @@ class Clusterer:
             filtered_clusters.append(cluster)
         
         print(f"Filtered out {dropped_count} irrelevant clusters. Remaining: {len(filtered_clusters)}")
-        return filtered_clusters
-           
+        return filtered_clusters       
 
     def format_output(self, organized_clusters):
         """
@@ -722,8 +717,6 @@ def handler(payload):
 
 
 
-
-
 if __name__ == "__main__":
 
     logging.basicConfig(
@@ -731,27 +724,15 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    print("="*60)
-    print("🔧 RUNNING FULL CLUSTERING PIPELINE")
-    print("="*60)
-
-    # Load real data from S3 instead of mock pickle files
-    try:
-        print("Loading real data from S3...")
-        gov_df = load_df('gov')
-        news_df = load_df('gnews')
-    except Exception as e:
-        print(f"Error loading data from S3: {e}")
-        print("Creating empty DataFrames for testing...")
-        gov_df = pd.DataFrame(columns=['title', 'full_text', 'url', 'keyword'])
-        news_df = pd.DataFrame(columns=['title', 'full_text', 'url', 'keyword'])
+    with open('tmp/gov.pkl', 'rb') as f:
+        gov_df = pickle.loads(f.read())
+    with open('tmp/gnews.pkl', 'rb') as f:
+        news_df = pickle.loads(f.read())
 
     clusterer = Clusterer()
     clusters = clusterer.cluster_articles(news_df, gov_df)
     
     if clusters and len(clusters) > 0:
-        # Create tmp directory if it doesn't exist
-        os.makedirs('tmp', exist_ok=True)
         with open('tmp/example_cluster.pkl', 'wb') as f:
             pickle.dump(clusters[0]['articles'], f)
         print(f"Example cluster saved to tmp/example_cluster.pkl")
