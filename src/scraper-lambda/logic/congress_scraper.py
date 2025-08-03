@@ -5,9 +5,15 @@ import json
 import datetime
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 
-from article_resource import ArticleResource
+# Set cache directories to writable location in Lambda BEFORE importing sentence_transformers
+os.environ['SENTENCE_TRANSFORMERS_HOME'] = '/tmp/sentence_transformers'
+os.environ['TRANSFORMERS_CACHE'] = '/tmp/transformers'
+os.environ['HF_HOME'] = '/tmp/huggingface'
+os.environ['HF_HUB_CACHE'] = '/tmp/huggingface/hub'
+
+from sentence_transformers import SentenceTransformer
+from logic.article_resource import ArticleResource
 
 logging.basicConfig(
         level=logging.INFO,
@@ -22,8 +28,8 @@ class Congress(ArticleResource):
         self.api_key = os.environ.get('CONGRESS_API_KEY')
         self.headers = {"Content-Type": "application/json"}
 
-        self.today = datetime.datetime.now()
-        self.time_constraint = self.today - datetime.timedelta(days=7)
+        self.today = datetime.datetime(2025, 7, 28)  # July 28th, 2025
+        self.time_constraint = datetime.datetime(2024, 7, 20)  # July 20th, 2024
         
         # Initialize semantic similarity model
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -48,12 +54,10 @@ class Congress(ArticleResource):
                     url = (f"https://api.congress.gov/v3/bill/119?query={topic}"
                            f"&fromDateTime={from_date}"
                            f"&toDateTime={to_date}"
-                           f"&limit=30"
                            f"&api_key={self.api_key}")
                 else:
                     # Search all available bills without time constraints
                     url = (f"https://api.congress.gov/v3/bill/119?query={topic}"
-                           f"&limit=30"
                            f"&api_key={self.api_key}")
 
                 try:
@@ -199,7 +203,7 @@ def handler(payload):
 
 if __name__ == "__main__":
     if os.environ.get('CONGRESS_API_KEY'):
-        keywords = ['climate'] 
+        keywords = ['A bill to amend the Higher Education Act of 1965'] 
         payload = {"topics": keywords}
         print("\n--- Invoking handler with example keywords ---")
         handler(payload)

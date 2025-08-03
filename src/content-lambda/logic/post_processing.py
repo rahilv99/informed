@@ -225,9 +225,9 @@ if __name__ == "__main__":
     # Create sample cluster data for testing with real government document titles
     sample_data = {
         'source': ['gov', 'gov', 'news', 'news'],
-        'type': ['primary', 'primary', 'news', 'news'],
+        'type': ['primary', 'secondary', 'news', 'news'],
         'title': [
-            'Federal Funding Impacts on Education: Loan Repayment and Funding Freezes',
+            '2026 Commerce, Justice, and Science Appropriations Bill',
             'Infrastructure Investment and Jobs Act Implementation',
             'New Climate Policies Announced',
             'Green Energy Investment Surge'
