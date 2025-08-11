@@ -13,7 +13,7 @@ GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
 summary_model = genai.GenerativeModel('gemini-2.0-flash')  # $0.075 /M input  $0.30 /M output tokens 
-article_model = genai.GenerativeModel('gemini-2.0-flash')  # $0.10 /M input $0.40 /M output tokens
+article_model = genai.GenerativeModel('gemini-2.5-flash')  # $0.10 /M input $0.40 /M output tokens
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
 
@@ -39,29 +39,32 @@ def underwriter_research(cluster_df):
     # Process primary government document
     primary_doc = cluster_df[cluster_df['type'] == 'primary'].iloc[0]
     primary_prompt = f"""
-    You are a research analyst preparing notes for an article about government documents and their impact on current events.
-    
-    Analyze this primary government document and create detailed research notes that will help an article writer.
+    You are a meticulous research analyst extracting the key information from government documents to write an in depth article.
     
     DOCUMENT:
     Title: {primary_doc['title']}
     Text: {primary_doc['text'][1000:50000]}
     
-    Create research notes with the following sections:
-    1. Key Points: Main ideas and decisions in the document
-    2. Important Figures: Key people, organizations, or entities mentioned
-    3. Metrics & Deadlines: Any specific numbers, amounts, or timeframes
-    4. Implications: Potential impact or consequences of this document
-    5. Context: Historical or policy context that would help readers understand
+    Create factual research notes:
+    1. **Summary of Key Points**: Detailed summary of the document's main points
+
+    Use bullet points for the following:
+    2. **Explicit Actions**: Only actions/decisions directly stated
+    3. **Named Entities**: Exact names mentioned in the document
+    4. **Specific Data**: Precise numbers, dates, amounts from the text
+    5. **Direct Quotes**: Key statements in quotation marks
+    6. **Cross-References**: Any references to other documents/policies mentioned
     
-    Format your response as a structured set of notes, not as a narrative.
-    Keep your response less than 300 tokens.
+    REQUIREMENTS:
+    - Mark uncertain information as "[UNCLEAR]"
+    - No analysis or interpretation
+    Keep response under 500 tokens.
     """
     
     primary_response = summary_model.generate_content(
         primary_prompt,
         generation_config=genai.GenerationConfig(
-            max_output_tokens=400,
+            max_output_tokens=700,
             temperature=0.2
         )
     )
@@ -76,29 +79,32 @@ def underwriter_research(cluster_df):
     secondary_docs = cluster_df[cluster_df['type'] == 'secondary']
     for _, doc in secondary_docs.iterrows():
         secondary_prompt = f"""
-        You are a research analyst preparing notes for an article about government documents and their impact on current events.
-        
-        Analyze this government document and create research notes that will help an article writer.
+        You are a meticulous research analyst extracting the key information from government documents to write an in depth article.
         
         DOCUMENT:
         Title: {doc['title']}
         Text: {doc['text'][1000:50000]}
         
-        Create research notes with the following sections:
-        1. Key Points: Main ideas and decisions in the document
-        2. Important Figures: Key people, organizations, or entities mentioned
-        3. Metrics & Deadlines: Any specific numbers, amounts, or timeframes
-        4. Implications: Potential impact or consequences of this document
-        5. Context: Historical or policy context that would help readers understand
+        Create factual research notes:
+        1. **Summary of Key Points**: Detailed summary of the document's main points
 
-        Format your response as a structured set of notes, not as a narrative.
-        Keep your response less than 200 tokens.
+        Use bullet points for the following:
+        2. **Explicit Actions**: Only actions/decisions directly stated
+        3. **Named Entities**: Exact names mentioned in the document
+        4. **Specific Data**: Precise numbers, dates, amounts from the text
+        5. **Direct Quotes**: Key statements in quotation marks
+        6. **Cross-References**: Any references to other documents/policies mentioned
+        
+        REQUIREMENTS:
+        - Mark uncertain information as "[UNCLEAR]"
+        - No analysis or interpretation
+        Keep response under 500 tokens.
         """
         
         secondary_response = summary_model.generate_content(
             secondary_prompt,
             generation_config=genai.GenerationConfig(
-                max_output_tokens=200,
+                max_output_tokens=600,
                 temperature=0.2
             )
         )
@@ -116,7 +122,7 @@ def underwriter_research(cluster_df):
             'title': article['title'],
             #'publisher': article['publisher'],
             'url': article['url'],
-            'notes': ''  # Keeping empty for now as in nlp.py, can be filled with news response text if needed
+            'notes': ''
         })
     
     return research_notes
@@ -139,44 +145,50 @@ def create_cluster_article(research_notes):
     # Extract information from research notes
     primary_doc = research_notes['primary_doc']
     secondary_docs = research_notes['secondary_docs']
-    news_articles = research_notes['news_articles']
     
     # Create a prompt for the article writer
     system_prompt = f"""
-    You are a professional writer for "Auxiom," a publication that breaks down complex government documents and their impact on current events.
+    You are an expert journalist for "Auxiom," specializing in accurate, engaging articles about government policy and current events.
     
-    Your task is to write a concise, informative, and engaging article based on government documents and news coverage.
-    You have been provided with research notes from a research analyst, which you will use to generate content.
+    CONTENT REQUIREMENTS:
+    - Base content on the provided research notes
+    - Use your background knowledge to add context, but do not speculate
+    - Use direct quotes exactly as provided in research notes
+
+    Your task: Write a well-structured, engaging article that transforms complex government documents into accessible journalism.
 
     Output exactly:
-    "Title": <Descriptive, attention-grabbing title of the article>,
-    "People": <List of specific names of the top (at most) 3 real people related to the documents>
-    "Keywords": <List the top (at most) 5 keywords related to the article>,
-    "Article": <Content of the article in html format without meta-comments or introductions, only <p> tags for paragraphs>
+    "Title": <Specific, newsworthy headline that captures the core development>,
+    "People": <List of specific names of the top (at most) 3 real people mentioned in the documents>
+    "Keywords": <List the top (at most) 5 relevant policy/topic keywords>,
+    "Article": <Content in HTML format using only <p> tags for paragraphs>
     
-    **WRITING GUIDELINES:**
-    * Write in a clear, professional, yet engaging tone
-    * Use active voice and vivid language
-    * Include specific details, numbers, and quotes when relevant
-    * Connect government actions (primary + secondary articles) to real-world impacts (news articles)
-    * Be charismatic and engaging while maintaining credibility
-    * Write in html format, using only <p> tags for paragraphs
+    **ENHANCED WRITING FRAMEWORK:**
     
-    **ARTICLE STRUCTURE:**
-    1. Start with a compelling hook that highlights why this matters
-    2. Explain the primary government document and its key provisions
-    3. Connect related government documents to show the bigger picture
-    4. Discuss how current news reflects or responds to these government actions
-    5. End with implications and what readers should watch for next
+    **Structure Requirements:**
+    1. **Lead Paragraph**: Open with the most newsworthy aspect - what happened, who was involved, when, and why it matters
+    2. **Context Section**: Provide essential background information
+    3. **Key Details**: Present specific actions, decisions, numbers, and quotes
+    4. **Impact Analysis**: Explain consequences and significance of the development
+    5. **Conclusion**: Summarize significance without speculation
+
+    **Writing Standards:**
+    - Use active voice and clear, direct sentences
+    - Write in present tense for recent developments
+    - Include specific data points (dates, amounts, percentages) when available
+    - Quote directly from documents when impactful
+    - Explain technical terms in plain language
+    - Maintain journalistic objectivity - report facts, not opinions
     
-    **STYLE TIPS:**
-    * Use short paragraphs for readability
-    * Include transitions between ideas
-    * Avoid jargon; explain technical terms when necessary
-    * Write as if explaining to an intelligent friend
-    * Be informative but not dry; engaging but not sensational
+    **Style Guidelines:**
+    - Write for an educated general audience
+    - Use short paragraphs (2-3 sentences max)
+    - Vary sentence length for readability  
+    - Create smooth transitions between sections
+    - Avoid bureaucratic jargon
+    - Be comprehensive but concise
     
-    Remember: This article must be approximately {tokens} tokens long.
+    Target length: approximately {tokens} tokens.
     
     **RESEARCH NOTES:**
     
@@ -194,19 +206,6 @@ def create_cluster_article(research_notes):
         Title: {doc['title']}
         {doc['notes']}
         """
-    
-    # Add news articles
-    system_prompt += """
-    NEWS ARTICLES:
-    """
-    
-    for i, article in enumerate(news_articles):
-        system_prompt += f"""
-        Article {i+1}:
-        Title: {article['title']}
-        {article['notes']}
-        """
-
     
     # Define your desired JSON schema
     json_schema = {
@@ -252,16 +251,70 @@ def create_cluster_article(research_notes):
     people = article_json.get("People", [])
     keywords = article_json.get("Keywords", [])
 
-    time = round(len(content.split()) / 175)  # Average reading speed is 175 words per minute
+    # Generate article overview bullet points
+    overview_bullets = generate_article_overview(title, content)
+    
+    # Prepend overview to the beginning of the article content
+    final_content = overview_bullets + content
+    
+    time = round(len(final_content.split()) / 175)  # Average reading speed is 175 words per minute
 
     return {
         'title': title,
-        'content': content,
+        'content': final_content,
         'people': people,
         'tags': keywords,
         'research_notes': research_notes,
         'time': time
     }
+
+
+def generate_article_overview(article_title, article_content):
+    """
+    Generates bullet points overview of the article to be added at the beginning.
+    
+    Args:
+        article_title: Title of the article
+        article_content: Content of the article (HTML format)
+    
+    Returns:
+        String containing bullet points with <ul> and <li> tags
+    """
+    overview_prompt = f"""
+    Create a concise bullet point overview for this article that will appear at the beginning.
+    
+    Article Title: {article_title}
+    Article Content: {article_content}
+    
+    REQUIREMENTS:
+    - Extract 3-5 key points that give readers a quick overview
+    - Focus on the most important facts, decisions, or developments
+    - Use clear, concise language suitable for scanning
+    - Include specific details (names, numbers, dates) when relevant
+    - Write each bullet point as a complete, informative sentence
+    - Do not repeat the article title
+    
+    FORMAT:
+    Return only the bullet points formatted as HTML using <ul> and <li> tags. Do not include any other text, formatting, or metadata.
+    Example:
+    <ul>
+    <li>Point 1 with specific details</li>
+    <li>Point 2 with specific details</li>
+    <li>Point 3 with specific details</li>
+    </ul>
+    
+    Keep each bullet point under 25 words. Focus on WHAT HAPPENED and KEY DETAILS.
+    """
+    
+    response = summary_model.generate_content(
+        overview_prompt,
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=300,
+            temperature=0.2
+        )
+    )
+    
+    return response.text.strip()
 
 
 def generate_summary(article_title, article_content):
@@ -282,18 +335,26 @@ def generate_summary(article_title, article_content):
     
     # Create newsletter blurb using the article content
     blurb_prompt = f"""
-    Create a concise newsletter blurb about this article for an email newsletter.
+    Create a compelling newsletter blurb for this government policy article.
     
     Article Title: {article_title}
     Article Content: {article_content[:2500]}
     
-    Write a brief, engaging summary that:
-    - Captures the key points of the article
-    - Highlights why it matters to readers
-    - Maintains an informative yet accessible tone
-    - Implicitly encourages readers to engage with the full content
+    REQUIREMENTS:
+    - Extract only the most newsworthy elements from the article
+    - Lead with what changed, who's affected, or what's at stake
+    - Use concrete details (numbers, names, dates) when available
+    - Write in active voice with strong, specific verbs
+    - Make it scannable but substantial
+    - End with impact or significance, not generic encouragement
     
-    Keep it under 80 tokens. Only include the blurb text itself, no introductions or meta-comments.
+    STYLE:
+    - 2-3 sentences maximum
+    - Under 80 tokens total
+    - Write like breaking news, not marketing copy
+    - Use present tense for recent developments
+    
+    Focus on WHAT HAPPENED and WHY IT MATTERS. No fluff or promotional language.
     """
     
     response = summary_model.generate_content(
