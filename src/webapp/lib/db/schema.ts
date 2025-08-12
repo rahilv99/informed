@@ -18,7 +18,6 @@ export const users = pgTable('users', {
   stripeCustomerId: text('stripe_customer_id').unique(),
   stripeSubscriptionId: text('stripe_subscription_id').unique(),
   stripeProductId: text('stripe_product_id'),
-  revenueCatCustomerId: text('revenue_cat_customer_id').unique(),
   plan: varchar('plan', { length: 50 }).notNull().default('free'),
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
