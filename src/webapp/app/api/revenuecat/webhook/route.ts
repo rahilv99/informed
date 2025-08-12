@@ -2,23 +2,23 @@ import { handleRevenueCatSubscriptionChange } from '@/lib/payments/revenuecat';
 import { NextRequest, NextResponse } from 'next/server';
 import type { RevenueCatWebhookEvent } from '@/lib/payments/revenuecat';
 
-const webhookSecret = process.env.REVENUECAT_WEBHOOK_SECRET!;
+//const webhookSecret = process.env.REVENUECAT_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.text();
     
     // Verify webhook authorization header if secret is provided
-    if (webhookSecret) {
-      const authHeader = request.headers.get('authorization');
-      if (!authHeader || authHeader !== webhookSecret) {
-      console.error('RevenueCat webhook authorization failed');
-      return NextResponse.json(
-        { error: 'Webhook authorization failed' },
-        { status: 401 }
-      );
-      }
-    }
+    // if (webhookSecret) {
+    //   const authHeader = request.headers.get('authorization');
+    //   if (!authHeader || authHeader !== webhookSecret) {
+    //   console.error('RevenueCat webhook authorization failed');
+    //   return NextResponse.json(
+    //     { error: 'Webhook authorization failed' },
+    //     { status: 401 }
+    //   );
+    //   }
+    // }
 
     // Parse the webhook event
     let event: RevenueCatWebhookEvent;
