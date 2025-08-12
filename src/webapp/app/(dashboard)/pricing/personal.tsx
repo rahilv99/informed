@@ -42,7 +42,7 @@ export default async function PricingPage() {
           action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
         />
         <PricingCard
-          name={paidPlan?.name || 'Paid'}
+          name={paidPlan?.name || 'Pro'}
           price={paidPrice?.unitAmount || 100}
           interval={paidPrice?.interval || 'month'}
           features={[
@@ -51,7 +51,7 @@ export default async function PricingPage() {
             'Personalized AI hosts',
           ]}
           priceId={paidPrice?.id}
-          currentPlan={plan === 'paid' || plan === 'Paid'}
+          currentPlan={plan === 'pro' || plan === 'Pro'}
           action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
         />
         <PricingCard
@@ -60,7 +60,7 @@ export default async function PricingPage() {
           interval={plusPrice?.interval || 'month'}
           trialDays={7}
           features={[
-            'Everything in Paid',
+            'Everything in Pro',
             '8-10 minute podcast',
             'Access to premium sources',
           ]}

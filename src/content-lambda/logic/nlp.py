@@ -336,7 +336,7 @@ def make_podcast_script(articles, plan='free'):
     Returns:
         Complete podcast script
     """
-    if plan == 'paid':
+    if plan == 'pro':
         tokens = 900
         # Limit articles for free plan
         articles = articles[:3]
@@ -428,7 +428,7 @@ def create_podcast_from_articles(articles, plan="paid"):
     Returns:
         Tuple of (script_turns, episode_title)
     """
-    if plan == 'paid':
+    if plan == 'pro':
         # Limit articles for paid plan
         articles = articles[:3]
     else:  # premium

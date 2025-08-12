@@ -403,17 +403,10 @@ def update_db(article_title, article_content, summary, people, time, topics, tag
     Update database with single article information.
     Capitalizes each word in people, topics, and tags.
     """
-    def capitalize_words(lst):
-        return [str(x).title() for x in lst]
 
     try:
         conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
         cursor = conn.cursor()
-
-        # Normalize capitalization
-        people_cap = capitalize_words(people)
-        topics_cap = capitalize_words(topics)
-        tags_cap = capitalize_words(tags)
 
         cursor.execute("""
             UPDATE articles 
@@ -423,10 +416,10 @@ def update_db(article_title, article_content, summary, people, time, topics, tag
             article_title,
             article_content,
             summary,
-            json.dumps(people_cap),
+            json.dumps(people),
             time,
-            json.dumps(topics_cap),
-            json.dumps(tags_cap),
+            json.dumps(topics),
+            json.dumps(tags),
             datetime.now(),
             json.dumps(sources),
             cluster_id
