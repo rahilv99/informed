@@ -7,6 +7,9 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from urllib.parse import quote_plus
+import boto3
+import hashlib
+from botocore.exceptions import ClientError
 
 from logic.article_resource import ArticleResource
 
@@ -264,7 +267,46 @@ class Congress(ArticleResource):
         except Exception as e:
             print(f"Error in TF-IDF filtering: {e}")
             return bills  # Return original bills if filtering fails
-            
+
+
+def save_to_s3(bills, hash_key):
+    """
+    Save congress bills to S3.
+    
+    Args:
+        bills: List of congress bills to save
+        hash_key: Hash key for the filename
+    """
+    # Initialize S3 client
+    s3_client = boto3.client(
+        's3',
+        region_name=os.getenv('AWS_REGION', 'us-east-1')
+    )
+
+    # Use astra bucket and congress path
+    bucket_name = '905418457861-astra-bucket'
+    filename = f"congress/bills_{hash_key[:10]}.json"
+    
+    # Prepare upload parameters
+    params = {
+        'Bucket': bucket_name,
+        'Key': filename,
+        'Body': json.dumps(bills),
+        'ContentType': 'application/json'
+    }
+
+    try:
+        print(f"Saving congress bills to S3: s3://{bucket_name}/{filename}")
+        s3_client.put_object(**params)
+        print('Successfully saved congress bills to S3')
+    except ClientError as e:
+        print(f"Error saving to S3: {e}")
+        raise
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise
+
+
 def handler(payload):
     """
     AWS Lambda handler function to process incoming events for Congress bills.
@@ -279,7 +321,17 @@ def handler(payload):
     bills = congress.get_bills()
 
     if bills is not None and len(bills) > 0:
-        print(f"Retrieved {len(bills)} bills.")
+        print(f"Retrieved {len(bills)} congress bills.")
+        
+        # Generate hash for S3 filename
+        topics_str = json.dumps(topics, sort_keys=True)
+        topics_hash = hashlib.sha256(topics_str.encode('utf-8')).hexdigest()
+        
+        # Save bills to S3
+        print(f"Saving {len(bills)} congress bills to S3 with hash: {topics_hash}")
+        save_to_s3(bills, topics_hash)
+        
+        # Log bill details
         for entry in bills:
             print(f"Title: {entry['title']}")
             print(f"Bill ID: {entry['bill_id']}") 
