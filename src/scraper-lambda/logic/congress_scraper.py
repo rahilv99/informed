@@ -5,16 +5,10 @@ import json
 import datetime
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
 from urllib.parse import quote_plus
 
-# Set cache directories to writable location in Lambda BEFORE importing sentence_transformers
-os.environ['SENTENCE_TRANSFORMERS_HOME'] = '/tmp/sentence_transformers'
-os.environ['TRANSFORMERS_CACHE'] = '/tmp/transformers'
-os.environ['HF_HOME'] = '/tmp/huggingface'
-os.environ['HF_HUB_CACHE'] = '/tmp/huggingface/hub'
-
-from sentence_transformers import SentenceTransformer
-from article_resource import ArticleResource #revert to logic.article_resource
+from logic.article_resource import ArticleResource
 
 logging.basicConfig(
         level=logging.INFO,
@@ -32,9 +26,14 @@ class Congress(ArticleResource):
         self.today = datetime.datetime.now()  # Current date
         self.time_constraint = datetime.datetime.now() - datetime.timedelta(days=7)  # 7 days ago
         
-        # Initialize semantic similarity model
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.similarity_threshold = 0.2  # Minimum similarity score to include bill
+        # Initialize TF-IDF vectorizer for semantic similarity
+        self.vectorizer = TfidfVectorizer(
+            max_features=5000,
+            stop_words='english',
+            ngram_range=(1, 2),
+            lowercase=True
+        )
+        self.similarity_threshold = 0.1  # Minimum similarity score to include bill (lower for TF-IDF)
 
     def get_bills(self):
         """
@@ -157,7 +156,7 @@ class Congress(ArticleResource):
     
     def _filter_bills_by_interests(self, bills, interests):
         """
-        Filter bills by semantic similarity to any of the user interests.
+        Filter bills by TF-IDF similarity to any of the user interests.
         Only returns bills that are similar to at least one interest above the threshold.
         
         Args:
@@ -178,12 +177,18 @@ class Congress(ArticleResource):
                 text = f"{bill.get('title', '')} {bill.get('latest_action_text', '')}"
                 bill_texts.append(text)
             
-            # Encode all interests and bill texts
-            interest_embeddings = self.model.encode(interests)
-            bill_embeddings = self.model.encode(bill_texts)
+            # Combine all texts for TF-IDF fitting
+            all_texts = interests + bill_texts
+            
+            # Fit TF-IDF vectorizer and transform texts
+            tfidf_matrix = self.vectorizer.fit_transform(all_texts)
+            
+            # Split back into interests and bills
+            interest_vectors = tfidf_matrix[:len(interests)]
+            bill_vectors = tfidf_matrix[len(interests):]
             
             # Calculate cosine similarities between each bill and all interests
-            similarities_matrix = cosine_similarity(bill_embeddings, interest_embeddings)
+            similarities_matrix = cosine_similarity(bill_vectors, interest_vectors)
             
             # Filter bills that match at least one interest above threshold
             filtered_bills = []
@@ -203,12 +208,12 @@ class Congress(ArticleResource):
             return filtered_bills
             
         except Exception as e:
-            print(f"Error in semantic filtering by interests: {e}")
+            print(f"Error in TF-IDF filtering by interests: {e}")
             return bills  # Return original bills if filtering fails
     
     def _filter_bills_by_similarity(self, bills, query):
         """
-        Filter bills by semantic similarity to the query using sentence transformers.
+        Filter bills by TF-IDF similarity to the query.
         
         Args:
             bills (list): List of bill dictionaries
@@ -228,12 +233,18 @@ class Congress(ArticleResource):
                 text = f"{bill.get('title', '')} {bill.get('latest_action_text', '')}"
                 bill_texts.append(text)
             
-            # Encode query and bill texts
-            query_embedding = self.model.encode([query])
-            bill_embeddings = self.model.encode(bill_texts)
+            # Combine query and bill texts for TF-IDF fitting
+            all_texts = [query] + bill_texts
+            
+            # Fit TF-IDF vectorizer and transform texts
+            tfidf_matrix = self.vectorizer.fit_transform(all_texts)
+            
+            # Split back into query and bills
+            query_vector = tfidf_matrix[0:1]
+            bill_vectors = tfidf_matrix[1:]
             
             # Calculate cosine similarities
-            similarities = cosine_similarity(query_embedding, bill_embeddings)[0]
+            similarities = cosine_similarity(query_vector, bill_vectors)[0]
             
             # Filter bills above threshold and add similarity scores
             filtered_bills = []
@@ -251,7 +262,7 @@ class Congress(ArticleResource):
             return filtered_bills
             
         except Exception as e:
-            print(f"Error in semantic filtering: {e}")
+            print(f"Error in TF-IDF filtering: {e}")
             return bills  # Return original bills if filtering fails
             
 def handler(payload):
