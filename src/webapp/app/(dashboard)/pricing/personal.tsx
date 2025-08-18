@@ -24,7 +24,6 @@ export default async function PricingPage() {
   const plusPlan = products.find((product) => product.name === 'Plus');
 
   const paidPrice = prices.find((price) => price.productId === paidPlan?.id);
-  const plusPrice = prices.find((price) => price.productId === plusPlan?.id);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-6 py-8">
@@ -42,7 +41,7 @@ export default async function PricingPage() {
           action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
         />
         <PricingCard
-          name={paidPlan?.name || 'Paid'}
+          name={paidPlan?.name || 'Pro'}
           price={paidPrice?.unitAmount || 100}
           interval={paidPrice?.interval || 'month'}
           features={[
@@ -51,21 +50,7 @@ export default async function PricingPage() {
             'Personalized AI hosts',
           ]}
           priceId={paidPrice?.id}
-          currentPlan={plan === 'paid' || plan === 'Paid'}
-          action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
-        />
-        <PricingCard
-          name={plusPlan?.name || 'Plus'}
-          price={plusPrice?.unitAmount || 400}
-          interval={plusPrice?.interval || 'month'}
-          trialDays={7}
-          features={[
-            'Everything in Paid',
-            '8-10 minute podcast',
-            'Access to premium sources',
-          ]}
-          priceId={plusPrice?.id}
-          currentPlan={plan === 'plus' || plan === 'Plus'}
+          currentPlan={plan === 'pro' || plan === 'Pro'}
           action_type = {plan == 'free' ? checkoutAction : customerPortalAction}
         />
       </div>

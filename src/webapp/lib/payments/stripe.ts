@@ -105,7 +105,7 @@ export async function createCustomerPortalSession(user: User) {
           },
         },
         payment_method_update: {
-          enabled: true, // Enable payment method updates to resolve the issue
+          enabled: true,
         },
       },
     });
@@ -140,8 +140,8 @@ export async function handleSubscriptionChange(
     
     // Map Stripe product names to internal plan names
     let internalPlanName = 'free';
-    if (productName === 'Paid') {
-      internalPlanName = 'paid';
+    if (productName === 'Pro') {
+      internalPlanName = 'pro';
     } else if (productName === 'Plus') {
       internalPlanName = 'plus';
     }

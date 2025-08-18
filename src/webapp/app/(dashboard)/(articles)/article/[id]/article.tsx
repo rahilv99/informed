@@ -210,7 +210,7 @@ export default function ArticlePage({article, related}: {
         <div className="prose prose-lg max-w-none mb-12">
           <div
             dangerouslySetInnerHTML={{ __html: article.content }}
-            className="leading-relaxed text-foreground [&>p]:mb-6 [&>p]:text-base [&>p]:leading-7"
+            className="leading-relaxed text-foreground [&>p]:mb-6 [&>p]:text-base [&>p]:leading-7 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>ul>li]:mb-2 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-6 [&>ol>li]:mb-2"
           />
         </div>
 
