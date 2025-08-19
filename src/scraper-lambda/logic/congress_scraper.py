@@ -119,20 +119,25 @@ class Congress(ArticleResource):
                     if self.user_input and all_bills:
                         print(f"Applying semantic filtering against {len(self.user_input)} interests: {self.user_input}")
                         filtered_results = self._filter_bills_by_interests(all_bills, self.user_input)
-                        print(f"Semantic filtering reduced results from {len(all_bills)} to {len(filtered_results)} bills")
+                        
+                        # Count total bills across all interests
+                        total_bills = sum(len(bills) for bills in filtered_results.values())
+                        print(f"Semantic filtering reduced results from {len(all_bills)} to {total_bills} bills")
                         results = filtered_results
                     else:
-                        results = all_bills
+                        # If no user input, return empty dict with interests as keys
+                        results = {interest: [] for interest in (self.user_input or [])}
                     
-                    if results:
-                        # Sort results by similarity score (highest first), then by latest action date
-                        results.sort(key=lambda x: (x.get('similarity_score', 0), x.get('latest_action_date', '')), reverse=True)
-                        print(f"Successfully retrieved {len(results)} bills.")
-                        print("Top bills by similarity score:")
-                        for i, bill in enumerate(results[:5]):  # Show top 5
-                            similarity = bill.get('similarity_score', 'N/A')
-                            keyword = bill.get('keyword', 'N/A')
-                            print(f"  {i+1}. {bill['title'][:60]}... - Similarity: {similarity} (Keyword: {keyword})")
+                    if results and any(bills for bills in results.values()):
+                        total_bills = sum(len(bills) for bills in results.values())
+                        print(f"Successfully retrieved {total_bills} bills organized by {len(results)} interests.")
+                        print("Bills by interest:")
+                        for interest, bills in results.items():
+                            if bills:
+                                print(f"  {interest}: {len(bills)} bills")
+                                for i, bill in enumerate(bills[:3]):  # Show top 3 per interest
+                                    similarity = bill.get('similarity_score', 'N/A')
+                                    print(f"    {i+1}. {bill['title'][:50]}... - Similarity: {similarity}")
                         return results
                     else:
                         print("No bills found matching the search criteria.")
@@ -159,19 +164,18 @@ class Congress(ArticleResource):
     
     def _filter_bills_by_interests(self, bills, interests):
         """
-        Filter bills by TF-IDF similarity to any of the user interests.
-        Only returns bills that are similar to at least one interest above the threshold.
+        Filter bills by TF-IDF similarity to user interests and organize by interest.
         
         Args:
             bills (list): List of bill dictionaries
             interests (list): List of interest strings to compare against
             
         Returns:
-            list: Filtered list of bills above similarity threshold for at least one interest
+            dict: Dictionary where keys are interests and values are lists of matching bills
         """
         try:
             if not bills or not interests:
-                return bills
+                return {interest: [] for interest in interests}
                 
             # Prepare texts for similarity comparison
             bill_texts = []
@@ -193,26 +197,36 @@ class Congress(ArticleResource):
             # Calculate cosine similarities between each bill and all interests
             similarities_matrix = cosine_similarity(bill_vectors, interest_vectors)
             
-            # Filter bills that match at least one interest above threshold
-            filtered_bills = []
-            for i, (bill, bill_similarities) in enumerate(zip(bills, similarities_matrix)):
-                # Find the best matching interest for this bill
-                max_similarity_idx = np.argmax(bill_similarities)
-                max_similarity = bill_similarities[max_similarity_idx]
-                best_interest = interests[max_similarity_idx]
-                
-                if max_similarity >= self.similarity_threshold:
-                    bill_copy = bill.copy()
-                    bill_copy['similarity_score'] = float(max_similarity)
-                    bill_copy['keyword'] = best_interest  # Add the best matching interest as keyword
-                    filtered_bills.append(bill_copy)
-                    print(f"  Bill '{bill['title'][:60]}...' - Similarity: {max_similarity:.3f} (Interest: '{best_interest}')")
+            # Initialize result dictionary with empty lists for each interest
+            bills_by_interest = {interest: [] for interest in interests}
             
-            return filtered_bills
+            # Group bills by ALL interests where they meet the threshold
+            for i, (bill, bill_similarities) in enumerate(zip(bills, similarities_matrix)):
+                bill_added_to_interests = []
+                
+                # Check similarity against each interest
+                for j, (interest, similarity) in enumerate(zip(interests, bill_similarities)):
+                    if similarity >= self.similarity_threshold:
+                        bill_copy = bill.copy()
+                        bill_copy['similarity_score'] = float(similarity)
+                        bill_copy['keyword'] = interest
+                        bills_by_interest[interest].append(bill_copy)
+                        bill_added_to_interests.append(f"{interest} ({similarity:.3f})")
+                
+                # Log which interests this bill was added to
+                if bill_added_to_interests:
+                    interests_str = ", ".join(bill_added_to_interests)
+                    print(f"  Bill '{bill['title'][:60]}...' added to: {interests_str}")
+            
+            # Sort bills within each interest by similarity score
+            for interest in bills_by_interest:
+                bills_by_interest[interest].sort(key=lambda x: x['similarity_score'], reverse=True)
+            
+            return bills_by_interest
             
         except Exception as e:
             print(f"Error in TF-IDF filtering by interests: {e}")
-            return bills  # Return original bills if filtering fails
+            return {interest: [] for interest in interests}
     
     def _filter_bills_by_similarity(self, bills, query):
         """
@@ -318,29 +332,34 @@ def handler(payload):
 
     print(f"congress_scraper invoked with topics: {topics}")
     congress = Congress(topics)
-    bills = congress.get_bills()
+    bills_by_interest = congress.get_bills()
 
-    if bills is not None and len(bills) > 0:
-        print(f"Retrieved {len(bills)} congress bills.")
+    if bills_by_interest is not None and any(bills for bills in bills_by_interest.values()):
+        total_bills = sum(len(bills) for bills in bills_by_interest.values())
+        print(f"Retrieved {total_bills} congress bills organized by interests.")
         
         # Generate hash for S3 filename
         topics_str = json.dumps(topics, sort_keys=True)
         topics_hash = hashlib.sha256(topics_str.encode('utf-8')).hexdigest()
         
         # Save bills to S3
-        print(f"Saving {len(bills)} congress bills to S3 with hash: {topics_hash}")
-        save_to_s3(bills, topics_hash)
+        print(f"Saving congress bills dictionary to S3 with hash: {topics_hash}")
+        save_to_s3(bills_by_interest, topics_hash)
         
-        # Log bill details
-        for entry in bills:
-            print(f"Title: {entry['title']}")
-            print(f"Bill ID: {entry['bill_id']}") 
-            print(f"URL: {entry['url']}")
-            print(f"Keyword: {entry['keyword']}")
-            print(f"Latest Action Date: {entry['latest_action_date']}")
-            print(f"Latest Action Text: {entry['latest_action_text']}")
-            print("--------------------")
-        return {"statusCode": 200, "body": json.dumps(bills)}
+        # Log bill details by interest
+        for interest, bills in bills_by_interest.items():
+            if bills:
+                print(f"\n--- {interest} ({len(bills)} bills) ---")
+                for entry in bills[:3]:  # Show first 3 bills per interest
+                    print(f"Title: {entry['title']}")
+                    print(f"Bill ID: {entry['bill_id']}") 
+                    print(f"URL: {entry['url']}")
+                    print(f"Similarity Score: {entry.get('similarity_score', 'N/A')}")
+                    print(f"Latest Action Date: {entry['latest_action_date']}")
+                    print(f"Latest Action Text: {entry['latest_action_text'][:100]}...")
+                    print("--------------------")
+        
+        return {"statusCode": 200, "body": json.dumps(bills_by_interest)}
     else:
         print("No bills found.")
         return {"statusCode": 204, "body": "No bills found."}
