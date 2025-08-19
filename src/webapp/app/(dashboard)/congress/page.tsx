@@ -1,7 +1,7 @@
 import { getCongressBills } from '@/lib/db/queries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Calendar, FileText } from 'lucide-react';
+import { ExternalLink, Calendar, FileText, Database, Clock, HardDrive } from 'lucide-react';
 
 interface CongressBill {
   billId: string;
@@ -17,103 +17,166 @@ interface CongressBill {
   scrapedAt: string;
 }
 
-export default async function CongressPage() {
-  const billsByInterest = await getCongressBills();
+interface CongressFile {
+  fileName: string;
+  fullPath: string;
+  lastModified?: Date;
+  size: number;
+  totalBills: number;
+  bills: any;
+  error?: string;
+  metadata: {
+    etag?: string;
+    storageClass?: string;
+  };
+}
 
-  // Check if we have any bills across all interests
-  const hasAnyBills = billsByInterest && typeof billsByInterest === 'object' && 
-    Object.values(billsByInterest).some((bills: any) => Array.isArray(bills) && bills.length > 0);
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+export default async function CongressPage() {
+  const congressFiles = await getCongressBills() as CongressFile[];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Congress Bills</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Congress Bills Archive</h1>
         <p className="text-gray-600">
-          Recent congressional bills relevant to your interests, updated weekly.
+          All congressional bills data stored in the S3 congress section with metadata.
         </p>
       </div>
 
-      {!hasAnyBills ? (
+      {congressFiles.length === 0 ? (
         <div className="text-center py-12">
           <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bills found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No congress files found</h3>
           <p className="text-gray-500">
             No congressional bills have been scraped yet. Check back later.
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {Object.entries(billsByInterest).map(([interest, bills]: [string, any]) => {
-            if (!Array.isArray(bills) || bills.length === 0) return null;
+        <div className="space-y-6">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Database className="h-8 w-8 text-blue-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Files</p>
+                    <p className="text-2xl font-bold text-gray-900">{congressFiles.length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             
-            return (
-              <div key={interest} className="space-y-4">
-                <div className="border-b border-gray-200 pb-2">
-                  <h2 className="text-xl font-semibold text-gray-900">{interest}</h2>
-                  <p className="text-sm text-gray-600">{bills.length} bill{bills.length !== 1 ? 's' : ''} found</p>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <FileText className="h-8 w-8 text-green-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Bills</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {congressFiles.reduce((sum, file) => sum + file.totalBills, 0)}
+                    </p>
+                  </div>
                 </div>
-                
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {bills.map((bill: CongressBill) => (
-                    <Card key={bill.billId} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <CardTitle className="text-lg leading-tight mb-2">
-                              {bill.title}
-                            </CardTitle>
-                            <CardDescription className="flex items-center gap-2">
-                              <Badge variant="outline">{bill.billId}</Badge>
-                              {bill.similarityScore && (
-                                <Badge variant="secondary">
-                                  {Math.round(bill.similarityScore * 100)}% match
-                                </Badge>
-                              )}
-                            </CardDescription>
-                          </div>
-                          {bill.url && (
-                            <a
-                              href={bill.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                              title="View on Congress.gov"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <HardDrive className="h-8 w-8 text-purple-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Size</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {formatFileSize(congressFiles.reduce((sum, file) => sum + file.size, 0))}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Files List */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">Congress Files</h2>
+            
+            <div className="grid gap-4">
+              {congressFiles.map((file, index) => (
+                <Card key={file.fullPath} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg leading-tight mb-2 flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                          {file.fileName}
+                          {index === 0 && (
+                            <Badge variant="secondary">Latest</Badge>
                           )}
-                        </div>
-                      </CardHeader>
+                        </CardTitle>
+                        <CardDescription className="flex items-center gap-4 flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {file.lastModified ? new Date(file.lastModified).toLocaleString() : 'Unknown'}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <HardDrive className="h-4 w-4" />
+                            {formatFileSize(file.size)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Database className="h-4 w-4" />
+                            {file.totalBills} bills
+                          </span>
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700">Full Path:</span>
+                        <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                          s3://905418457861-astra-bucket/{file.fullPath}
+                        </code>
+                      </div>
                       
-                      <CardContent>
-                        <div className="space-y-3">
-                          {bill.latestActionDate && (
-                            <div className="flex items-start gap-2">
-                              <Calendar className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                              <div>
-                                <div className="text-sm font-medium text-gray-700">
-                                  Latest Action ({bill.latestActionDate})
-                                </div>
-                                {bill.latestActionText && (
-                                  <div className="text-sm text-gray-600 mt-1">
-                                    {bill.latestActionText}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                          
-                          <div className="text-xs text-gray-500 pt-2 border-t">
-                            Scraped: {new Date(bill.scrapedAt || Date.now()).toLocaleDateString()}
+                      {file.error ? (
+                        <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                          Error: {file.error}
+                        </div>
+                      ) : file.bills && typeof file.bills === 'object' ? (
+                        <div className="space-y-2">
+                          <span className="text-sm font-medium text-gray-700">Bills by Interest:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(file.bills).map(([interest, bills]: [string, any]) => (
+                              <Badge key={interest} variant="outline" className="text-xs">
+                                {interest}: {Array.isArray(bills) ? bills.length : 0}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+                      ) : null}
+                      
+                      {file.metadata.etag && (
+                        <div className="text-xs text-gray-500 pt-2 border-t">
+                          ETag: {file.metadata.etag?.replace(/"/g, '')} | 
+                          Storage: {file.metadata.storageClass || 'STANDARD'}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
