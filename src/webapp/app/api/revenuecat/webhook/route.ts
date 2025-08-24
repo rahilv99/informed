@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
     //   }
     // }
 
+    console.log('Received RevenueCat event:', payload);
     // Parse the webhook event
     let event: RevenueCatWebhookEvent;
     try {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Handle the subscription change
     await handleRevenueCatSubscriptionChange(event);
 
-    return NextResponse.json({ received: true });
+    return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
     console.error('Error processing RevenueCat webhook:', err);
     return NextResponse.json(

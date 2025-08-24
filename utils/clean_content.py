@@ -1,9 +1,8 @@
 import psycopg2
 import re
 
-# You'll need to define this variable with your database connection string
-# For example: db_access_url = "postgresql://username:password@host:port/database"
-db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres'  # Replace with your actual database URL
+
+db_access_url = 'postgresql://postgres.uufxuxbilvlzllxgbewh:astrapodcast!@aws-0-us-east-1.pooler.supabase.com:6543/postgres'
 
 def clean_html_code_blocks():
     """
