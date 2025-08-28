@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import psycopg2 
 import json
 import boto3
+import requests
 
 sqs = boto3.client('sqs')
 
@@ -26,6 +27,8 @@ def _handler(event, context):
     for user in user_records:
         user_id, email, name, plan, last_delivered_ts, episode, keywords = user
 
+        plan = verify_plan(user_id, plan)
+
         if not skip_delivery(last_delivered_ts.timestamp()):
             pulse_customers.append(user_id)
             print(f"Sent pulse for user {email}")
@@ -43,6 +46,49 @@ def _handler(event, context):
                 }
             )
 
+def verify_plan(user_id, plan):
+    # check revenuecat if plan has changed
+    revenuecat_api_key = os.environ.get("REVENUECAT_API_KEY")
+    headers = {
+        "Authorization": f"Bearer {revenuecat_api_key}",
+        "Accept": "application/json"
+    }
+    revenuecat_url = f"https://api.revenuecat.com/v2/projects/proj160c63e2/customers/{user_id}/active_entitlements"
+    response = requests.get(revenuecat_url, headers=headers)
+    if response.status_code == 200:
+        entitlements = response.json().get("items", [])
+
+        if len(entitlements) == 0:
+            current_plan = "free"
+        else:
+            current_plan = "pro"
+    else:
+        print(f"Error fetching entitlements for user {user_id}: {response.status_code}")
+        current_plan = plan
+    
+    if current_plan != plan:
+        print(f"Plan changed for user {user_id} from {plan} to {current_plan}")
+        # update in DB
+        conn = None
+        cursor = None
+        try:
+            conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE users
+                SET plan = %s
+                WHERE id = %s
+            """, (current_plan, user_id))
+            conn.commit()
+        except psycopg2.Error as e:
+            print(f"Database error while updating plan for user {user_id}: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    return current_plan
 
 def db_getusers(today_weekday):
     try:

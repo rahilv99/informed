@@ -66,6 +66,20 @@ def get_articles_by_ids(article_ids):
         print(f"Error retrieving articles from database: {e}")
         return []
 
+def update_user_delivered(user_id, episode):
+    try:
+        conn = psycopg2.connect(dsn=db_access_url, client_encoding='utf8')
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users
+            SET delivered = NOW(), episode = %s
+            WHERE id = %s
+        """, (episode + 1, user_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error last sent data for {user_id}: {e}")
 
 def generate_html(episode_title, articles, episode, name):
     # Load the HTML template
@@ -149,6 +163,7 @@ def handler(payload):
 
     send_email(user_email, ep_title, html)
 
+    update_user_delivered(user_id, episode)
 
 if __name__ == "__main__":
     # Test payload with article recommendations
