@@ -72,7 +72,7 @@ export async function updateUserSubscription(id: number, subscriptionData: {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   stripeProductId: string | null;
-  plan: string | 'free';
+  plan: string | 'pro';
 }) {
   return await db.update(users).set(subscriptionData).where(eq(users.id, id)).returning();
 }
