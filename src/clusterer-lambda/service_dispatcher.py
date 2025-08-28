@@ -1,6 +1,7 @@
 import logic.embed
 import logic.infer
 import logic.represent_user
+import logic.bill_embeddings
 import json
 import traceback
 
@@ -36,7 +37,8 @@ def _handler(event, context):
     action_map = {
         "e_embed": logic.embed.handler, # convert raw data sources to stories
         "e_infer": logic.infer.handler, # infer recommendations
-        "e_represent_user": logic.represent_user.handler # represent user in embedding space
+        "e_represent_user": logic.represent_user.handler, # represent user in embedding space
+        "e_embed_bills": logic.bill_embeddings.handler # generate congress bill embeddings
     }
 
     # Route to the appropriate function

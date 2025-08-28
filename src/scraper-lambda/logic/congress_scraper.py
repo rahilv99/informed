@@ -385,6 +385,29 @@ def handler(payload):
         print(f"Saving congress bills to PostgreSQL database")
         save_to_database(bills_by_interest)
         
+        # Send message to clusterer queue to generate embeddings
+        try:
+            sqs = boto3.client('sqs')
+            clusterer_queue_url = os.environ.get('CLUSTERER_QUEUE_URL')
+            
+            if clusterer_queue_url:
+                embed_message = {
+                    "action": "e_embed_bills",
+                    "payload": {}
+                }
+                
+                response = sqs.send_message(
+                    QueueUrl=clusterer_queue_url,
+                    MessageBody=json.dumps(embed_message)
+                )
+                
+                print(f"Sent embedding generation request to clusterer queue: {response.get('MessageId')}")
+            else:
+                print("Warning: CLUSTERER_QUEUE_URL not set, cannot trigger embedding generation")
+                
+        except Exception as e:
+            print(f"Error sending message to clusterer queue: {e}")
+        
         # Log bill details by interest
         for interest, bills in bills_by_interest.items():
             if bills:
@@ -397,8 +420,6 @@ def handler(payload):
                     print(f"Latest Action Date: {entry['latest_action_date']}")
                     print(f"Latest Action Text: {entry['latest_action_text'][:100]}...")
                     print("--------------------")
-        
-        # send message to clusterer queue to generate embeddings
     else:
         print("No bills found.")
 
