@@ -9,6 +9,7 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 
 dotenv.config();
 
@@ -80,7 +81,9 @@ export class ClustererStack extends cdk.Stack {
     RecommendationSizeAlarm.addAlarmAction(new cloudwatchActions.SnsAction(RecommendationSizeAlarmTopic))
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ClustererFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/clusterer-lambda'),
+      code: lambda.DockerImageCode.fromImageAsset('src/clusterer-lambda', {
+        platform: Platform.LINUX_AMD64,
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
       environment: {

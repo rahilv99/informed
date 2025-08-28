@@ -9,6 +9,7 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 
 dotenv.config();
 
@@ -26,7 +27,9 @@ export class ContentStack extends cdk.Stack {
     })
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ContentFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/content-lambda'),
+      code: lambda.DockerImageCode.fromImageAsset('src/content-lambda', {
+        platform: Platform.LINUX_AMD64,
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
       environment: {

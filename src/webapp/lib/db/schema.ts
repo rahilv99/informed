@@ -22,7 +22,7 @@ export const users = pgTable('users', {
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
   embedding: vector('embedding', { dimensions: 384 }),
-  auth_user_id: text('auth_user_id').unique()
+  auth_user_id: text('auth_user_id')
 });
 
 // Email table for newsletter
@@ -73,10 +73,10 @@ export const congressBills = pgTable('congress_bills', {
   congress: integer('congress'),
   billType: varchar('bill_type', { length: 20 }),
   billNumber: integer('bill_number'),
-  keyword: varchar('keyword', { length: 255 }), // The user interest that matched
-  similarityScore: real('similarity_score'),
-  scrapedAt: timestamp('scraped_at').notNull().default(new Date()),
-  active: boolean('active').notNull().default(true), // For soft deletes
+  embedding: vector('embedding', { dimensions: 384 }).notNull(),
+
+  // keyword: varchar('keyword', { length: 255 }), // The user interest that matched
+  // similarityScore: real('similarity_score'),
 });
 
 export type User = typeof users.$inferSelect;

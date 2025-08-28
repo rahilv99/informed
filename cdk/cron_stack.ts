@@ -9,6 +9,7 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 
 
 interface ExtendedProps extends cdk.StackProps {
@@ -25,7 +26,9 @@ export class CronStack extends cdk.Stack {
     })
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'CronFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/cron-lambda'),
+      code: lambda.DockerImageCode.fromImageAsset('src/cron-lambda', {
+        platform: Platform.LINUX_AMD64,
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 1*1024,
       environment: {

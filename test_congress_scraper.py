@@ -114,14 +114,8 @@ def test_handler_function():
     print(f'\nHandler returned status code: {result["statusCode"]}')
     if result["statusCode"] == 200:
         import json
-        bills = json.loads(result["body"])
-        print(f'Handler found {len(bills)} bills')
-        
-        if bills:
-            print('\nFirst 3 bills from handler:')
-            for i, bill in enumerate(bills[:3]):
-                print(f'  {i+1}. {bill["title"][:60]}...')
-                print(f'     Similarity: {bill.get("similarity_score", "N/A")} | Keyword: {bill.get("keyword", "N/A")}')
+        response_data = json.loads(result["body"])
+        print(f'Handler response: {response_data.get("message", "Success")}')
     else:
         print(f'Handler response: {result["body"]}')
 

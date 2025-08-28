@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { users, emails, podcasts, articles } from './schema';
+import { users, emails, podcasts, articles, congressBills } from './schema';
 import { eq, sql } from 'drizzle-orm';
 import type { User, NewUser } from './schema';
 import { cookies } from 'next/headers';
@@ -165,6 +165,23 @@ export async function getTop3Articles() {
       FROM articles
       ORDER BY score DESC
       LIMIT 3
+    `
+  );
+
+  return result;
+}
+
+// Get recommended congress bills based on user embedding
+export async function getRecommendedBills(userEmbedding: number[]) {
+  const embeddingLiteral = `array[${userEmbedding.join(",")}]`;
+
+  const result = await db.execute(
+    sql`
+      SELECT
+        *,
+        embedding <=> ${sql.raw(embeddingLiteral)}::vector AS distance
+      FROM congress_bills
+      ORDER BY distance ASC
     `
   );
 

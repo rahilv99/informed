@@ -13,6 +13,7 @@ import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 
 dotenv.config();
 
@@ -160,7 +161,9 @@ export class ScraperStack extends cdk.Stack {
     props.coreStack.s3ScraperBucket.grantReadWrite(scraperLambdaRole);
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperHelperFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/scraper-lambda'),
+      code: lambda.DockerImageCode.fromImageAsset('src/scraper-lambda', {
+        platform: Platform.LINUX_AMD64,
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
       architecture: lambda.Architecture.X86_64,
