@@ -83,10 +83,23 @@ export default async function CongressPage() {
       <header className="border-b backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 py-6">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold mb-2">Congressional Bills</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {user?.name?.split(" ")[0]}'s Congressional Bills
+            </h1>
             <p className="text-muted-foreground">
               Bills personalized for your interests, ranked by relevance.
             </p>
+            {recommendedBills.length > 0 && (
+              <div className="text-sm text-muted-foreground mt-2">
+                Showing {recommendedBills.length} {recommendedBills.length === 1 ? 'bill' : 'bills'}
+                {recommendedBills.length > 0 && (
+                  <> • Top match: {formatDistance(recommendedBills[0].distance)}</>
+                )}
+                {recommendedBills.length > 0 && recommendedBills[0].latest_action_date && (
+                  <> • Last updated: {formatActionDate(recommendedBills[0].latest_action_date)}</>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -104,35 +117,6 @@ export default async function CongressPage() {
             </div>
           ) : (
             <>
-              {/* Summary Stats - Clean newspaper style */}
-              <div className="mb-8 pb-6 border-b border-border/50">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground mb-1">{recommendedBills.length}</div>
-                    <div className="text-sm text-muted-foreground">Total Bills</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground mb-1">
-                      {recommendedBills.length > 0 ? formatDistance(recommendedBills[0].distance) : 'N/A'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Top Match</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground mb-1">
-                      {recommendedBills.length > 0 && recommendedBills[0].latest_action_date 
-                        ? formatActionDate(recommendedBills[0].latest_action_date)
-                        : 'N/A'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Last Updated</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Page Title */}
-              {user && (
-                <h1 className="text-5xl mb-10">{user.name?.split(" ")[0]}'s Bills</h1>
-              )}
-
               {/* Bills Feed - Newspaper style */}
               <div className="space-y-8">
                 {recommendedBills.map((bill, index) => (
