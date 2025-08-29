@@ -1,18 +1,17 @@
 import { getRecommendedBills, getUser } from '@/lib/db/queries';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Calendar, FileText, Database, Clock, HardDrive, Star, TrendingUp } from 'lucide-react';
+import { ExternalLink, Calendar, FileText, Clock, Star, Search } from 'lucide-react';
 
 interface CongressBill {
   id: number;
-  billId: string;
+  bill_id: string;
   title: string;
   url?: string;
-  latestActionDate?: string;
-  latestActionText?: string;
+  latest_action_date?: string;
+  latest_action_text?: string;
   congress?: number;
-  billType?: string;
-  billNumber?: number;
+  bill_type?: string;
+  bill_number?: number;
   embedding: number[];
   distance: number;
 }
@@ -60,14 +59,18 @@ export default async function CongressPage() {
   
   if (!user || !user.embedding) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Please log in to view personalized bills</h3>
-          <p className="text-gray-500">
-            You need to be logged in with a complete profile to see bills tailored to your interests.
-          </p>
-        </div>
+      <div className="min-h-screen">
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center py-12">
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Please log in to view personalized bills</h3>
+              <p className="text-muted-foreground">
+                You need to be logged in with a complete profile to see bills tailored to your interests.
+              </p>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -75,147 +78,137 @@ export default async function CongressPage() {
   const recommendedBills = await getRecommendedBills(user.embedding) as unknown as CongressBill[];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Recommended Congress Bills</h1>
-        <p className="text-gray-600">
-          Congressional bills personalized for your interests, ranked by relevance.
-        </p>
-      </div>
-
-      {recommendedBills.length === 0 ? (
-        <div className="text-center py-12">
-          <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bills found</h3>
-          <p className="text-gray-500">
-            No congressional bills have been scraped yet. Check back later.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Database className="h-8 w-8 text-blue-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Bills</p>
-                    <p className="text-2xl font-bold text-gray-900">{recommendedBills.length}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Star className="h-8 w-8 text-yellow-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Top Match</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {recommendedBills.length > 0 ? formatDistance(recommendedBills[0].distance) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <TrendingUp className="h-8 w-8 text-green-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Congress</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {recommendedBills.length > 0 ? `${recommendedBills[0].congress}th` : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="border-b backdrop-blur sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-6">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold mb-2">Congressional Bills</h1>
+            <p className="text-muted-foreground">
+              Bills personalized for your interests, ranked by relevance.
+            </p>
           </div>
+        </div>
+      </header>
 
-          {/* Bills List */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Your Personalized Bills</h2>
-            
-            <div className="grid gap-4">
-              {recommendedBills.map((bill, index) => (
-                <Card key={bill.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg leading-tight mb-2 flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-blue-600" />
-                          {bill.title}
-                          {index === 0 && (
-                            <Badge variant="default" className="bg-yellow-100 text-yellow-800">
-                              <Star className="h-3 w-3 mr-1" />
-                              Best Match
-                            </Badge>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {recommendedBills.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+              <h3 className="text-lg font-medium mb-2">No bills found</h3>
+              <p className="text-muted-foreground">
+                No congressional bills have been scraped yet. Check back later.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Summary Stats - Clean newspaper style */}
+              <div className="mb-8 pb-6 border-b border-border/50">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground mb-1">{recommendedBills.length}</div>
+                    <div className="text-sm text-muted-foreground">Total Bills</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground mb-1">
+                      {recommendedBills.length > 0 ? formatDistance(recommendedBills[0].distance) : 'N/A'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Top Match</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground mb-1">
+                      {recommendedBills.length > 0 && recommendedBills[0].latest_action_date 
+                        ? formatActionDate(recommendedBills[0].latest_action_date)
+                        : 'N/A'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Last Updated</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Page Title */}
+              {user && (
+                <h1 className="text-5xl mb-10">{user.name?.split(" ")[0]}'s Bills</h1>
+              )}
+
+              {/* Bills Feed - Newspaper style */}
+              <div className="space-y-8">
+                {recommendedBills.map((bill, index) => (
+                  <article
+                    key={bill.id}
+                    className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-black bg-opacity-20 cursor-pointer p-6 rounded-lg"
+                  >
+                    <div className="space-y-4">
+                      {/* Title and Match Score */}
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-4">
+                          <h3 className="font-bold leading-tight group-hover:text-primary transition-colors text-lg md:text-xl flex-1">
+                            {bill.title}
+                          </h3>
+                          {bill.url && (
+                            <a
+                              href={bill.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-primary hover:text-primary/80 text-sm shrink-0"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              View Bill
+                            </a>
                           )}
-                          <Badge variant="outline" className="text-xs">
+                        </div>
+                        
+                        {/* Match percentage badge */}
+                        <div>
+                          <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
                             {formatDistance(bill.distance)} match
                           </Badge>
-                        </CardTitle>
-                        <CardDescription className="flex items-center gap-4 flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <Database className="h-4 w-4" />
-                            {bill.billId}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <FileText className="h-4 w-4" />
-                            {formatBillType(bill.billType)}
-                          </span>
-                          {bill.latestActionDate && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {formatActionDate(bill.latestActionDate)}
-                            </span>
-                          )}
-                        </CardDescription>
+                        </div>
                       </div>
-                      {bill.url && (
-                        <a
-                          href={bill.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          View Bill
-                        </a>
-                      )}
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <div className="space-y-3">
-                      {bill.latestActionText && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-700">Latest Action:</span>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {bill.latestActionText}
+
+                      {/* Bill Type and Date */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <FileText className="h-4 w-4" />
+                          {formatBillType(bill.bill_type)}
+                        </span>
+                        {bill.latest_action_date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {formatActionDate(bill.latest_action_date)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Latest Action */}
+                      {bill.latest_action_text && (
+                        <div className="space-y-2">
+                          <span className="text-sm font-medium text-foreground">Latest Action:</span>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {bill.latest_action_text}
                           </p>
                         </div>
                       )}
-                      
-                      <div className="flex items-center gap-4 text-xs text-gray-500 pt-2 border-t">
-                        <span>Bill #{bill.billNumber}</span>
-                        <span>•</span>
-                        <span>{bill.congress}th Congress</span>
-                        <span>•</span>
-                        <span>Relevance: {formatDistance(bill.distance)}</span>
+
+                      {/* Bill Meta - Clean divider style */}
+                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
+                        <div className="text-xs text-muted-foreground">
+                          {bill.bill_id || 'Unknown Bill'}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Relevance: {formatDistance(bill.distance)}
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </main>
     </div>
   );
 }
