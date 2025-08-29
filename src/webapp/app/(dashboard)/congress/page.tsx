@@ -5,14 +5,14 @@ import { ExternalLink, Calendar, FileText, Database, Clock, HardDrive, Star, Tre
 
 interface CongressBill {
   id: number;
-  billId: string;
+  bill_id: string;
   title: string;
   url?: string;
-  latestActionDate?: string;
-  latestActionText?: string;
+  latest_action_date?: string;
+  latest_action_text?: string;
   congress?: number;
-  billType?: string;
-  billNumber?: number;
+  bill_type?: string;
+  bill_number?: number;
   embedding: number[];
   distance: number;
 }
@@ -98,7 +98,7 @@ export default async function CongressPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <Database className="h-8 w-8 text-blue-600" />
+                  <FileText className="h-8 w-8 text-blue-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Bills</p>
                     <p className="text-2xl font-bold text-gray-900">{recommendedBills.length}</p>
@@ -124,11 +124,13 @@ export default async function CongressPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <TrendingUp className="h-8 w-8 text-green-600" />
+                  <Clock className="h-8 w-8 text-green-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Congress</p>
+                    <p className="text-sm font-medium text-gray-600">Last Updated</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {recommendedBills.length > 0 ? `${recommendedBills[0].congress}th` : 'N/A'}
+                      {recommendedBills.length > 0 && recommendedBills[0].latest_action_date 
+                        ? formatActionDate(recommendedBills[0].latest_action_date)
+                        : 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -149,29 +151,19 @@ export default async function CongressPage() {
                         <CardTitle className="text-lg leading-tight mb-2 flex items-center gap-2">
                           <FileText className="h-5 w-5 text-blue-600" />
                           {bill.title}
-                          {index === 0 && (
-                            <Badge variant="default" className="bg-yellow-100 text-yellow-800">
-                              <Star className="h-3 w-3 mr-1" />
-                              Best Match
-                            </Badge>
-                          )}
                           <Badge variant="outline" className="text-xs">
                             {formatDistance(bill.distance)} match
                           </Badge>
                         </CardTitle>
                         <CardDescription className="flex items-center gap-4 flex-wrap">
                           <span className="flex items-center gap-1">
-                            <Database className="h-4 w-4" />
-                            {bill.billId}
-                          </span>
-                          <span className="flex items-center gap-1">
                             <FileText className="h-4 w-4" />
-                            {formatBillType(bill.billType)}
+                            {formatBillType(bill.bill_type)}
                           </span>
-                          {bill.latestActionDate && (
+                          {bill.latest_action_date && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              {formatActionDate(bill.latestActionDate)}
+                              {formatActionDate(bill.latest_action_date)}
                             </span>
                           )}
                         </CardDescription>
@@ -192,19 +184,17 @@ export default async function CongressPage() {
                   
                   <CardContent>
                     <div className="space-y-3">
-                      {bill.latestActionText && (
+                      {bill.latest_action_text && (
                         <div>
                           <span className="text-sm font-medium text-gray-700">Latest Action:</span>
                           <p className="text-sm text-gray-600 mt-1">
-                            {bill.latestActionText}
+                            {bill.latest_action_text}
                           </p>
                         </div>
                       )}
                       
                       <div className="flex items-center gap-4 text-xs text-gray-500 pt-2 border-t">
-                        <span>Bill #{bill.billNumber}</span>
-                        <span>•</span>
-                        <span>{bill.congress}th Congress</span>
+                        <span>{bill.bill_id || 'Unknown Bill'}</span>
                         <span>•</span>
                         <span>Relevance: {formatDistance(bill.distance)}</span>
                       </div>
