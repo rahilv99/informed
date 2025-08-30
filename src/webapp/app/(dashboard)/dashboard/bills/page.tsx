@@ -84,7 +84,7 @@ export default async function CongressPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-2">
-              {user?.name?.split(" ")[0]}'s Congressional Bills
+              {user?.name?.split(" ")[0]}'s Bills
             </h1>
             <p className="text-muted-foreground">
               Bills personalized for your interests, ranked by relevance.

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 const navItems = [
   { name: "Feed", href: "/dashboard/feed", icon: Scroll },
   { name: "Podcasts", href: "/dashboard/podcasts", icon: LibraryBig },
-  { name: "Congress", href: "/dashboard/congress", icon: FileText },
+  { name: "Bills", href: "/dashboard/bills", icon: FileText },
   { name: "Pulse", href: "/dashboard/pulse", icon: Activity },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
