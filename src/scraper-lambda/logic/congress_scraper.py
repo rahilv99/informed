@@ -3,13 +3,9 @@ import requests
 import logging
 import json
 import datetime
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-from urllib.parse import quote_plus
 import boto3
-import hashlib
-from botocore.exceptions import ClientError
 
 from logic.article_resource import ArticleResource
 
@@ -22,7 +18,6 @@ logging.basicConfig(
 class Congress(ArticleResource):
     def __init__(self, user_topics_output):
         super().__init__(user_topics_output)
-        self.fuzzy_threshold = 95
         self.api_key = os.environ.get('CONGRESS_API_KEY')
         self.headers = {"Content-Type": "application/json"}
 
@@ -47,7 +42,6 @@ class Congress(ArticleResource):
             list: List of dicts with bill info, filtered by semantic similarity to user interests
         """
         try:
-            results = []
             seen_titles = set()
             
             # Build URL - get all recent bills without search query since API search is broken
@@ -243,61 +237,6 @@ class Congress(ArticleResource):
             print(f"Error in TF-IDF filtering by interests: {e}")
             return {interest: [] for interest in interests}
     
-    def _filter_bills_by_similarity(self, bills, query):
-        """
-        Filter bills by TF-IDF similarity to the query.
-        
-        Args:
-            bills (list): List of bill dictionaries
-            query (str): Query string to compare against
-            
-        Returns:
-            list: Filtered list of bills above similarity threshold
-        """
-        try:
-            if not bills or not query:
-                return bills
-                
-            # Prepare texts for similarity comparison
-            bill_texts = []
-            for bill in bills:
-                # Combine title and latest action text for better semantic matching
-                text = f"{bill.get('title', '')} {bill.get('latest_action_text', '')}"
-                bill_texts.append(text)
-            
-            # Combine query and bill texts for TF-IDF fitting
-            all_texts = [query] + bill_texts
-            
-            # Fit TF-IDF vectorizer and transform texts
-            tfidf_matrix = self.vectorizer.fit_transform(all_texts)
-            
-            # Split back into query and bills
-            query_vector = tfidf_matrix[0:1]
-            bill_vectors = tfidf_matrix[1:]
-            
-            # Calculate cosine similarities
-            similarities = cosine_similarity(query_vector, bill_vectors)[0]
-            
-            # Filter bills above threshold and add similarity scores
-            filtered_bills = []
-            for i, (bill, similarity) in enumerate(zip(bills, similarities)):
-                if similarity >= self.similarity_threshold:
-                    bill_copy = bill.copy()
-                    bill_copy['similarity_score'] = float(similarity)
-                    bill_copy['keyword'] = query  # Add the query as keyword for compatibility
-                    filtered_bills.append(bill_copy)
-                    print(f"  Bill '{bill['title'][:60]}...' - Similarity: {similarity:.3f}")
-            
-            # Sort by similarity score (highest first)
-            filtered_bills.sort(key=lambda x: x['similarity_score'], reverse=True)
-            
-            return filtered_bills
-            
-        except Exception as e:
-            print(f"Error in TF-IDF filtering: {e}")
-            return bills  # Return original bills if filtering fails
-
-
 def save_to_database(bills_by_interest):
     """
     Save congress bills to PostgreSQL database without embeddings.

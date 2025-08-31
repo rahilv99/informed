@@ -88,7 +88,6 @@ def handler(payload):
             }
             print(f"Failed to send message in SCRAPER_QUEUE_URL: {error_info}")
             
-        # Add Congress scraper dispatch
         message = {
             'action': 'e_congress',
             "payload": {
