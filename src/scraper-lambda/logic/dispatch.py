@@ -91,7 +91,7 @@ def handler(payload):
         message = {
             'action': 'e_congress',
             "payload": {
-                'topics': chunk
+                'topics': topics
             }
         }
         try:
