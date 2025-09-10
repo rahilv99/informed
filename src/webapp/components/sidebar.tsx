@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Activity, Scroll, Settings, LibraryBig } from 'lucide-react'
+import { Activity, Scroll, Settings, LibraryBig, FileText } from 'lucide-react'
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 const navItems = [
   { name: "Feed", href: "/dashboard/feed", icon: Scroll },
   { name: "Podcasts", href: "/dashboard/podcasts", icon: LibraryBig },
+  { name: "Bills", href: "/dashboard/bills", icon: FileText },
   { name: "Pulse", href: "/dashboard/pulse", icon: Activity },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
@@ -43,4 +44,3 @@ export function Sidebar() {
     </div>
   )
 }
-

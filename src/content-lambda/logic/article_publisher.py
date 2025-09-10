@@ -293,7 +293,8 @@ def generate_article_overview(article_title, article_content):
     - Include specific details (names, numbers, dates) when relevant
     - Write each bullet point as a complete, informative sentence
     - Do not repeat the article title
-    
+    - BE SURE to remove any HTML tags or formatting from the content
+
     FORMAT:
     Return only the bullet points formatted as HTML using <ul> and <li> tags. Do not include any other text, formatting, or metadata.
     Example:

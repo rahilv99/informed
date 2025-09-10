@@ -22,7 +22,7 @@ export const users = pgTable('users', {
   episode: integer('episode').notNull().default(1),
   verified: boolean('verified').notNull().default(false),
   embedding: vector('embedding', { dimensions: 384 }),
-  auth_user_id: text('auth_user_id').unique()
+  auth_user_id: text('auth_user_id')
 });
 
 // Email table for newsletter
@@ -62,11 +62,31 @@ export const articles = pgTable('articles', {
   date: timestamp('date').notNull(),
 });
 
+// Congress bills table for storing scraped congressional bills
+export const congressBills = pgTable('congress_bills', {
+  id: serial('id').primaryKey(),
+  billId: varchar('bill_id', { length: 100 }).notNull().unique(), // e.g., "hr3876-119"
+  title: text('title').notNull(),
+  url: varchar('url', { length: 512 }),
+  latestActionDate: varchar('latest_action_date', { length: 50 }),
+  latestActionText: text('latest_action_text'),
+  congress: integer('congress'),
+  billType: varchar('bill_type', { length: 20 }),
+  billNumber: integer('bill_number'),
+  embedding: vector('embedding', { dimensions: 384 }).notNull(),
+
+  // keyword: varchar('keyword', { length: 255 }), // The user interest that matched
+  // similarityScore: real('similarity_score'),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
 export type Podcast = typeof podcasts.$inferSelect;
 export type NewPodcast = typeof podcasts.$inferInsert;
+
+export type CongressBill = typeof congressBills.$inferSelect;
+export type NewCongressBill = typeof congressBills.$inferInsert;
 
 export enum ActivityType {
   SIGN_UP = 'SIGN_UP',

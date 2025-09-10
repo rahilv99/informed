@@ -13,6 +13,7 @@ import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 
 dotenv.config();
 
@@ -160,15 +161,19 @@ export class ScraperStack extends cdk.Stack {
     props.coreStack.s3ScraperBucket.grantReadWrite(scraperLambdaRole);
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperHelperFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/scraper-lambda'),
+      code: lambda.DockerImageCode.fromImageAsset('src/scraper-lambda', {
+        platform: Platform.LINUX_AMD64,
+      }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
+      architecture: lambda.Architecture.X86_64,
       environment: {
         ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
         BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName,
         SCRAPER_QUEUE_URL: this.scraperSQSQueue.queueUrl,
         CLUSTERER_QUEUE_URL: props.coreStack.clustererSQSQueue.queueUrl,
         GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
+        CONGRESS_API_KEY: process.env.CONGRESS_API_KEY!,
         DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
       },
       role: scraperLambdaRole,
