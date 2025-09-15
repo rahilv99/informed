@@ -1,3 +1,4 @@
+pymongo
 boto3
 PyPDF2
 fuzzywuzzy
