@@ -1,6 +1,3 @@
-from datetime import datetime
-
-
 def test_connection(client):
     """
     Test the MongoDB connection.

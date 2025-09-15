@@ -1,9 +1,10 @@
-from congress import CongressGovAPI
+from types.api import CongressGovAPI
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import database
-
+import common.s3 as s3
+import common.sqs as sqs
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
@@ -52,13 +53,21 @@ def main():
                     success = database.update_bill(bills_collection, bill_id, bill_data)
 
                     if success:
-                        # Add to updates list as an update
-                        update_item = {
-                            'action': bill.get_latest_action(),
-                            'bill_id': bill_id,
-                            'type': 'new_action'
-                        }
-                        updates.append(update_item)
+                        if len(text) == 0:
+                            print("Warning: Text not yet available for this bill. Adding to requery queue.")
+                            requery.append({
+                                'bill_id': bill_id,
+                                'request': 'text'
+                            })
+                        else:
+                            # Add to updates list as an update
+                            update_item = {
+                                'action': 'extractor',
+                                'latest_action': bill.get_latest_action(),
+                                'bill_id': bill_id,
+                                'type': 'new_action'
+                            }
+                            updates.append(update_item)
                 else:
                     # Bill doesn't exist - insert as new
                     print(f"Bill {bill_id} is new. Inserting...")
@@ -69,11 +78,11 @@ def main():
                             print("Warning: Text not yet available for this bill. Adding to requery queue.")
                             requery.append({
                                 'bill_id': bill_id,
-                                'request': 'text',
-                                'endpoint': f'bill/{bill.congress}/{bill.bill_type}/{bill.bill_number}/text'
+                                'request': 'text'
                             })
                         else:
                             update_item = {
+                                'action': 'extractor',
                                 'document_id': bill_id,
                                 'type': 'new_bill'
                             }
@@ -93,3 +102,13 @@ def handler(payload):
 
 if __name__ == "__main__":
     updates, requeries = main()
+
+    # save requeries
+    for requery in requeries:
+        s3.save_serialized('requery', requery['bill_id'], requery)
+    
+    print(f"Saved {len(requeries)} requery items to S3.")
+
+    # send updates to SQS directly
+    for update in updates:
+        sqs.send_to_scraper_queue(update)

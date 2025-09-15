@@ -1,9 +1,5 @@
-import logic.clean
-import logic.merge
-import logic.dispatch
-import logic.legal_scraper
-import logic.google_scraper
-import logic.congress_scraper
+import logic.ingest
+import logic.requery
 import json
 import traceback
 
@@ -37,12 +33,8 @@ def _handler(event, context):
 
     # Map actions to internal functions
     action_map = {
-        "e_merge": logic.merge.handler,
-        "e_clean": logic.clean.handler,
-        "e_dispatch": logic.dispatch.handler,
-        "e_gov": logic.legal_scraper.handler,
-        "e_news": logic.google_scraper.handler,
-        "e_congress": logic.congress_scraper.handler,
+        "e_ingest": logic.ingest.handler,
+        "e_requery": logic.requery.handler
     }
 
     # Route to the appropriate function

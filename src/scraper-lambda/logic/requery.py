@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-from congress import CongressGovAPI, Bill
+from types.api import CongressGovAPI
+from types.congress import Bill
 import database
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import sys
-import json
+import common.s3 as s3
+
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
@@ -34,12 +35,9 @@ def process_requery_items(requery_objects):
         print("Failed to connect to MongoDB. Exiting.")
         return {"success": False, "error": "Database connection failed"}
     
-    results = {
-        "processed": 0,
-        "success": 0,
-        "failed": 0,
-        "errors": []
-    }
+
+    updated = []
+    errors = 0
     
     print(f"Processing {len(requery_objects)} requery items...")
     
@@ -47,16 +45,14 @@ def process_requery_items(requery_objects):
         try:
             bill_id = requery_item['bill_id']
             field = requery_item['request']
-            endpoint = requery_item['endpoint']
-            
+
             print(f"\nProcessing requery for bill {bill_id} (request: {field})")
             
             # Get existing bill from database
             existing_bill = database.get_bill(bills_collection, bill_id)
             if not existing_bill:
-                print(f"Warning: Bill {bill_id} not found in database. Skipping.")
-                results["failed"] += 1
-                results["errors"].append(f"Bill {bill_id} not found in database")
+                print(f"Warning: Bill {bill_id} not found in database. Removing from requery.")
+                updated.append(bill_id)
                 continue
             
             # Create a Bill object with existing data
@@ -78,60 +74,42 @@ def process_requery_items(requery_objects):
                         success = database.update_bill(bills_collection, bill_id, update_data)
                         
                         if success:
-                            results["success"] += 1
+                            updated.append(bill_id)
                             print(f"Updated database for bill {bill_id}")
                         else:
-                            results["failed"] += 1
-                            results["errors"].append(f"Failed to update database for bill {bill_id}")
+                            errors += 1
                     else:
-                        print(f"No text available for bill {bill_id} - may still be pending")
-                        results["failed"] += 1
-                        results["errors"].append(f"No text available for bill {bill_id}")
+                        print(f"No text available for bill {bill_id} - do not delete object")
                         
                 except Exception as text_error:
                     print(f"Error fetching text for bill {bill_id}: {text_error}")
-                    results["failed"] += 1
-                    results["errors"].append(f"Error fetching text for bill {bill_id}: {str(text_error)}")
+                    errors += 1
             else:
                 print(f"Unsupported request type: {field}")
-                results["failed"] += 1
-                results["errors"].append(f"Unsupported field type: {field}")
+                errors += 1
                 
         except Exception as e:
             print(f"Error processing requery item: {e}")
-            results["failed"] += 1
-            results["errors"].append(f"Error processing requery item: {str(e)}")
-        
-        results["processed"] += 1
+            errors += 1
+    
+    # Delete successfully processed requery items from S3
+    for bill_id in updated:
+        s3.delete_json('requery', bill_id)
     
     # Close database connection
     client.close()
     
     print(f"\nRequery processing complete:")
-    print(f"  Processed: {results['processed']}")
-    print(f"  Successful: {results['success']}")
-    print(f"  Failed: {results['failed']}")
+    print(f"  Successful: {len(updated)}")
+    print(f"  Errors: {errors}")
     
-    if results["errors"]:
-        print(f"  Errors encountered:")
-        for error in results["errors"]:
-            print(f"    - {error}")
-    
-    return results
-
 
 def handler(payload):
     """
     AWS Lambda handler function.
     """
-    try:
-        requery_objects = payload.get('requery_objects', [])
-        return process_requery_items(requery_objects)
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"Lambda handler error: {str(e)}"
-        }
+    requery_objects = s3.restore_dir('requery')
+    process_requery_items(requery_objects)
 
 if __name__ == "__main__":
     requery_objects = [
@@ -142,4 +120,4 @@ if __name__ == "__main__":
         }
     ]
     
-    result = process_requery_items(requery_objects)
+    process_requery_items(requery_objects)

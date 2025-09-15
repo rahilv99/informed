@@ -49,12 +49,11 @@ export class ScraperStack extends cdk.Stack {
       })
     );
 
-    // Create a CloudWatch Event Rule for the scraper schedule (weekly)
+    // Create a CloudWatch Event Rule for the scraper schedule (daily)
     const scraperRule = new events.Rule(this, 'ScraperRule', {
       schedule: events.Schedule.cron({
       minute: '0',
       hour: '10',
-      weekDay: 'MON', // Every Monday
       month: '*',
       year: '*',
       }),
