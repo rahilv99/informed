@@ -1,4 +1,5 @@
 
+from definitions.congress import Bill
 import requests
 from bs4 import BeautifulSoup
 import PyPDF2
@@ -46,7 +47,7 @@ class CongressGovAPI:
             # Calculate the date N days ago
             date_n_days_ago = datetime.date.today() - datetime.timedelta(days=date_since_days)
             params["fromDateTime"] = date_n_days_ago.strftime("%Y-%m-%dT00:00:00Z")
-        params["limit"] = 5  # Maximum limit
+        params["limit"] = 250  # Maximum limit
 
         data = self._make_request(endpoint, params=params)
         bills_data = data.get("bills", [])

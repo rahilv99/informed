@@ -1,14 +1,14 @@
-from types.api import CongressGovAPI
+from definitions.api import CongressGovAPI
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import database
+import logic.database as database
 import common.s3 as s3
 import common.sqs as sqs
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
-uri = "mongodb+srv://admin:astrapodcast!@auxiom-backend.7edkill.mongodb.net/?retryWrites=true&w=majority&appName=auxiom-backend"
+uri = os.environ.get("DB_URI", "mongodb+srv://admin:astrapodcast!@auxiom-backend.7edkill.mongodb.net/?retryWrites=true&w=majority&appName=auxiom-backend")
 
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['auxiom_database']
@@ -97,7 +97,19 @@ def main():
         return updates, requery
 
 def handler(payload):
-    main()
+    updates, requeries = main()
+
+    # save requeries
+    for requery in requeries:
+        s3.save_serialized('requery', requery['bill_id'], requery)
+    
+    print(f"Saved {len(requeries)} requery items to S3.")
+
+    # send updates to SQS directly
+    # for update in updates:
+    #     sqs.send_to_scraper_queue(update)
+
+
 
 
 if __name__ == "__main__":

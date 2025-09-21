@@ -6,7 +6,7 @@ import { Construct } from 'constructs';
 
 export class CoreStack extends cdk.Stack {
   public readonly generalLambdaRole: iam.Role;
-  public readonly s3AstraBucket: s3.Bucket;
+  public readonly s3Bucket: s3.Bucket;
   public readonly s3ScraperBucket: s3.Bucket;
   public readonly clustererSQSQueue: sqs.Queue;
   public readonly contentSQSQueue: sqs.Queue;
@@ -15,8 +15,8 @@ export class CoreStack extends cdk.Stack {
     super(scope, id, props);
 
     // Create primary bucket
-    this.s3AstraBucket = new s3.Bucket(this, 's3AstraBucket', {
-      bucketName: `${this.account}-astra-bucket`,
+    this.s3Bucket = new s3.Bucket(this, 's3Bucket', {
+      bucketName: `${this.account}-bucket`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -42,7 +42,7 @@ export class CoreStack extends cdk.Stack {
         iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
       );
 
-    this.s3AstraBucket.grantReadWrite(this.generalLambdaRole);
+    this.s3Bucket.grantReadWrite(this.generalLambdaRole);
     this.s3ScraperBucket.grantReadWrite(this.generalLambdaRole);
 
     // Create Clusterer queue
@@ -70,7 +70,7 @@ export class CoreStack extends cdk.Stack {
 
     // Outputs
     new cdk.CfnOutput(this, 'BucketName', {
-        value: this.s3AstraBucket.bucketName,
+        value: this.s3Bucket.bucketName,
         description: 'Astra S3 Bucket to store data',
       });
     new cdk.CfnOutput(this, 'ScraperBucketName', {

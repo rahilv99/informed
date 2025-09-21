@@ -13,7 +13,7 @@ console.log(`CDK Working with Account ${process.env.CDK_DEFAULT_ACCOUNT} Region 
 const app = new cdk.App();
 
 const coreStack = new CoreStack(app, "CoreStack", {env});
-new ClustererStack(app, 'ClustererStack', {env, coreStack});
-new CronStack(app, 'CronStack', {env, coreStack});
+//new ClustererStack(app, 'ClustererStack', {env, coreStack});
+//new CronStack(app, 'CronStack', {env, coreStack});
 new ScraperStack(app, 'ScraperStack', {env, coreStack});
-new ContentStack(app, 'ContentStack', {env, coreStack});
+//new ContentStack(app, 'ContentStack', {env, coreStack});

@@ -1,5 +1,5 @@
 {
-  "name": "auxiom-app",
+  "name": "informed-app",
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",

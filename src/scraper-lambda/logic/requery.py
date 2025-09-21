@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from types.api import CongressGovAPI
-from types.congress import Bill
-import database
+from definitions.api import CongressGovAPI
+from definitions.congress import Bill
+import logic.database as database
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -11,7 +11,7 @@ import common.s3 as s3
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
-uri = "mongodb+srv://admin:astrapodcast!@auxiom-backend.7edkill.mongodb.net/?retryWrites=true&w=majority&appName=auxiom-backend"
+uri = os.environ.get("DB_URI", "mongodb+srv://admin:astrapodcast!@auxiom-backend.7edkill.mongodb.net/?retryWrites=true&w=majority&appName=auxiom-backend")
 
 def process_requery_items(requery_objects):
     """
@@ -101,7 +101,8 @@ def process_requery_items(requery_objects):
     
     print(f"\nRequery processing complete:")
     print(f"  Successful: {len(updated)}")
-    print(f"  Errors: {errors}")
+    for error in range(errors):
+        print(f"Logging error {error}")
     
 
 def handler(payload):
