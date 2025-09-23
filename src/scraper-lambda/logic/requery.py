@@ -2,11 +2,11 @@
 
 from definitions.api import CongressGovAPI
 from definitions.congress import Bill
-import logic.database as database
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import common.s3 as s3
+import s3
+import database
 
 
 # Replace with your actual API key
@@ -104,13 +104,24 @@ def process_requery_items(requery_objects):
     for error in range(errors):
         print(f"Logging error {error}")
     
+    return updated
 
 def handler(payload):
     """
     AWS Lambda handler function.
     """
     requery_objects = s3.restore_dir('requery')
-    process_requery_items(requery_objects)
+    updated = process_requery_items(requery_objects)
+
+    # send updates as new bills
+    for id in updated:
+        update = {
+            'action': 'extractor',
+            'document_id': id,
+            'type': 'new_bill'
+        }
+
+        # sqs.send_to_nlp_queue(update)
 
 if __name__ == "__main__":
     requery_objects = [

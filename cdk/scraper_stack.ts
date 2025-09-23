@@ -168,14 +168,15 @@ export class ScraperStack extends cdk.Stack {
         BUCKET_NAME: props.coreStack.s3Bucket.bucketName,
         SCRAPER_BUCKET_NAME: props.coreStack.s3ScraperBucket.bucketName,
         SCRAPER_QUEUE_URL: this.scraperSQSQueue.queueUrl,
-        CLUSTERER_QUEUE_URL: props.coreStack.clustererSQSQueue.queueUrl,
+        NLP_QUEUE_URL: props.coreStack.nlpSQSQueue.queueUrl,
         CONGRESS_API_KEY: process.env.CONGRESS_API_KEY!,
         DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
         DB_URI: process.env.DB_URI!,
 
       },
       role: scraperLambdaRole,
-      logGroup: logGroup
+      logGroup: logGroup,
+      layers: [props.coreStack.commonLayer]
     });
 
     const ScraperlambdaErrorMetric = lambdaFunction.metricErrors({

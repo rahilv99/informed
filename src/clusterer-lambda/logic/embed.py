@@ -17,7 +17,7 @@ import spacy
 import hashlib
 from datetime import datetime
 from io import StringIO
-import common.s3 as s3
+import common.python.s3 as s3
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
 

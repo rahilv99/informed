@@ -8,8 +8,10 @@ print(f"Bucket name is {bucket_name}")
 
 # Centralized area to define where various stuff is in S3 bucket
 def s3LocationMapping(type, key=''):
-    if (type == "REQUERY"):
+    if (type == "requery"):
         return f"requery/{key}"
+    else:
+        return ""
 
 def get_s3_url(user_id, episode_number, type):
     object_key = s3LocationMapping(user_id, episode_number, type)

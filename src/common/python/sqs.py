@@ -4,9 +4,9 @@ import json
 
 sqs = boto3.client('sqs')
 
-CLUSTERER_QUEUE_URL = os.getenv("CLUSTERER_QUEUE_URL")
-CONTENT_QUEUE_URL = os.getenv("CONTENT_QUEUE_URL")
-SCRAPER_QUEUE_URL = os.getenv("SCRAPER_QUEUE_URL")
+CLUSTERER_QUEUE_URL = os.getenv("CLUSTERER_QUEUE_URL", "")
+NLP_QUEUE_URL = os.getenv("NLP_QUEUE_URL", "")
+SCRAPER_QUEUE_URL = os.getenv("SCRAPER_QUEUE_URL", "")
 
 def send_to_clusterer_queue(message):
 
@@ -16,19 +16,19 @@ def send_to_clusterer_queue(message):
     )
 
     if response.get('MessageId'):
-        print(f"Message sent to scraper queue with ID: {response['MessageId']}")
+        print(f"Message sent to clusterer queue with ID: {response['MessageId']}")
     else:
         print("Failed to send message to scraper queue.")
 
-def send_to_content_queue(message):
+def send_to_nlp_queue(message):
 
     response = sqs.send_message(
-        QueueUrl=CONTENT_QUEUE_URL,
+        QueueUrl=NLP_QUEUE_URL,
         MessageBody=json.dumps(message)
     )
 
     if response.get('MessageId'):
-        print(f"Message sent to scraper queue with ID: {response['MessageId']}")
+        print(f"Message sent to nlp queue with ID: {response['MessageId']}")
     else:
         print("Failed to send message to scraper queue.")
 

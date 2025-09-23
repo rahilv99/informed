@@ -11,7 +11,7 @@ import psycopg2
 import json
 from datetime import datetime
 
-import common.s3
+import common.python.s3
 
 db_access_url = os.environ.get('DB_ACCESS_URL')
 TEMP_BASE = "/tmp"
@@ -512,7 +512,7 @@ def handler(payload):
     write_to_s3(num_turns, user_id, episode)
     
     # Get S3 URL for the saved audio
-    s3_url = common.s3.get_s3_url(user_id, episode, "PODCAST")
+    s3_url = common.python.s3.get_s3_url(user_id, episode, "PODCAST")
     
     # Update database with podcast information
     article_info = [{"title": article['title'], "description": article["summary"], "url": article['url']} for article in articles]

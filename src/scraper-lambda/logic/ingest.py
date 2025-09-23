@@ -3,8 +3,8 @@ import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import logic.database as database
-import common.s3 as s3
-import common.sqs as sqs
+import s3 as s3
+import sqs as sqs
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
@@ -107,7 +107,7 @@ def handler(payload):
 
     # send updates to SQS directly
     # for update in updates:
-    #     sqs.send_to_scraper_queue(update)
+    #     sqs.send_to_nlp_queue(update)
 
 
 

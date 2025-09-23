@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 import pandas as pd
 from io import StringIO
-import common.s3
+import common.python.s3
 
 
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')

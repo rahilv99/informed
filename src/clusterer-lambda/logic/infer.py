@@ -3,8 +3,8 @@ import psycopg2
 import json
 from sentence_transformers import SentenceTransformer
 
-import common.sqs
-import common.s3
+import common.python.sqs
+import common.python.s3
 
 # Database connection parameters
 
@@ -91,7 +91,7 @@ def handler(payload):
                 }
             }
 
-            common.sqs.send_to_content_queue(next_event)
+            common.python.sqs.send_to_content_queue(next_event)
             print(f"Sent message to SQS for next action {next_event['action']}")
 
             if plan != "free":
@@ -107,7 +107,7 @@ def handler(payload):
                     }
                 }
 
-                common.sqs.send_to_content_queue(next_event)
+                common.python.sqs.send_to_content_queue(next_event)
                 print(f"Sent message to SQS for next action {next_event['action']}")
 
         except Exception as e:
@@ -126,7 +126,7 @@ def handler(payload):
                 "keywords": interests
                 }
             }
-            common.sqs.send_to_clusterer_queue(next_event)
+            common.python.sqs.send_to_clusterer_queue(next_event)
             print(f"Sent message to SQS for next action {next_event['action']}")
         except Exception as e:
             print(f"Exception when sending message to SQS {e}")
