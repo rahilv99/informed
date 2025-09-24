@@ -54,3 +54,6 @@ venv
 __pycache__cdk.out
 __pycache__
 ___.pyc
+
+# packages
+*.egg-info

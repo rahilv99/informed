@@ -87,11 +87,9 @@ export class ClustererStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
       environment: {
-        ASTRA_BUCKET_NAME: props.coreStack.s3AstraBucket.bucketName,
+        BUCKET_NAME: props.coreStack.s3Bucket.bucketName,
         CLUSTERER_QUEUE_URL: props.coreStack.clustererSQSQueue.queueUrl,
-        CONTENT_QUEUE_URL: props.coreStack.contentSQSQueue.queueUrl,
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
-        GOVINFO_API_KEY: process.env.GOVINFO_API_KEY!,
+        NLP_QUEUE_URL: props.coreStack.nlpSQSQueue.queueUrl,
         DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!
       },
@@ -119,7 +117,7 @@ export class ClustererStack extends cdk.Stack {
 
     // Grant Lambda permissions to send messages to the queue
     props.coreStack.clustererSQSQueue.grantSendMessages(lambdaFunction);
-    props.coreStack.contentSQSQueue.grantSendMessages(lambdaFunction);
+    props.coreStack.nlpSQSQueue.grantSendMessages(lambdaFunction);
 
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(

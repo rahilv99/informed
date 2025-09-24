@@ -28,7 +28,8 @@ class Bill(Document):
             for action in self.data["actions"]:
                 new_action = {
                     "date": action.get("actionDate"),
-                    "text": action.get("text")
+                    "text": action.get("text"),
+                    "code": action.get("actionCode")
                 }
                 actions.append(new_action)
 
@@ -48,6 +49,28 @@ class Bill(Document):
             return actions[-1]
         else:
             return None
+        
+    def get_status(self):
+        if not isinstance(self.data.get("actions"), list):
+            actions = self.get_actions()
+        else:
+            actions = self.data.get("actions", [])
+        
+        if actions and len(actions) > 0:
+            latest = actions[-1]
+            code = latest.get("code")
+
+            # filter by codes
+            enacted = {36000, 37000, 38000, 39000, 40000}
+
+            if code in enacted:
+                self.data['status'] = "enacted"
+            else:
+                self.data['status'] = "pending"
+        else:
+            self.data['status'] = "pending"
+        
+        return self.data['status']
 
     def get_amendments(self):
         if isinstance(self.data.get("amendments"), dict) and "count" in self.data.get("amendments", {}):
@@ -149,6 +172,7 @@ class Bill(Document):
         self.get_summary()
         self.get_amendments()
         self.get_committees()
+        self.get_status()
 
         self.data["full"] = True
 
@@ -176,6 +200,7 @@ class Bill(Document):
             'committees': self.data.get("committees", []),
             'people': self.get_sponsors(),
             'url': f'https://www.congress.gov/bill/{self.congress}/{self.bill_type}/{self.bill_number}',
+            'status': self.data.get("status", "pending")
         }
 
         return bill

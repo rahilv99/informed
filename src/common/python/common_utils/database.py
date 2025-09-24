@@ -57,7 +57,7 @@ def insert_bill(bills_collection, bill_data):
         return False
 
 
-def update_bill(bills_collection, bill_id, bill_data):
+def update_bill(bills_collection, bill_data):
     """
     Update an existing bill in the database.
     
@@ -71,16 +71,36 @@ def update_bill(bills_collection, bill_id, bill_data):
     """
     try:
         result = bills_collection.update_one(
-            {"bill_id": bill_id},
+            {"bill_id": bill_data['bill_id']},
             {"$set": bill_data}
         )
         
         if result.modified_count > 0:
-            print(f"Updated existing bill: {bill_id}")
+            print(f"Updated existing bill: {bill_data['bill_id']}")
             return True
         else:
-            print(f"No changes made to bill: {bill_id}")
+            print(f"No changes made to bill: {bill_data['bill_id']}")
             return False
     except Exception as e:
         print(f"Error updating existing bill: {e}")
+        return False
+
+
+def insert_event(events_collection, event_data):
+    """
+    Insert a new event into the database.
+    
+    Args:
+        events_collection: MongoDB collection instance
+        event_data (json): The event data to insert
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        result = events_collection.insert_one(event_data)
+        print(f"Inserted new event with ID: {result.inserted_id}")
+        return True
+    except Exception as e:
+        print(f"Error inserting new event: {e}")
         return False

@@ -1,6 +1,4 @@
-openai
-pydub
-pandas
 boto3
-psycopg2-binary
-google-generativeai
+pymongo
+google-genai
+anthropic

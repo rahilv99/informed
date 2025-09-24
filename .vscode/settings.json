@@ -1,4 +1,3 @@
 {
-  "python.analysis.extraPaths": ["src/common/python"],
-  "python.autoComplete.extraPaths": ["./layer/python"]
+  "python.analysis.extraPaths": ["src/common/python/common_utils/"]
 }

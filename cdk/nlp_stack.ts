@@ -34,13 +34,13 @@ export class NlpStack extends cdk.Stack {
       memorySize: 2048,
       environment: {
         BUCKET_NAME: props.coreStack.s3Bucket.bucketName,
-        CLUSTERER_QUEUE_URL: props.coreStack.clustererSQSQueue.queueUrl,
         NLP_QUEUE_URL: props.coreStack.nlpSQSQueue.queueUrl,
-        DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
+        DB_URI: process.env.DB_URI!,
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
       },
       role: props.coreStack.generalLambdaRole,
-      logGroup: logGroup
+      logGroup: logGroup,
+      layers: [props.coreStack.commonLayer]
     });
 
     const NlplambdaErrorMetric = lambdaFunction.metricErrors({

@@ -3,8 +3,8 @@ import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import logic.database as database
-import s3 as s3
-import sqs as sqs
+import common_utils.s3 as s3
+import common_utils.sqs as sqs
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
@@ -50,7 +50,7 @@ def main():
                 if existing_bill:
                     # Bill exists - update it in the database
                     print(f"Bill {bill_id} already exists. Updating...")
-                    success = database.update_bill(bills_collection, bill_id, bill_data)
+                    success = database.update_bill(bills_collection, bill_data)
 
                     if success:
                         if len(text) == 0:

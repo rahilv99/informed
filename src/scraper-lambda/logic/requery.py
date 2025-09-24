@@ -5,8 +5,8 @@ from definitions.congress import Bill
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import s3
-import database
+import common_utils.s3 as s3
+import common_utils.database as database
 
 
 # Replace with your actual API key
@@ -71,7 +71,7 @@ def process_requery_items(requery_objects):
                         
                         # Update the database with the new text
                         update_data = {"text": text}
-                        success = database.update_bill(bills_collection, bill_id, update_data)
+                        success = database.update_bill(bills_collection, update_data)
                         
                         if success:
                             updated.append(bill_id)

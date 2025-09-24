@@ -3,8 +3,8 @@ import psycopg2
 import json
 from sentence_transformers import SentenceTransformer
 
-import common.python.sqs
-import common.python.s3
+import common_utils.sqs
+import common_utils.s3
 
 # Database connection parameters
 
@@ -126,7 +126,7 @@ def handler(payload):
                 "keywords": interests
                 }
             }
-            common.python.sqs.send_to_clusterer_queue(next_event)
+            common_utils.sqs.send_to_clusterer_queue(next_event)
             print(f"Sent message to SQS for next action {next_event['action']}")
         except Exception as e:
             print(f"Exception when sending message to SQS {e}")
