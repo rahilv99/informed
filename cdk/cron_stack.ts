@@ -32,8 +32,7 @@ export class CronStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(15),
       memorySize: 1*1024,
       environment: {
-        CLUSTERER_QUEUE_URL: props.coreStack.clustererSQSQueue.queueUrl,
-        DB_ACCESS_URL: process.env.DB_ACCESS_URL!
+        DB_ACCESS_URI: process.env.DB_ACCESS_URI!
       },
       role: props.coreStack.generalLambdaRole,
       logGroup: logGroup
@@ -56,9 +55,6 @@ export class CronStack extends cdk.Stack {
     const CronLambdaFailureAlarmTopic = new sns.Topic(this, 'CronLambdaFailureAlarmTopic');
     CronLambdaFailureAlarmTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
     CronLambdaFailureAlarm.addAlarmAction(new cloudwatchActions.SnsAction(CronLambdaFailureAlarmTopic));
-
-    // Grant Lambda permissions to send messages to the queue
-    props.coreStack.clustererSQSQueue.grantSendMessages(lambdaFunction);
 
     // Create a CloudWatch Event Rule for the cron schedule
     const scheduleRule = new events.Rule(this, 'ScheduleRule', {

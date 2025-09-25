@@ -10,9 +10,7 @@ export class CoreStack extends cdk.Stack {
   public readonly generalLambdaRole: iam.Role;
   public readonly s3Bucket: s3.Bucket;
   public readonly s3ScraperBucket: s3.Bucket;
-  public readonly clustererSQSQueue: sqs.Queue;
   public readonly nlpSQSQueue: sqs.Queue;
-  public readonly commonLayer: lambda.LayerVersion;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -48,17 +46,6 @@ export class CoreStack extends cdk.Stack {
     this.s3Bucket.grantReadWrite(this.generalLambdaRole);
     this.s3ScraperBucket.grantReadWrite(this.generalLambdaRole);
 
-    // Create Clusterer queue
-    this.clustererSQSQueue = new sqs.Queue(this, 'clustererSQSQueue', {
-        visibilityTimeout: cdk.Duration.seconds(60*15), // 15 minutes
-        deadLetterQueue: {
-            maxReceiveCount: 2,
-            queue: new sqs.Queue(this, 'custererDLQ', {
-                queueName: 'clustererSQSQueue_DLQ',
-                retentionPeriod: cdk.Duration.days(14), // Retain messages in DLQ for 14 days
-            })
-        },
-    });
 
     this.nlpSQSQueue = new sqs.Queue(this, 'nlpSQSQueue', {
         visibilityTimeout: cdk.Duration.seconds(60*15), // 15 minutes
@@ -71,12 +58,6 @@ export class CoreStack extends cdk.Stack {
         },
     });
 
-    this.commonLayer = new lambda.LayerVersion(this, 'CommonLayer', {
-      code: lambda.Code.fromAsset(path.join(__dirname, 'src/common')),
-      compatibleRuntimes: [lambda.Runtime.PYTHON_3_12],
-      description: 'Shared Utils Layer',
-    });
-
     // Outputs
     new cdk.CfnOutput(this, 'BucketName', {
         value: this.s3Bucket.bucketName,
@@ -86,9 +67,5 @@ export class CoreStack extends cdk.Stack {
         value: this.s3ScraperBucket.bucketName,
         description: 'Scraper bucket for news indexing',
       });
-    new cdk.CfnOutput(this, 'CommonLayerArn', {
-      value: this.commonLayer.layerVersionArn,
-      exportName: 'commonLayerArn',
-    });
   }
 }

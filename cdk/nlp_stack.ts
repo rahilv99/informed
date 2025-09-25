@@ -27,8 +27,10 @@ export class NlpStack extends cdk.Stack {
     })
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'NlpFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/nlp-lambda', {
+      code: lambda.DockerImageCode.fromImageAsset('src', {
         platform: Platform.LINUX_AMD64,
+        buildArgs: {},
+        file: 'nlp-lambda/Dockerfile'
       }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
@@ -39,8 +41,7 @@ export class NlpStack extends cdk.Stack {
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
       },
       role: props.coreStack.generalLambdaRole,
-      logGroup: logGroup,
-      layers: [props.coreStack.commonLayer]
+      logGroup: logGroup
     });
 
     const NlplambdaErrorMetric = lambdaFunction.metricErrors({

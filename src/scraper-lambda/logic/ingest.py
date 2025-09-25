@@ -25,10 +25,11 @@ def main():
         # The get_bills method now returns a list of Bill objects directly
         bills = api.get_bills(date_since_days=1)
 
-        print(f"Retrieved {len(bills)} bills updated in the last 2 days.")
+        print(f"Retrieved {len(bills)} bills updated in the last 1 day.")
 
         updates = []
         requery = []
+        seen = set()
         for i, bill in enumerate(bills):
             try:
                 # Check if bill is already in database
@@ -47,9 +48,14 @@ def main():
                 # Convert bill to dictionary with all information
                 bill_data = bill.to_dict()
 
-                if existing_bill:
+                if existing_bill or bill_id in seen:
                     # Bill exists - update it in the database
                     print(f"Bill {bill_id} already exists. Updating...")
+
+                    if existing_bill and len(existing_bill['text']) > 0 and len(text) == 0:
+                        print("Warning: Encountered stale version of bill. Discarding.")
+                        continue
+
                     success = database.update_bill(bills_collection, bill_data)
 
                     if success:
@@ -87,6 +93,8 @@ def main():
                                 'type': 'new_bill'
                             }
                             updates.append(update_item)
+                
+                seen.add(bill_id)
 
             except Exception as e:
                 print(f"Error getting information for bill {i}: {e}")

@@ -30,6 +30,7 @@ Definition of an event:
 One or more spans of bill text that constitutes a change in policy for one or more topics.
 Must include enough context to determine what the change is and what it applies to.
 All details related to the event should be encapsulated in the group of spans.
+Each individual event must be different from the other events in the bill.
 
 For each event, return a JSON object in the following format:
 {
@@ -43,7 +44,7 @@ For each event, return a JSON object in the following format:
 Guidelines:
 - Topics are broad policy areas where the U.S. government takes a stance (e.g., "Healthcare", "Defense", "Education", "Energy", "Immigration").
 - Tags are narrower descriptors that specify the scope within a topic (e.g., for Healthcare → "Medicare", "drug pricing"; for Energy → "renewable energy", "oil subsidies")
-- Summaries are to be read independent of the bill. Write a concise paragraph overview of the event and bill context.
+- Summaries are a concise overview of the event with necessary context on the bill. It will be viewed outside of the context of the bill.
 - Extract all unique events in the bill. Each event must be completely different from the other events. Merge similar events.
 - There is no minimum or maximum number of events. Be sure all events meet the requirements outlined. 
 - Prune events that are simply minor, technical, or procedural details of the bill (such as budget scoring rules, effective dates, definitions, or clerical amendments). Only include substantive policy changes that affect how government programs, funding, or regulations actually operate.

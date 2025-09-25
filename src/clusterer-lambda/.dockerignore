@@ -1,5 +1,0 @@
-**/Dockerfile*
-__pycache__
-*.pyc
-venv
-tmp

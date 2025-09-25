@@ -158,8 +158,10 @@ export class ScraperStack extends cdk.Stack {
     props.coreStack.s3ScraperBucket.grantReadWrite(scraperLambdaRole);
 
     const lambdaFunction = new lambda.DockerImageFunction(this, 'ScraperFunction', {
-      code: lambda.DockerImageCode.fromImageAsset('src/scraper-lambda', {
+      code: lambda.DockerImageCode.fromImageAsset('src', {
         platform: Platform.LINUX_AMD64,
+        buildArgs: {},
+        file: 'scraper-lambda/Dockerfile'
       }),
       timeout: cdk.Duration.minutes(15),
       memorySize: 2048,
@@ -175,8 +177,7 @@ export class ScraperStack extends cdk.Stack {
 
       },
       role: scraperLambdaRole,
-      logGroup: logGroup,
-      layers: [props.coreStack.commonLayer]
+      logGroup: logGroup
     });
 
     const ScraperlambdaErrorMetric = lambdaFunction.metricErrors({
@@ -200,7 +201,6 @@ export class ScraperStack extends cdk.Stack {
 
     // Grant Lambda permissions to send messages to the queue
     this.scraperSQSQueue.grantSendMessages(lambdaFunction);
-    props.coreStack.clustererSQSQueue.grantSendMessages(lambdaFunction);
     
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
