@@ -9,12 +9,14 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 
 dotenv.config();
 
 interface ExtendedProps extends cdk.StackProps {
   readonly coreStack: CoreStack;
+  readonly scraperQueueArn: string;
 }
 
 export class NlpStack extends cdk.Stack {
@@ -37,8 +39,10 @@ export class NlpStack extends cdk.Stack {
       environment: {
         BUCKET_NAME: props.coreStack.s3Bucket.bucketName,
         NLP_QUEUE_URL: props.coreStack.nlpSQSQueue.queueUrl,
+        SCRAPER_QUEUE_ARN: props.scraperQueueArn,
         DB_URI: process.env.DB_URI!,
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
       },
       role: props.coreStack.generalLambdaRole,
       logGroup: logGroup
@@ -64,6 +68,26 @@ export class NlpStack extends cdk.Stack {
 
     // Grant Lambda permissions to send messages to the queue
     props.coreStack.nlpSQSQueue.grantSendMessages(lambdaFunction);
+
+    // Create a specific IAM policy for EventBridge rule management
+    const eventBridgeRulePolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'events:PutRule',
+        'events:DeleteRule',
+        'events:PutTargets',
+        'events:RemoveTargets',
+        'events:ListRules',
+        'events:ListTargetsByRule',
+        'events:DescribeRule'
+      ],
+      resources: [
+        `arn:aws:events:${this.region}:${this.account}:rule/batch-check-*`
+      ]
+    });
+
+    // Add the specific EventBridge rule policy to the Lambda function's role
+    lambdaFunction.addToRolePolicy(eventBridgeRulePolicy);
 
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(

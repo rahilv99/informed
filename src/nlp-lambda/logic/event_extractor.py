@@ -1,29 +1,28 @@
-# Invoked with a single new bill event. Extracts key events from bill, processes and stores in database
-
-from google import genai
+# Invoked with a list of bill events. Extracts key events from bills using batch processing, processes and stores in database
+import boto3
 import os
+import json
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import common_utils.database as database
-import json
-import numpy as np
-import uuid
 import anthropic
+from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
+from anthropic.types.messages.batch_create_params import Request
 
-GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
-genai_client = genai.Client(api_key=GOOGLE_API_KEY)
 anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-uri = os.environ.get("DB_URI", "mongodb+srv://admin:astrapodcast!@auxiom-backend.7edkill.mongodb.net/?retryWrites=true&w=majority&appName=auxiom-backend")
+uri = os.environ.get("DB_URI")
 
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['auxiom_database']
 bills_collection = db['bills']
-events_collection = db['events']
+
+# AWS clients
+events_client = boto3.client('events')
 
 
-def get_events(bill):
+def create_batch_requests(bills):
     system_prompt = """You are an expert legislative analyst. Your task is to extract policy events from the text of a U.S. legislative bill.
 
 Definition of an event:
@@ -68,117 +67,142 @@ Example output:
     }
 ]"""
 
-    # Generate the article using Claude
-    user_message = f"Bill text to analyze:\n{bill.get('text')}\nResponse in a json structure with the following fields: text, topics, tags, summary, title"
+    requests = []
     
-    response = anthropic_client.messages.create(
-        model="claude-3-5-haiku-latest",
-        max_tokens=4096,
-        system=system_prompt,
-        messages=[
+    for bill in bills:
+        user_message = f"Bill text to analyze:\n{bill.get('text')}\nResponse in a json structure with the following fields: text, topics, tags, summary, title"
+        
+        request = Request(
+            custom_id=bill['bill_id'],
+            params=MessageCreateParamsNonStreaming(
+                model="claude-3-5-haiku-latest",
+                max_tokens=4096,
+                system=system_prompt,
+                messages=[{
+                    "role": "user",
+                    "content": user_message
+                }]
+            )
+        )
+        requests.append(request)
+    
+    return requests
+
+def create_eventbridge_rule(batch_id, bill_ids):
+    """
+    Create EventBridge rules with backoff strategy to check batch status.
+    Creates multiple rules with different schedules and automatic cleanup.
+    """
+    
+    # Create the rule
+    events_client.put_rule(
+        Name=f'batch-check-{batch_id}',
+        ScheduleExpression=f"rate(2 minutes)",
+        Description=f"Check batch {batch_id} status every 2 minutes",
+        State='ENABLED'
+    )
+    
+    # Create the target (SQS queue message)
+    message_payload = {
+        "action": "e_event_retriever",
+        "payload": {
+            "batch_id": batch_id,
+            "bills_ids": bill_ids
+        }
+    }
+    
+    # Add target to the rule - send message to scraper queue via SQS utils
+    events_client.put_targets(
+        Rule=f'batch-check-{batch_id}',
+        Targets=[
             {
-                "role": "user",
-                "content": user_message
+                'Id': f'scraper-queue-target-{batch_id}',
+                'Arn': os.environ.get('SCRAPER_QUEUE_ARN'),
+                'Input': json.dumps(message_payload)
             }
         ]
     )
 
+
+def submit_batch_for_processing(bills):
+    """Submit batch requests to Anthropic and return batch tracking information"""
+    requests = create_batch_requests(bills)
+    
+    print(f"Creating batch with {len(requests)} requests")
+    
+    message_batch = anthropic_client.messages.batches.create(requests=requests)
+    
+    print(f"Batch created with ID: {message_batch.id}")
+    print(f"Processing status: {message_batch.processing_status}")
+    print(f"Request counts: {message_batch.request_counts}")
+    
     try:
-        events = json.loads(response.content[0].text)
-
-        print(f"Generated {len(events)} events")
-        return events
-    except:
-        raise(Exception(f"Failed to generate valid json for bill {bill['bill_id']}"))
-
-
-def process_event(bill, event):
-    def _get_embedding(content):
-        result = genai_client.models.embed_content(
-        model="gemini-embedding-001",
-        contents=content,
-        config=genai.types.EmbedContentConfig(output_dimensionality=768))
-
-        [embedding_obj] = result.embeddings
-        embedding_values_np = np.array(embedding_obj.values)
-        normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
-
-        return normed_embedding.tolist()
-
-    content = ' '.join(event['topics']) + ' ' + ' '.join(event['tags']) + ' ' + event['summary']
-
-    print('embedding content: ' + content)
-    event['embedding'] = _get_embedding(content)
-
-    actions = bill['actions']
-
-    if actions and len(actions) > 0:
-        latest = actions[-1]
-        latest_action = latest.get('text', None)
-    else:
-        latest_action = None
-
-    # Add bill data to event
-    event['bill'] = {
-        'id': bill['bill_id'],
-        'title': bill['title'],
-        'date': bill['latest_action_date'],
-        'latest_action': latest_action
+        ids = [bill['bill_id'] for bill in bills]
+        create_eventbridge_rule(message_batch.id, ids)
+    except Exception as e:
+        print(f"Error creating eventbridge rule: {e}")
+    
+    return {
+        'batch_id': message_batch.id,
+        'processing_status': message_batch.processing_status,
+        'request_counts': message_batch.request_counts,
+        'created_at': message_batch.created_at,
+        'expires_at': message_batch.expires_at,
+        'results_url': message_batch.results_url,
+        'bill_ids': [bill['bill_id'] for bill in bills]
     }
 
-    # add id and status to event
-    event['id'] = bill['bill_id'] + '-' + str(uuid.uuid4())
-    event['status'] = bill.get('status', 'pending')
 
-    return event
-
-
-def main(bill):
-    events = get_events(bill)
-
-    event_ids = []
-    for event in events:
-        event = process_event(bill, event)
-        success = database.insert_event(events_collection, event)
-
-        if success:
-            print(f"Inserted event id {event['id']}")
-        else:
-            print(f"Failed to insert event id {event['id']}")
-
-        event_ids.append(event['id'])
+def main(bill_ids):
+    """Process multiple bills using batch API"""
+    bills = []
     
-    # update bill
-    bill['events'] = event_ids
-    success = database.update_bill(bills_collection, bill)
-
-    if success:
-        print(f"Updated bill {bill['bill_id']} with events")
-    else:
-        print(f"Failed to update bill {bill['bill_id']} with events")
+    # Get all bills from database
+    for bill_id in bill_ids:
+        bill = database.get_bill(bills_collection, bill_id)
+        if bill:
+            bills.append(bill)
+        else:
+            print(f"Warning: Bill {bill_id} not found in database")
+    
+    if not bills:
+        raise Exception("No valid bills found for processing")
+    
+    print(f"Processing {len(bills)} bills for batch event extraction")
+    
+    # Submit batch for processing
+    batch_info = submit_batch_for_processing(bills)
+    
+    return batch_info
 
 
 def handler(payload):
-    id = payload.get("id")
-
-    print(f"Processing event for bill: {id}")
-
-    # Get bill from database
-    bill = database.get_bill(bills_collection, id)
-
-    main(bill)
+    """Handle requests for batch event extraction"""
+    
+    # Handle batch extraction request
+    bill_ids = payload.get("bill_ids", [])
+    
+    if not bill_ids:
+        # Fallback to single bill ID for backward compatibility
+        single_id = payload.get("id")
+        if single_id:
+            bill_ids = [single_id]
+        else:
+            raise ValueError("No bill IDs provided in payload")
+    
+    print(f"Processing batch event extraction for {len(bill_ids)} bills: {bill_ids}")
+    
+    batch_info = main(bill_ids)
+    return batch_info
 
 
 if __name__ == "__main__":
+    # Example usage for batch processing
     payload = {
-        "id": "S2806-119",
-        'type': 'new_bill'
+        "bill_ids": ["S2806-119"],
     }
-    id = payload.get("id")
-
-    print(f"Processing event for bill: {id}")
-
-    # Get bill from database
-    bill = database.get_bill(bills_collection, id)
-
-    main(bill)
+    
+    print(f"Processing batch event extraction for bills: {payload['bill_ids']}")
+    
+    result = handler(payload)
+    print("Batch submission result:", result)

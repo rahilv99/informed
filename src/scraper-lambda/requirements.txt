@@ -1,8 +1,6 @@
 pymongo
 boto3
 PyPDF2
-fuzzywuzzy
-python-Levenshtein
 requests
 beautifulsoup4
 psycopg2-binary

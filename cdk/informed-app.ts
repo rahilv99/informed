@@ -13,5 +13,9 @@ const app = new cdk.App();
 
 const coreStack = new CoreStack(app, "CoreStack", {env});
 //new CronStack(app, 'CronStack', {env, coreStack});
-new ScraperStack(app, 'ScraperStack', {env, coreStack});
-new NlpStack(app, 'NlpStack', {env, coreStack});
+const scraperStack = new ScraperStack(app, 'ScraperStack', {env, coreStack});
+new NlpStack(app, 'NlpStack', {
+  env, 
+  coreStack, 
+  scraperQueueArn: scraperStack.scraperSQSQueue.queueArn
+});

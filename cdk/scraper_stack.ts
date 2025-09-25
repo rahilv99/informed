@@ -22,7 +22,7 @@ interface ExtendedProps extends cdk.StackProps {
 }
 
 export class ScraperStack extends cdk.Stack {
-  private  readonly scraperSQSQueue: sqs.Queue;
+  public readonly scraperSQSQueue: sqs.Queue;
 
   constructor(scope: Construct, id: string, props: ExtendedProps) {
     super(scope, id, props);
@@ -144,6 +144,34 @@ export class ScraperStack extends cdk.Stack {
     TotalRequeryErrorTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
     TotalRequeryErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(TotalRequeryErrorTopic));
 
+    // Metric filter and alarm for EventBridge rule creation errors
+    new logs.MetricFilter(this, 'PollCreationErrorFilter', {
+      logGroup,
+      metricNamespace: 'Scraper/Metrics',
+      metricName: 'PollCreationError',
+      filterPattern: logs.FilterPattern.literal('Error creating eventbridge rule'),
+      metricValue: '1',
+    });
+
+    const PollCreationErrorMetric = new cloudwatch.Metric({
+      namespace: 'Scraper/Metrics',
+      metricName: 'PollCreationError',
+      statistic: 'Sum',
+      period: cdk.Duration.hours(20),
+    });
+
+    const PollCreationErrorAlarm = new cloudwatch.Alarm(this, 'PollCreationErrorAlarm', {
+      metric: PollCreationErrorMetric,
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      alarmDescription: 'Alarm when EventBridge rule creation fails',
+    });
+
+    const PollCreationErrorTopic = new sns.Topic(this, 'PollCreationErrorTopic');
+    PollCreationErrorTopic.addSubscription(new subs.EmailSubscription('rahilv99@gmail.com'));
+    PollCreationErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(PollCreationErrorTopic));
+
     const scraperLambdaRole = new iam.Role(this, 'ScraperLambdaRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
     });
@@ -174,6 +202,7 @@ export class ScraperStack extends cdk.Stack {
         CONGRESS_API_KEY: process.env.CONGRESS_API_KEY!,
         DB_ACCESS_URL: process.env.DB_ACCESS_URL!,
         DB_URI: process.env.DB_URI!,
+        SCRAPER_QUEUE_ARN: this.scraperSQSQueue.queueArn
 
       },
       role: scraperLambdaRole,
