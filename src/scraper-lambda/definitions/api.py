@@ -28,7 +28,6 @@ class CongressGovAPI:
     def _make_request(self, endpoint, params=None):
         if params is None:
             params = {}
-        print(f"Query to: https://www.congress.gov/{endpoint}")
         params["api_key"] = self.api_key
         url = f"{self.BASE_URL}/{endpoint}"
         response = requests.get(url, params=params)

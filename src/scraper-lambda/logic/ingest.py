@@ -2,13 +2,13 @@ from definitions.api import CongressGovAPI
 import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-import logic.database as database
+import common_utils.database as database
 import common_utils.s3 as s3
 import common_utils.sqs as sqs
 
 # Replace with your actual API key
-API_KEY = os.environ.get("CONGRESS_API_KEY", '7NxXpjZniUGLLvbeCp1q0bOVEitgvfZwl4zym9iE')
-uri = os.environ.get("DB_URI", "mongodb+srv://admin:astrapodcast!@auxiom-backend.7edkill.mongodb.net/?retryWrites=true&w=majority&appName=auxiom-backend")
+API_KEY = os.environ.get("CONGRESS_API_KEY")
+uri = os.environ.get("DB_URI")
 
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['auxiom_database']

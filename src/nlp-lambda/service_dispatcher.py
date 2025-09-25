@@ -1,7 +1,4 @@
-import logic.nlp
-import logic.article_publisher
-import logic.ses
-import logic.notify
+import logic.event_extractor as event_extractor
 import json
 import traceback
 
@@ -35,10 +32,7 @@ def _handler(event, context):
 
     # Map actions to internal functions
     action_map = {
-        "e_publish": logic.article_publisher.handler, # write articles
-        "e_nlp": logic.nlp.handler, # create podcasts
-        "e_email": logic.ses.handler, # send newsletters
-        "e_notify": logic.notify.handler, # notify user of issue
+        "e_event_extractor": event_extractor.handler
     }
 
     # Route to the appropriate function
