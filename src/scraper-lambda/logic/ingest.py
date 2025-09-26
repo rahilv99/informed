@@ -104,7 +104,7 @@ def main():
 
         return updates, requery
 
-def handler(payload):
+def handler():
     updates, requeries = main()
 
     # save requeries
@@ -114,8 +114,7 @@ def handler(payload):
     print(f"Saved {len(requeries)} requery items to S3.")
 
     # send updates to SQS directly
-    # for update in updates:
-    #     sqs.send_to_nlp_queue(update)
+    # sqs.send_to_nlp_queue(updates)
 
 
 
@@ -130,5 +129,4 @@ if __name__ == "__main__":
     print(f"Saved {len(requeries)} requery items to S3.")
 
     # send updates to SQS directly
-    for update in updates:
-        sqs.send_to_scraper_queue(update)
+    sqs.send_to_nlp_queue(updates)

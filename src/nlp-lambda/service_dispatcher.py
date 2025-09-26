@@ -1,4 +1,5 @@
 import logic.event_extractor as event_extractor
+import logic.event_retriever as event_retriever
 import json
 import traceback
 
@@ -32,7 +33,8 @@ def _handler(event, context):
 
     # Map actions to internal functions
     action_map = {
-        "e_event_extractor": event_extractor.handler
+        "e_event_extractor": event_extractor.handler,
+        "e_event_retriever": event_retriever.handler
     }
 
     # Route to the appropriate function

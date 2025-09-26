@@ -111,13 +111,13 @@ def create_eventbridge_rule(batch_id, bill_ids):
         }
     }
     
-    # Add target to the rule - send message to scraper queue via SQS utils
+    # Add target to the rule - send message to nlp queue via SQS utils
     events_client.put_targets(
         Rule=f'batch-check-{batch_id}',
         Targets=[
             {
-                'Id': f'scraper-queue-target-{batch_id}',
-                'Arn': os.environ.get('SCRAPER_QUEUE_ARN'),
+                'Id': f'nlp-queue-target-{batch_id}',
+                'Arn': os.environ.get('NLP_QUEUE_ARN'),
                 'Input': json.dumps(message_payload)
             }
         ]

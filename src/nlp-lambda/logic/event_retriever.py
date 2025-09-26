@@ -187,7 +187,7 @@ def cleanup_eventbridge_rule(batch_id):
     # Remove targets first
     events_client.remove_targets(
         Rule=f'batch-check-{batch_id}',
-        Ids=[f'scraper-queue-target-{batch_id}']
+        Ids=[f'nlp-queue-target-{batch_id}']
     )
     
     # Delete the rule

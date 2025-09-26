@@ -16,7 +16,6 @@ dotenv.config();
 
 interface ExtendedProps extends cdk.StackProps {
   readonly coreStack: CoreStack;
-  readonly scraperQueueArn: string;
 }
 
 export class NlpStack extends cdk.Stack {
@@ -39,10 +38,10 @@ export class NlpStack extends cdk.Stack {
       environment: {
         BUCKET_NAME: props.coreStack.s3Bucket.bucketName,
         NLP_QUEUE_URL: props.coreStack.nlpSQSQueue.queueUrl,
-        SCRAPER_QUEUE_ARN: props.scraperQueueArn,
         DB_URI: process.env.DB_URI!,
         GOOGLE_API_KEY: process.env.GOOGLE_API_KEY!,
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
+        NLP_QUEUE_ARN: props.coreStack.nlpSQSQueue.queueArn
       },
       role: props.coreStack.generalLambdaRole,
       logGroup: logGroup

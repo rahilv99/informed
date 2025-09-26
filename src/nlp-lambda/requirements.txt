@@ -2,3 +2,4 @@ boto3
 pymongo
 google-genai
 anthropic
+numpy
