@@ -4,20 +4,26 @@ import hdbscan
 import numpy as np
 from datetime import datetime
 from collections import defaultdict
+from mangum import Mangum
+import os
+from pymongo.server_api import ServerApi
 
 app = FastAPI()
 
 # MongoDB Atlas client
 # 👉 Set MONGODB_URI in AWS Lambda environment variables
-client = MongoClient("DB_URI")
+uri = os.environ.get("DB_URI")
+
+client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["auxiom_database"]
 events = db["events"]
 
 @app.get("/search")
 async def search(query: str, top_k: int = 50, min_cluster_size: int = 2):
     # Step 1: Query Atlas Search
+    print(f"Search endpoint invoked with {query}")
     pipeline = [
-        {"$search": {"index": "tags", "text": {"query": query, "path": ["title", "body"]}}},
+        {"$search": {"index": "tags", "text": {"query": query, "path": ["tags", "topics"]}}},
         {"$limit": top_k}
     ]
     results = list(events.aggregate(pipeline))
@@ -25,13 +31,16 @@ async def search(query: str, top_k: int = 50, min_cluster_size: int = 2):
     if not results:
         return {"clusters": []}
 
+    print(f"Found {len(results)} results")
     # Step 2: Extract embeddings
     embeddings = np.array([r["embedding"] for r in results])
 
     # Step 3: Cluster
+    print("Clustering...")
     clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size)
+    print("Fitting...")
     labels = clusterer.fit_predict(embeddings)
-
+    print("Done clustering!")
     # Step 4: Group & sort
     clusters = defaultdict(list)
     for label, item in zip(labels, results):
@@ -47,13 +56,19 @@ async def search(query: str, top_k: int = 50, min_cluster_size: int = 2):
     for label in clusters:
         for item in clusters[label]:
             del item["embedding"]
+            del item["_id"]
 
-    return {
+
+    ans = {
         "clusters": [
             {"cluster_id": int(label), "items": clusters[label]}
             for label in clusters
         ]
     }
+
+    return ans
+
+handler = Mangum(app)
 
 if __name__ == "__main__":
     import uvicorn
