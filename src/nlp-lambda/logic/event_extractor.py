@@ -17,6 +17,7 @@ uri = os.environ.get("DB_URI")
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['auxiom_database']
 bills_collection = db['bills']
+events_collection = db['events']
 
 # AWS clients
 events_client = boto3.client('events')
@@ -107,7 +108,7 @@ def create_eventbridge_rule(batch_id, bill_ids):
         "action": "e_event_retriever",
         "payload": {
             "batch_id": batch_id,
-            "bills_ids": bill_ids
+            "bill_ids": bill_ids
         }
     }
     
@@ -180,15 +181,13 @@ def handler(payload):
     """Handle requests for batch event extraction"""
     
     # Handle batch extraction request
-    bill_ids = payload.get("bill_ids", [])
-    
-    if not bill_ids:
-        # Fallback to single bill ID for backward compatibility
-        single_id = payload.get("id")
-        if single_id:
-            bill_ids = [single_id]
-        else:
-            raise ValueError("No bill IDs provided in payload")
+    bill_ids = payload.get('ids')
+    type = payload.get('type')
+
+    if type == 'updated_bill':
+        # Clear all events for these bills
+        for bill_id in bill_ids:
+            database.clear_events(events_collection, bill_id)
     
     print(f"Processing batch event extraction for {len(bill_ids)} bills: {bill_ids}")
     

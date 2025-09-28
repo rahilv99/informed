@@ -211,12 +211,14 @@ def main(batch_id, bill_ids):
                 
                 retry.append(bill.get('bill_id'))
 
-        sqs.send_to_nlp_queue({
-            "action": "e_event_extractor",
-            "payload": {
-                "bills_ids": [bill.get('bill_id')]
-            }
-        })
+        if retry:
+            sqs.send_to_nlp_queue({
+                "action": "e_event_extractor",
+                "payload": {
+                    "bill_ids": retry,
+                    "type": "new_bill"
+                }
+            })
     # If batch is not completed, report status and wait
     elif result.get('status') == 'not_ready':
         print(result.get('message'))
@@ -232,14 +234,15 @@ def main(batch_id, bill_ids):
         sqs.send_to_nlp_queue({
             "action": "e_event_extractor",
             "payload": {
-                "bills_ids": bill_ids
+                "bill_ids": bill_ids,
+                "type": "new_bill"
             }
         })
 
 def handler(payload):
     """Handle event retriever requests from EventBridge or direct calls"""
     batch_id = payload.get('batch_id')
-    bill_ids = payload.get('bills_ids')
+    bill_ids = payload.get('bill_ids')
     
     print(f"Processing batch status check for {batch_id}")
     
@@ -252,9 +255,9 @@ if __name__ == "__main__":
     # Example usage for batch processing
     payload = {
         "batch_id": "msgbatch_019rntWnPMD5M7dz53qJNT4u",
-        "bills_ids": ["S2806-119"]
+        "bill_ids": ["S2806-119"]
     }
     
-    print(f"Processing batch event extraction for bills: {payload['bills_ids']}")
+    print(f"Processing batch event extraction for bills: {payload['bill_ids']}")
     
     handler(payload)

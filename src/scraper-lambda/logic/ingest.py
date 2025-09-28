@@ -27,11 +27,17 @@ def main():
         print(f"Retrieved {len(bills)} bills updated in the last 1 day.")
 
         updates = []
+        revisions = []
+        propogates = []
         seen = set()
         for i, bill in enumerate(bills):
             try:
                 # Check if bill is already in database
                 bill_id = bill.get_id()
+
+                if bill_id in seen:
+                    continue
+
                 existing_bill = database.get_bill(bills_collection, bill_id)
 
                 print(f"Bill ID: {bill_id}, Title: {bill.get_title()}, Latest Action: {bill.get_latest_action_date()}")
@@ -52,21 +58,38 @@ def main():
                 bill_data = bill.to_dict()
 
                 # TODO: issue with update / recognizing seen bills
-                if existing_bill or bill_id in seen:
+                if existing_bill:
                     # Bill exists - update it in the database
                     print(f"Bill {bill_id} already exists. Updating...")
 
                     success = database.update_bill(bills_collection, bill_data)
 
                     if success:
-                        # Add to updates list as an update
-                        update_item = {
-                            'action': 'extractor',
-                            'latest_action': bill.get_latest_action(),
-                            'bill_id': bill_id,
-                            'type': 'new_action'
-                        }
-                        updates.append(update_item)
+
+                        # First time seeing this bill's text
+                        if len(existing_bill['text']) == 0:
+                            update_item = {
+                                'action': 'e_extractor',
+                                'payload': {
+                                    'document_id': bill_id,
+                                    'type': 'new_bill'
+                                }
+                            }
+                            updates.append(bill_id)
+                        # Significant revision has been made
+                        elif abs(len(existing_bill['text']) - len(text)) > 1000:
+                            revisions.append(bill_id)
+                        # No updates, just new action
+                        else:
+                            item = {
+                                'action': 'e_propogator',
+                                'payload': {
+                                    'latest_action': bill.get_latest_action(),
+                                    'bill_id': bill_id,
+                                    'type': 'new_action'
+                                }
+                            }
+                            propogates.append(bill_id)
                 else:
                     # Bill doesn't exist - insert as new
                     print(f"Bill {bill_id} is new. Inserting...")
@@ -74,9 +97,11 @@ def main():
                     
                     if success:
                         update_item = {
-                            'action': 'extractor',
-                            'document_id': bill_id,
-                            'type': 'new_bill'
+                            'action': 'e_extractor',
+                            'payload': {
+                                'document_id': bill_id,
+                                'type': 'new_bill'
+                            }
                         }
                         updates.append(update_item)
                 
@@ -91,9 +116,35 @@ def main():
         return updates
 
 def handler(payload):
-    updates = main()
+    updates, revisions, propogates = main()
     # send updates to SQS directly
-    # sqs.send_to_nlp_queue(updates)
+
+    update_item = {
+        'action': 'e_event_extractor',
+        'payload': {
+            'ids': updates,
+            'type': 'new_bill'
+        }
+    }
+    sqs.send_to_nlp_queue(update_item)
+
+    revision_item = {
+        'action': 'e_event_extractor',
+        'payload': {
+            'ids': revisions,
+            'type': 'updated_bill'
+        }
+    }
+    sqs.send_to_nlp_queue(revision_item)
+
+    propogate_item = {
+        'action': 'e_propogator',
+        'payload': {
+            'ids': propogates,
+            'type': 'new_action'
+        }
+    }
+    sqs.send_to_nlp_queue(propogate_item)
 
 
 if __name__ == "__main__":

@@ -119,3 +119,12 @@ def insert_event(events_collection, event_data):
     except Exception as e:
         print(f"Error inserting new event: {e}")
         return False
+
+def clear_events(events_collection, bill_id):
+    try:
+        result = events_collection.delete_many({"bill_id": bill_id})
+        print(f"Deleted {result.deleted_count} events for bill {bill_id}")
+        return True
+    except Exception as e:
+        print(f"Error deleting events for bill {bill_id}: {e}")
+        return False
