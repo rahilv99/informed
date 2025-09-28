@@ -67,24 +67,6 @@ export class ScraperStack extends cdk.Stack {
       message: events.RuleTargetInput.fromObject(messagePayload)
     }));
 
-    // Create a CloudWatch Event Rule for the merge schedule (weekly)
-    const requeryRule = new events.Rule(this, 'requeryRule', {
-      schedule: events.Schedule.cron({
-      minute: '0',
-      hour: '9',
-      month: '*',
-      year: '*',
-      }),
-    });
-
-    const messagePayload2 = {
-      "action": "e_requery"
-    };
-
-    requeryRule.addTarget(new targets.SqsQueue(this.scraperSQSQueue, {
-      message: events.RuleTargetInput.fromObject(messagePayload2)
-    }));
-
     const logGroup = new logs.LogGroup(this, "ScraperLogGroup", {
       logGroupName: "ScraperLogGroup",
       retention: cdk.aws_logs.RetentionDays.ONE_MONTH

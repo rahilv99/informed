@@ -17,6 +17,13 @@ def test_connection(client):
         print(f"Error connecting to MongoDB: {e}")
         return False
 
+def get_all_bills(bill_collection):
+    try:
+        return list(bill_collection.find())
+    except Exception as e:
+        print(f"Error getting all bills: {e}")
+        return []
+
 
 def get_bill(bills_collection, bill_id):
     """
@@ -56,6 +63,14 @@ def insert_bill(bills_collection, bill_data):
         print(f"Error inserting new bill: {e}")
         return False
 
+def delete_bill(bills_collection,  id):
+    try:
+        result = bills_collection.delete_one({"_id": id})
+        print(f"Deleted bill with ID: {id}")
+        return True
+    except Exception as e:
+        print(f"Error deleting bill: {e}")
+        return False
 
 def update_bill(bills_collection, bill_data):
     """

@@ -32,6 +32,10 @@ async def search(query: str, top_k: int = 50, min_cluster_size: int = 2):
         return {"clusters": []}
 
     print(f"Found {len(results)} results")
+
+    if len(results) < min_cluster_size:
+        print("Too few results to cluster. Returning all results.")
+        return {"clusters": [{"cluster_id": 0, "items": results}]}
     # Step 2: Extract embeddings
     embeddings = np.array([r["embedding"] for r in results])
 

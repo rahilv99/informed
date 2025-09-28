@@ -3,7 +3,6 @@ import os
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import common_utils.database as database
-import common_utils.s3 as s3
 import common_utils.sqs as sqs
 
 # Replace with your actual API key
@@ -28,7 +27,6 @@ def main():
         print(f"Retrieved {len(bills)} bills updated in the last 1 day.")
 
         updates = []
-        requery = []
         seen = set()
         for i, bill in enumerate(bills):
             try:
@@ -42,57 +40,45 @@ def main():
                 text = bill.get_text()
                 print(f"{len(text)} characters of text extracted from the bill.")
 
+                # Skip bills with no text
+                if len(text) == 0:
+                    print(f"Skipping bill {bill_id} - no text available.")
+                    continue
+
                 subjects = bill.get_subjects()
                 print(f"Subjects: {subjects}")
 
                 # Convert bill to dictionary with all information
                 bill_data = bill.to_dict()
 
+                # TODO: issue with update / recognizing seen bills
                 if existing_bill or bill_id in seen:
                     # Bill exists - update it in the database
                     print(f"Bill {bill_id} already exists. Updating...")
 
-                    if existing_bill and len(existing_bill['text']) > 0 and len(text) == 0:
-                        print("Warning: Encountered stale version of bill. Discarding.")
-                        continue
-
                     success = database.update_bill(bills_collection, bill_data)
 
                     if success:
-                        if len(text) == 0:
-                            print("Warning: Text not yet available for this bill. Adding to requery queue.")
-                            requery.append({
-                                'bill_id': bill_id,
-                                'request': 'text'
-                            })
-                        else:
-                            # Add to updates list as an update
-                            update_item = {
-                                'action': 'extractor',
-                                'latest_action': bill.get_latest_action(),
-                                'bill_id': bill_id,
-                                'type': 'new_action'
-                            }
-                            updates.append(update_item)
+                        # Add to updates list as an update
+                        update_item = {
+                            'action': 'extractor',
+                            'latest_action': bill.get_latest_action(),
+                            'bill_id': bill_id,
+                            'type': 'new_action'
+                        }
+                        updates.append(update_item)
                 else:
                     # Bill doesn't exist - insert as new
                     print(f"Bill {bill_id} is new. Inserting...")
                     success = database.insert_bill(bills_collection, bill_data)
                     
-                    if success:                        
-                        if len(text) == 0:
-                            print("Warning: Text not yet available for this bill. Adding to requery queue.")
-                            requery.append({
-                                'bill_id': bill_id,
-                                'request': 'text'
-                            })
-                        else:
-                            update_item = {
-                                'action': 'extractor',
-                                'document_id': bill_id,
-                                'type': 'new_bill'
-                            }
-                            updates.append(update_item)
+                    if success:
+                        update_item = {
+                            'action': 'extractor',
+                            'document_id': bill_id,
+                            'type': 'new_bill'
+                        }
+                        updates.append(update_item)
                 
                 seen.add(bill_id)
 
@@ -100,33 +86,18 @@ def main():
                 print(f"Error getting information for bill {i}: {e}")
 
 
-        print(f"Processed {len(updates)} bill updates and added {len(requery)} new requery items.")
+        print(f"Processed {len(updates)} bill updates.")
 
-        return updates, requery
+        return updates
 
-def handler():
-    updates, requeries = main()
-
-    # save requeries
-    for requery in requeries:
-        s3.save_serialized('requery', requery['bill_id'], requery)
-    
-    print(f"Saved {len(requeries)} requery items to S3.")
-
+def handler(payload):
+    updates = main()
     # send updates to SQS directly
     # sqs.send_to_nlp_queue(updates)
 
 
-
-
 if __name__ == "__main__":
-    updates, requeries = main()
-
-    # save requeries
-    for requery in requeries:
-        s3.save_serialized('requery', requery['bill_id'], requery)
-    
-    print(f"Saved {len(requeries)} requery items to S3.")
+    updates = main()
 
     # send updates to SQS directly
     sqs.send_to_nlp_queue(updates)

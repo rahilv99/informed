@@ -70,7 +70,7 @@ def process_requery_items(requery_objects):
                         print(f"Successfully retrieved {len(text)} characters of text for bill {bill_id}")
                         
                         # Update the database with the new text
-                        update_data = {"text": text}
+                        update_data = {"text": text, "bill_id": bill_id}
                         success = database.update_bill(bills_collection, update_data)
                         
                         if success:
@@ -114,12 +114,15 @@ def handler(payload):
     updated = process_requery_items(requery_objects)
 
     # send updates as new bills
+    updates = []
     for id in updated:
         update = {
             'action': 'extractor',
             'document_id': id,
             'type': 'new_bill'
         }
+
+        updates.append(update)
 
         # sqs.send_to_nlp_queue(update)
 
