@@ -4,6 +4,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import common_utils.database as database
 import common_utils.sqs as sqs
+from datetime import datetime
 
 # Replace with your actual API key
 API_KEY = os.environ.get("CONGRESS_API_KEY")
@@ -32,6 +33,11 @@ def main():
         seen = set()
         for i, bill in enumerate(bills):
             try:
+                # Not historical bills
+                published_date = bill.get_published_date()
+                if published_date and datetime.strptime(published_date, '%Y-%m-%d').year >= 2022:
+                    continue
+                    
                 # Check if bill is already in database
                 bill_id = bill.get_id()
 
@@ -68,42 +74,20 @@ def main():
 
                         # First time seeing this bill's text
                         if len(existing_bill['text']) == 0:
-                            update_item = {
-                                'action': 'e_extractor',
-                                'payload': {
-                                    'document_id': bill_id,
-                                    'type': 'new_bill'
-                                }
-                            }
                             updates.append(bill_id)
                         # Significant revision has been made
                         elif abs(len(existing_bill['text']) - len(text)) > 1000:
                             revisions.append(bill_id)
                         # No updates, just new action
-                        else:
-                            item = {
-                                'action': 'e_propogator',
-                                'payload': {
-                                    'latest_action': bill.get_latest_action(),
-                                    'bill_id': bill_id,
-                                    'type': 'new_action'
-                                }
-                            }
-                            propogates.append(bill_id)
+                        elif existing_bill['latest_action'] != bill_data['latest_action']:
+                            propogates.append({'bill_id': bill_id, 'latest_action': bill_data['latest_action'], 'status': bill_data['status']})
                 else:
                     # Bill doesn't exist - insert as new
                     print(f"Bill {bill_id} is new. Inserting...")
                     success = database.insert_bill(bills_collection, bill_data)
                     
                     if success:
-                        update_item = {
-                            'action': 'e_extractor',
-                            'payload': {
-                                'document_id': bill_id,
-                                'type': 'new_bill'
-                            }
-                        }
-                        updates.append(update_item)
+                        updates.append(bill_id)
                 
                 seen.add(bill_id)
 
@@ -137,14 +121,16 @@ def handler(payload):
     }
     sqs.send_to_nlp_queue(revision_item)
 
-    propogate_item = {
-        'action': 'e_propogator',
-        'payload': {
-            'ids': propogates,
-            'type': 'new_action'
+    for item in propogates:
+        bill_id = item['bill_id']
+        # update all events for this bill
+        data = {
+            'bill': {
+                'latest_action': item['latest_action'],
+                'status': item['status']
+            }
         }
-    }
-    sqs.send_to_nlp_queue(propogate_item)
+        database.update_events(bills_collection, bill_id, data)
 
 
 if __name__ == "__main__":

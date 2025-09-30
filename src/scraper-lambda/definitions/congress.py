@@ -18,7 +18,10 @@ class Bill(Document):
         return self.data.get("title")
 
     def get_latest_action_date(self):
-        return self.data.get("latestAction", {}).get("actionDate")
+        return self.data.get("latestAction", {}).get("actionDate", "")
+
+    def get_published_date(self):
+        return self.data.get("introducedDate", "")
 
     def get_actions(self):
         if isinstance(self.data.get("actions"), dict) and "count" in self.data.get("actions", {}):

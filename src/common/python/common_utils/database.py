@@ -128,3 +128,12 @@ def clear_events(events_collection, bill_id):
     except Exception as e:
         print(f"Error deleting events for bill {bill_id}: {e}")
         return False
+
+def update_events(events_collection, bill_id, data):
+    try:
+        result = events_collection.update_many({"bill_id": bill_id}, {"$set": data})
+        print(f"Updated {result.modified_count} events for bill {bill_id}")
+        return True
+    except Exception as e:
+        print(f"Error updating events for bill {bill_id}: {e}")
+        return False
