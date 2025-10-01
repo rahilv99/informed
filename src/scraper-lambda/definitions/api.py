@@ -34,7 +34,7 @@ class CongressGovAPI:
         response.raise_for_status()  # Raise an exception for HTTP errors
         return response.json()
 
-    def get_bills(self, congress=None, bill_type=None, date_since_days=None):
+    def get_bills(self, congress=None, bill_type=None, date_since_days=None, offset=0):
         endpoint = "bill"
         params = {}
         if congress:

@@ -22,8 +22,15 @@ def main():
             print("Failed to connect to MongoDB. Exiting.")
             return
 
-        # The get_bills method now returns a list of Bill objects directly
-        bills = api.get_bills(date_since_days=1)
+        # Only give me bills from this congress
+        bills = []
+        offset = 0
+        while True:
+            page = api.get_bills(date_since_days=1, congress=119, offset=offset)
+            bills.extend(page)
+            if len(page) < 250: # last page
+                break
+            offset += 250
 
         print(f"Retrieved {len(bills)} bills updated in the last 1 day.")
 
@@ -35,7 +42,7 @@ def main():
             try:
                 # Not historical bills
                 published_date = bill.get_published_date()
-                if published_date and datetime.strptime(published_date, '%Y-%m-%d').year >= 2022:
+                if published_date and datetime.strptime(published_date, '%Y-%m-%d').year <= 2022:
                     continue
                     
                 # Check if bill is already in database
@@ -95,31 +102,33 @@ def main():
                 print(f"Error getting information for bill {i}: {e}")
 
 
-        print(f"Processed {len(updates)} bill updates.")
+        print(f"Processed {len(updates)} bill updates, {len(revisions)} bill revisions, and {len(propogates)} bill propogates.")
 
-        return updates
+        return updates, revisions, propogates
 
 def handler(payload):
     updates, revisions, propogates = main()
     # send updates to SQS directly
 
-    update_item = {
-        'action': 'e_event_extractor',
-        'payload': {
-            'ids': updates,
-            'type': 'new_bill'
+    if updates:
+        update_item = {
+            'action': 'e_event_extractor',
+            'payload': {
+                'ids': updates,
+                'type': 'new_bill'
+            }
         }
-    }
-    sqs.send_to_nlp_queue(update_item)
+        sqs.send_to_nlp_queue(update_item)
 
-    revision_item = {
-        'action': 'e_event_extractor',
-        'payload': {
-            'ids': revisions,
-            'type': 'updated_bill'
+    if revisions:
+        revision_item = {
+            'action': 'e_event_extractor',
+            'payload': {
+                'ids': revisions,
+                'type': 'updated_bill'
+            }
         }
-    }
-    sqs.send_to_nlp_queue(revision_item)
+        sqs.send_to_nlp_queue(revision_item)
 
     for item in propogates:
         bill_id = item['bill_id']
