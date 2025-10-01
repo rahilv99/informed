@@ -71,18 +71,38 @@ Example output:
     requests = []
     
     for bill in bills:
-        user_message = f"Bill text to analyze:\n{bill.get('text')}\nResponse in a json structure with the following fields: text, topics, tags, summary, title"
-        
+        if len(bill.get('text')) < 10000:
+            model = "claude-3-5-haiku-latest"
+        else:
+            model = "claude-sonnet-4-20250514"
+    
         request = Request(
             custom_id=bill['bill_id'],
             params=MessageCreateParamsNonStreaming(
-                model="claude-3-5-haiku-latest",
-                max_tokens=4096,
-                system=system_prompt,
-                messages=[{
-                    "role": "user",
-                    "content": user_message
-                }]
+                model=model,
+                max_tokens=12000,
+                temperature=0.7,
+                system="You are an expert legislative analyst. Your task is to extract policy events from the text of a U.S. legislative bill.\n\nDefinition of an event:\n- A substantive policy changes that affect how government programs, funding, or regulations operate.\n- Multiple sentences of bill text that constitutes a change in policy for one or more topics. Include all related sentences in the bill.\n- Include enough context to determine what the change is and what it applies to.\n- All details related to the event should be encapsulated in the text excerpt.\n\nExtraction Procedure\n- The goal is to maximize the number of events extracted and minimize noise (negligible events).\n- Collect all events that have unique results in the bill. Merge events that are related to the same result.\n- Prune events that are simply minor, technical, or procedural details of the bill (such as budget scoring rules, effective dates, definitions, or clerical amendments).\n- There is no minimum or maximum number of events. Be sure all events meet the requirements outlined. Return an empty array if there is no event that meets the guidelines above. \n- Only output valid JSON as a list of objects (no commentary, no explanation).\n\nFor each event, return a JSON object in the following format:\n\nJSON\n{\n\"text\": \"<exact excerpt of bill text describing the policy change>\",\n\"topics\": [\"<broad policy areas impacted>\"],\n\"tags\": [\"<specific descriptors within the topics>\"],\n\"overview\": \"<analysis of text contextualizing the main idea of the event in the goal of the bill>\",\n\"title\": \"<concise descriptor of event>\"\n}\n\nGuidelines:\n- Text is excerpt of bill text that constitutes a change in policy and all related details. Include any other excerpts of text from the bill that add valuable context. \n- Topics are broad policy areas where the U.S. government takes a stance (e.g., \"Healthcare\", \"Defense\", \"Education\", \"Energy\", \"Immigration\"). Topics are one word.\n- Tags are narrower descriptors that specify the scope within a topic (e.g., for Healthcare → \"Medicare\", \"drug pricing\"; for Energy → \"renewable energy\", \"oil subsidies\"). Tags should be just one level more specific than the topic, but still broad.\n- Overview is a summary of the bill's overall goal, specifying what the event achieves. Define any unknown entities. Include all information in the bill outside of the event that contextualizes the event.\n- Title is a short, concise, and specific descriptor with metrics included when possible.\n\nExample output:\n\n[\n    {\n        \"text\": \"Notwithstanding any other provision of law, the Secretary of Health and Human Services shall, beginning on January 1, 2026, negotiate directly with manufacturers of insulin products with respect to the prices that may be charged to prescription drug plans under part D of title XVIII of the Social Security Act for such products furnished to individuals entitled to benefits under such title.\",\n        \"topics\": [\"Healthcare\"],\n        \"tags\": [\"Medicare\", \"drug pricing\", \"insulin\"],\n        \"overview\": \"The Secretary of Health and Human Services will negotiate the price of insulin for Medicare beneficiaries.\",\n        \"title\": \"Insulin Prices to be Negotiated\"\n    },\n    {\n        \"text\": \"Of the amounts authorized to be appropriated for the Department of Defense for fiscal year 2026, the Secretary of Defense shall allocate not less than $500,000,000 for the purposes of planning, developing, and sustaining cybersecurity infrastructure, including but not limited to network modernization, threat detection systems, and defensive cyber operations.\",\n        \"topics\": [\"Defense\", \"Technology\"],\n        \"tags\": [\"cybersecurity\", \"infrastructure funding\"],\n        \"overview\": \"The Department of Defense allocates $500 million for cybersecurity infrastructure.\",\n        \"title\": \"$500M allocated for cybersecurity\"\n    }\n]",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"Bill text to analyze:\n{bill.get('text')}\nStructure your response as a list of JSONs with the following keys: text (string), topics (list), tags (list), overview(string), title (string). Only include this list, no comments or introduction.\n\n"
+                            }
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "["
+                            }
+                        ]
+                    }
+                ]
             )
         )
         requests.append(request)

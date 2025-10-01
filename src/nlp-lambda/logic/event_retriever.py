@@ -39,7 +39,7 @@ def process_event(bill, event):
 
         return normed_embedding.tolist()
 
-    content = ' '.join(event['topics']) + ' ' + ' '.join(event['tags']) + ' ' + event['summary']
+    content = ' '.join(event['topics']) + ' ' + ' '.join(event['tags']) + ' ' + event['overview']
 
     event['embedding'] = _get_embedding(content)
 
@@ -99,6 +99,7 @@ def process_batch_results(batch_id):
                 try:
                     # Parse the events from the response
                     events_json = result.result.message.content[0].text
+                    events_json = '[' + events_json # Add opening bracket from prefill
                     events = json.loads(events_json)
                     
                     # Get bill from database
