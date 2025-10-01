@@ -14,7 +14,7 @@ import random
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
-MAX_RETRIES = 10
+MAX_RETRIES = 15
 BASE_DELAY = 0.33
 MAX_DELAY = 15
 
@@ -30,9 +30,19 @@ class CongressGovAPI:
             params = {}
         params["api_key"] = self.api_key
         url = f"{self.BASE_URL}/{endpoint}"
-        response = requests.get(url, params=params)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        return response.json()
+        
+        # Use exponential backoff for retries
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = requests.get(url, params=params)
+                response.raise_for_status()  # Raise an exception for HTTP errors
+                return response.json()
+            except Exception as e:
+                if attempt == MAX_RETRIES - 1:
+                    raise e
+                # Exponential backoff with jitter
+                delay = min(BASE_DELAY * 2 ** attempt + random.uniform(0, 1), MAX_DELAY)
+                time.sleep(delay)
 
     def get_bills(self, congress=None, bill_type=None, date_since_days=None, offset=0):
         endpoint = "bill"
@@ -49,6 +59,7 @@ class CongressGovAPI:
         params["limit"] = 250  # Maximum limit
         params["offset"] = offset
 
+        print('making request with params', params)
         data = self._make_request(endpoint, params=params)
         bills_data = data.get("bills", [])
         bill_objects = []

@@ -23,6 +23,7 @@ def main():
             page = api.get_bills(date_since_days=1, congress=119, offset=offset)
             bills.extend(page)
             if len(page) < 250: # last page
+                print("Last page reached.")
                 break
             offset += 250
             print("Fetching next page...")
