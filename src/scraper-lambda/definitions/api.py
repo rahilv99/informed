@@ -47,6 +47,7 @@ class CongressGovAPI:
             date_n_days_ago = datetime.date.today() - datetime.timedelta(days=date_since_days)
             params["fromDateTime"] = date_n_days_ago.strftime("%Y-%m-%dT00:00:00Z")
         params["limit"] = 250  # Maximum limit
+        params["offset"] = offset
 
         data = self._make_request(endpoint, params=params)
         bills_data = data.get("bills", [])

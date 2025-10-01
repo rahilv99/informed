@@ -100,7 +100,17 @@ def process_batch_results(batch_id):
                     # Parse the events from the response
                     events_json = result.result.message.content[0].text
                     events_json = '[' + events_json # Add opening bracket from prefill
-                    events = json.loads(events_json)
+
+                    try:
+                        events = json.loads(events_json)
+                    except json.JSONDecodeError as e:
+                        print(f"Error parsing json of events for bill {bill_id}: {e}")
+                        processed_bills.append({
+                                    'bill_id': bill_id,
+                                    'status': 'decode_error',
+                                    'error': str(e)
+                                })
+                        continue
                     
                     # Get bill from database
                     bill = database.get_bill(bills_collection, bill_id)

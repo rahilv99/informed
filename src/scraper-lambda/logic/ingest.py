@@ -17,12 +17,6 @@ bills_collection = db['bills']
 api = CongressGovAPI(API_KEY)
 
 def main():
-        # Test database connection first
-        if not database.test_connection(client):
-            print("Failed to connect to MongoDB. Exiting.")
-            return
-
-        # Only give me bills from this congress
         bills = []
         offset = 0
         while True:
@@ -31,6 +25,7 @@ def main():
             if len(page) < 250: # last page
                 break
             offset += 250
+            print("Fetching next page...")
 
         print(f"Retrieved {len(bills)} bills updated in the last 1 day.")
 
@@ -78,7 +73,6 @@ def main():
                     success = database.update_bill(bills_collection, bill_data)
 
                     if success:
-
                         # First time seeing this bill's text
                         if len(existing_bill['text']) == 0:
                             updates.append(bill_id)
@@ -86,8 +80,13 @@ def main():
                         elif abs(len(existing_bill['text']) - len(text)) > 1000:
                             revisions.append(bill_id)
                         # No updates, just new action
-                        elif existing_bill['latest_action'] != bill_data['latest_action']:
-                            propogates.append({'bill_id': bill_id, 'latest_action': bill_data['latest_action'], 'status': bill_data['status']})
+                        elif existing_bill['latest_action_date'] != bill_data['latest_action_date']:
+                            propogates.append({'bill_id': bill_id, 'latest_action': bill['actions'][-1], 'date': bill_data['latest_action_date'], 'status': bill_data['status']})
+                        # Otherwise don't bother updating
+                        else:
+                            print(f"Insignificant changes made to bill {bill_id}")
+                    else:
+                        print(f"No changes made to bill {bill_id}")
                 else:
                     # Bill doesn't exist - insert as new
                     print(f"Bill {bill_id} is new. Inserting...")
@@ -102,7 +101,7 @@ def main():
                 print(f"Error getting information for bill {i}: {e}")
 
 
-        print(f"Processed {len(updates)} bill updates, {len(revisions)} bill revisions, and {len(propogates)} bill propogates.")
+        print(f"Processed {len(updates)} new bills, {len(revisions)} bill revisions, and {len(propogates)} bill propogates.")
 
         return updates, revisions, propogates
 
@@ -136,8 +135,9 @@ def handler(payload):
         data = {
             'bill': {
                 'latest_action': item['latest_action'],
-                'status': item['status']
-            }
+                'date': item['date']
+            },
+            'status': item['status']
         }
         database.update_events(bills_collection, bill_id, data)
 
