@@ -208,6 +208,11 @@ def handler(payload):
         # Clear all events for these bills
         for bill_id in bill_ids:
             database.clear_events(events_collection, bill_id)
+            bill_data = {
+                'bill_id': bill_id,
+                'events': []
+            }
+            database.update_bill(bills_collection, bill_data)
     
     print(f"Processing batch event extraction for {len(bill_ids)} bills: {bill_ids}")
     

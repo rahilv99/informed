@@ -174,7 +174,7 @@ export class ScraperStack extends cdk.Stack {
         file: 'scraper-lambda/Dockerfile'
       }),
       timeout: cdk.Duration.minutes(15),
-      memorySize: 2048,
+      memorySize: 1024,
       architecture: lambda.Architecture.X86_64,
       environment: {
         BUCKET_NAME: props.coreStack.s3Bucket.bucketName,

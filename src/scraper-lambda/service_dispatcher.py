@@ -1,5 +1,4 @@
 import logic.ingest
-import logic.requery
 import json
 import traceback
 
@@ -33,8 +32,7 @@ def _handler(event, context):
 
     # Map actions to internal functions
     action_map = {
-        "e_ingest": logic.ingest.handler,
-        "e_requery": logic.requery.handler
+        "e_ingest": logic.ingest.handler
     }
 
     # Route to the appropriate function

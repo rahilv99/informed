@@ -8,13 +8,14 @@ import re
 import datetime
 import time
 import random
+import common_utils.sqs as sqs
 
 # NOTES
 # - add cosponsors to people section
 
 # Constants
 DEFAULT_ARTICLE_AGE = 7
-MAX_RETRIES = 15
+MAX_RETRIES = 5
 BASE_DELAY = 0.33
 MAX_DELAY = 15
 
@@ -27,10 +28,10 @@ class CongressGovAPI:
 
     def _make_request(self, endpoint, params=None):
         if params is None:
-            params = {}
-        params["api_key"] = self.api_key
+                params = {}
         url = f"{self.BASE_URL}/{endpoint}"
         
+        params["api_key"] = self.api_key
         # Use exponential backoff for retries
         for attempt in range(MAX_RETRIES):
             try:
@@ -38,13 +39,15 @@ class CongressGovAPI:
                 response.raise_for_status()  # Raise an exception for HTTP errors
                 return response.json()
             except Exception as e:
+                print(f"Error making request: {e}")
+                print(f'Response: {response}')
                 if attempt == MAX_RETRIES - 1:
                     raise e
                 # Exponential backoff with jitter
                 delay = min(BASE_DELAY * 2 ** attempt + random.uniform(0, 1), MAX_DELAY)
                 time.sleep(delay)
 
-    def get_bills(self, congress=None, bill_type=None, date_since_days=None, offset=0):
+    def get_bills(self, congress=None, bill_type=None, date_since_days=1, offset=0):
         endpoint = "bill"
         params = {}
         if congress:
@@ -52,17 +55,33 @@ class CongressGovAPI:
         if bill_type:
             endpoint += f"/{bill_type}"
 
-        if date_since_days is not None:
-            # Calculate the date N days ago
-            date_n_days_ago = datetime.date.today() - datetime.timedelta(days=date_since_days)
-            params["fromDateTime"] = date_n_days_ago.strftime("%Y-%m-%dT00:00:00Z")
-        params["limit"] = 250  # Maximum limit
+        date_n_days_ago = datetime.date.today() - datetime.timedelta(days=date_since_days)
+        params["fromDateTime"] = date_n_days_ago.strftime("%Y-%m-%dT00:00:00Z")
+
         params["offset"] = offset
+        params["limit"] = 250  # Maximum limit
 
         print('making request with params', params)
         data = self._make_request(endpoint, params=params)
-        bills_data = data.get("bills", [])
+
+        bills_data = []
+        bills = data.get("bills", [])
+        bills_data.extend(bills)
+
+        next_page = data.get("pagination", {}).get("next", "")
+        if next_page:
+            print(f'Invoking lambda for next page: {offset+250}/{data["pagination"]["count"]}')
+            next_page = {
+                'action': 'e_ingest',
+                'payload': {
+                    "offset": offset+250,
+                    "date_since_days": date_since_days
+                }
+            }
+            sqs.send_to_scraper_queue(next_page)
+
         bill_objects = []
+        print(f'Found {len(bills_data)} bills. Requesting more info...')
         for bill_summary in bills_data:
             congress_num = bill_summary.get("congress")
             bill_type = bill_summary.get("type")
