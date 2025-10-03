@@ -1,1 +1,0 @@
-(()=>{let t=self;t.addEventListener("install",e=>{t.skipWaiting()}),t.addEventListener("activate",e=>{e.waitUntil(t.clients.claim())}),t.addEventListener("message",e=>{e.data&&"SKIP_WAITING"===e.data.type&&t.skipWaiting()})})();
