@@ -1,12 +1,12 @@
 'use client'
 
-import { Hero } from "@/components/hero";
+import { Landing } from "@/components/landing";
 import { Leva } from "leva";
 
 export default function Home() {
   return (
     <>
-      <Hero />
+      <Landing />
       <Leva hidden />
     </>
   );
