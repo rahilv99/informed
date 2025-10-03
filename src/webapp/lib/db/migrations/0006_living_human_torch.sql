@@ -1,1 +1,0 @@
-ALTER TABLE "users" ALTER COLUMN "delivered" SET NOT NULL;

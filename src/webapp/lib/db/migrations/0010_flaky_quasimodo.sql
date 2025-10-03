@@ -1,1 +1,0 @@
-ALTER TABLE "users" ADD COLUMN "delivery_day" integer DEFAULT 1 NOT NULL;

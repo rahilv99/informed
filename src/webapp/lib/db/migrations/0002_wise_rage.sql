@@ -1,1 +1,0 @@
-ALTER TABLE "users" ADD COLUMN "occupation" varchar(255);

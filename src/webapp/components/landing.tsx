@@ -13,7 +13,7 @@ export function Landing() {
       <GL hovering={hovering} />
 
       <div className="pb-16 mt-auto text-center relative">
-        <Pill className="mb-6">BETA RELEASE</Pill>
+        <Pill className="mb-6">PRIVATE RELEASE</Pill>
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-sentient">
           A new level of <i className="font-light">visibility</i> <br />
           in US policy

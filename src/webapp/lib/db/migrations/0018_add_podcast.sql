@@ -1,1 +1,0 @@
-ALTER TABLE "podcasts" ADD COLUMN "user_id" integer NOT NULL;
