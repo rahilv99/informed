@@ -23,15 +23,18 @@ api_client = CongressGovAPI(api_key)
 
 bills = database.get_all_bills(bills_collection)
 deleted = []
+deleted_error_messages = []
 
 for bill in bills:
     bill_id = bill.get('bill_id')
 
-    # if before 2022 delete
-    if bill.get('published_date') < 1640995200:
-        deleted.append(bill_id)
+    # if text length is 59 characters (error message), delete
+    bill_text = bill.get('text', '')
+    if len(bill_text) == 59:
+        deleted_error_messages.append(bill_id)
         database.delete_bill(bills_collection, bill_id)
   
 
 print(f"Post-processing complete:")
 print(f"- Deleted {len(deleted)} old bills")
+print(f"- Deleted {len(deleted_error_messages)} bills with error messages (59 characters)")

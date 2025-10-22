@@ -6,9 +6,12 @@ from google import genai
 import numpy as np
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import spacy
 
 # Add the parent directory to the Python path so we can import common_utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+nlp = spacy.load("en_core_web_sm")
 
 import common_utils.database as database
 
@@ -17,6 +20,18 @@ uri = os.environ.get("DB_URI")
 
 genai_client = genai.Client(api_key=GOOGLE_API_KEY)
 
+def extract_entities(input_text):
+    """Extract entities and nouns from text"""
+    if not isinstance(input_text, str):
+        return ""
+    
+    # trim for spacy limit
+    input_text = input_text[:50000]
+    doc = nlp(input_text)
+    
+    entities = [ent.text.lower() for ent in doc.ents]
+    nouns = [token.text.lower() for token in doc if token.pos_ == "NOUN"]
+    return " ".join(entities + nouns)
 
 def get_embedding(content):
     """
@@ -53,16 +68,22 @@ def vectorize_bill_text(bill):
     """
     bill_id = bill.get('bill_id')
     text = bill.get('text')
+    title = bill.get('title')
+    people = ' '.join([person.get('name', '') for person in bill.get('people', [])]) if bill.get('people', []) else ''
+    summary = bill.get('summary', '')
+
+    text = extract_entities(text)
+    full_text = f"{title}\n\n{summary}\n\n{people}\n\n{text}"
     
-    if not text or len(text.strip()) == 0:
+    if not full_text or len(full_text.strip()) == 0:
         print(f"Warning: Bill {bill_id} has no text content. Skipping.")
         return None
     
-    print(f"Vectorizing bill {bill_id} (text length: {len(text)} chars)")
+    print(f"Vectorizing bill {bill_id} (text length: {len(full_text)} chars). Originally {len(bill.get('text', ''))} chars.")
     
     try:
         # Generate embedding for the bill text
-        embedding = get_embedding(text)
+        embedding = get_embedding(full_text)
         
         # Return update data
         return {
@@ -74,7 +95,7 @@ def vectorize_bill_text(bill):
         return None
 
 
-def vectorize_all_bills(preview=False, limit=None):
+def vectorize_all_bills(offset = 564):
     """
     Loop through all bills in the collection and vectorize their text attributes.
     
@@ -113,17 +134,14 @@ def vectorize_all_bills(preview=False, limit=None):
         return {'success': True, 'processed': 0, 'updated': 0, 'skipped': 0, 'errors': 0}
     
     total_bills = len(bills)
-    if limit:
-        bills = bills[:limit]
-        print(f"Processing {len(bills)} bills (limited from {total_bills} total)")
-    else:
-        print(f"Processing {total_bills} bills")
+    
+    print(f"Processing {total_bills} bills")
     
     updated_count = 0
     skipped_count = 0
     error_count = 0
-    
-    for i, bill in enumerate(bills, 1):
+    print('starting from ', offset)
+    for i, bill in enumerate(bills[offset:], offset+1):
         bill_id = bill.get('bill_id', 'unknown')
         print(f"\n[{i}/{len(bills)}] Processing bill {bill_id}")
         
@@ -137,18 +155,14 @@ def vectorize_all_bills(preview=False, limit=None):
         update_data = vectorize_bill_text(bill)
         
         if update_data:
-            if preview:
-                print(f"[PREVIEW] Would update bill {bill_id} with embedding (dimension: {len(update_data['text_embedding'])})")
+            # Update the database
+            success = database.update_bill(bills_collection, update_data)
+            if success:
+                print(f"Successfully updated bill {bill_id} with text embedding")
                 updated_count += 1
             else:
-                # Update the database
-                success = database.update_bill(bills_collection, update_data)
-                if success:
-                    print(f"Successfully updated bill {bill_id} with text embedding")
-                    updated_count += 1
-                else:
-                    print(f"Failed to update bill {bill_id}")
-                    error_count += 1
+                print(f"Failed to update bill {bill_id}")
+                error_count += 1
         else:
             skipped_count += 1
     
@@ -173,34 +187,4 @@ def vectorize_all_bills(preview=False, limit=None):
 
 
 if __name__ == "__main__":
-    print("Bill Text Vectorization Utility")
-    print("=" * 60)
-    
-    print("\nOptions:")
-    print("1. Preview changes (recommended first)")
-    print("2. Vectorize all bills")
-    print("3. Vectorize with limit (specify number)")
-    
-    choice = input("\nEnter your choice (1, 2, or 3): ").strip()
-    
-    if choice == "1":
-        print("\nRunning in PREVIEW mode...")
-        vectorize_all_bills(preview=True)
-    elif choice == "2":
-        confirm = input("\nAre you sure you want to vectorize all bills? This will update your database. (yes/no): ")
-        if confirm.lower() == 'yes':
-            vectorize_all_bills()
-        else:
-            print("Operation cancelled")
-    elif choice == "3":
-        try:
-            limit = int(input("Enter number of bills to process: "))
-            confirm = input(f"\nProcess {limit} bills? (yes/no): ")
-            if confirm.lower() == 'yes':
-                vectorize_all_bills(limit=limit)
-            else:
-                print("Operation cancelled")
-        except ValueError:
-            print("Invalid number. Operation cancelled.")
-    else:
-        print("Invalid choice")
+    vectorize_all_bills()

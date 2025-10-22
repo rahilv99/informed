@@ -71,6 +71,10 @@ def process_batch_results(batch_id):
         # Retrieve batch results
         batch = anthropic_client.messages.batches.retrieve(batch_id)
         
+        if batch.processing_status == 'expired' or batch.processing_status == 'cancelled':
+            return {
+                'status': batch.processing_status,
+            }
         if batch.processing_status != 'ended':
             return {
                 'status': 'not_ready',
@@ -166,11 +170,15 @@ def process_batch_results(batch_id):
                         'error': str(e)
                     })
             else:
-                print(f"Batch request failed for bill {bill_id}: {result.result.error}")
+                # Handle different error/failure result types
+                if hasattr(result.result, 'error') and result.result.error:
+                    error_msg = str(result.result.error)
+                    print(f"Batch request failed for bill {bill_id}: {error_msg}")
+                
                 processed_bills.append({
                     'bill_id': bill_id,
                     'status': 'api_error',
-                    'error': str(result.result.error)
+                    'error': error_msg
                 })
         
         return {
