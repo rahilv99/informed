@@ -202,7 +202,7 @@ def handler(payload):
     
     # Handle batch extraction request
     bill_ids = payload.get('ids')
-    type = payload.get('type')
+    type = payload.get('type', '')
 
     if type == 'updated_bill':
         # Clear all events for these bills

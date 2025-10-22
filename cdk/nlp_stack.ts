@@ -88,6 +88,15 @@ export class NlpStack extends cdk.Stack {
     // Add the specific EventBridge rule policy to the Lambda function's role
     lambdaFunction.addToRolePolicy(eventBridgeRulePolicy);
 
+    // Grant EventBridge permissions to send messages to the SQS queue
+    // This allows EventBridge rules to send messages to the queue as targets
+    props.coreStack.nlpSQSQueue.addToResourcePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      principals: [new iam.ServicePrincipal('events.amazonaws.com')],
+      actions: ['sqs:SendMessage'],
+      resources: [props.coreStack.nlpSQSQueue.queueArn]
+    }));
+
     // Grant Lambda permissions to be triggered by the queue
     lambdaFunction.addEventSource(
       new lambdaEventSources.SqsEventSource(props.coreStack.nlpSQSQueue, {
