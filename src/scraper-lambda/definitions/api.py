@@ -148,7 +148,9 @@ class CongressGovAPI:
                     text = self._extract_text_from_html(response.text)
                 
                 # Clean the extracted text
-                return self._clean_text(text)
+                text = self._clean_text(text)
+                print("Extracted {} characters".format(len(text)))
+                return text
             else:
                 raise Exception(f"Failed to retrieve document: {response.status_code}")
                 

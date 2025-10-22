@@ -23,6 +23,9 @@ class Bill(Document):
     def get_published_date(self):
         return self.data.get("introducedDate", "")
 
+    def get_text_count(self):
+        return self.data.get("textVersions", {}).get("count", 0)
+
     def get_actions(self):
         if isinstance(self.data.get("actions"), dict) and "count" in self.data.get("actions", {}):
             self.data["actions"] = self.api_client.get_bill_actions(self.congress, self.bill_type, self.bill_number)
@@ -145,7 +148,7 @@ class Bill(Document):
                             break  # Exit after successfully processing the first valid URL
                         except Exception as e:
                             print(f"Error fetching document text from {url}: {e}")
-                
+
                 self.data["text"] = text
             else:
                 self.data["text"] = ""
@@ -170,46 +173,32 @@ class Bill(Document):
             return self.data['people']
         return []
 
-    def get_details(self):
-        self.get_actions()
-        self.get_summary()
-        self.get_amendments()
-        self.get_committees()
-        self.get_status()
-
-        self.data["full"] = True
-
-    def to_dict(self):
+    def to_dict(self, text=False):
         """
         Return a dictionary object with only the essential attributes of the bill.
+        Minimized to reduce API calls.
         """
-
-        if "full" not in self.data or not self.data["full"]:
-            self.get_details()
+        # one API call to get actions if not already present
 
         bill = {
             "title": self.data.get("title"),
-            "text": self.data.get("text") if "text" in self.data else self.get_text(),
+            "text": "",  # Don't fetch text by default - too expensive
             "congress": self.congress,
             "bill_type": self.bill_type,
             "bill_number": self.bill_number,
             "bill_id": self.bill_id,
-            "subjects": self.data.get("subjects", ""),
             "latest_action_date": self.get_latest_action_date() if self.get_latest_action_date() else self.data.get("introducedDate"),
             "published_date": self.data.get("introducedDate"),
-            'actions': self.data.get("actions", []),
-            'summary': self.data.get("summary", ""),
-            'amendments': [amendment.data for amendment in self.data.get("amendments", [])],
-            'committees': self.data.get("committees", []),
+            'actions': self.get_actions(),
             'people': self.get_sponsors(),
             'url': f'https://www.congress.gov/bill/{self.congress}/{self.bill_type}/{self.bill_number}',
-            'status': self.data.get("status", "pending")
+            'status': self.get_status()
         }
 
+        if text:
+            bill['text'] = self.get_text()
+
         return bill
-
-
-
 
 
 class Amendment(Document):
