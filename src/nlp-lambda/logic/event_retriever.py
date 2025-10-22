@@ -171,8 +171,11 @@ def process_batch_results(batch_id):
                     })
             else:
                 # Handle different error/failure result types
+                error_msg = "Unknown API error"
                 if hasattr(result.result, 'error') and result.result.error:
                     error_msg = str(result.result.error)
+                    print(f"Batch request failed for bill {bill_id}: {error_msg}")
+                else:
                     print(f"Batch request failed for bill {bill_id}: {error_msg}")
                 
                 processed_bills.append({
@@ -267,9 +270,7 @@ def handler(payload):
     print(f"Processing batch status check for {batch_id}")
     
     # Process the batch
-    result = main(batch_id, bill_ids)
-
-    print(result)
+    main(batch_id, bill_ids)
 
 if __name__ == "__main__":
     # Example usage for batch processing

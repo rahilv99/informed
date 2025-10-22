@@ -7,8 +7,6 @@ from pymongo.server_api import ServerApi
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import common_utils.database as database
-from definitions.api import CongressGovAPI
-from definitions.congress import Bill
 from datetime import datetime
 
 uri = os.environ.get("DB_URI")
@@ -18,8 +16,6 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['auxiom_database']
 bills_collection = db['bills']
 
-# Initialize the API client
-api_client = CongressGovAPI(api_key)
 
 bills = database.get_all_bills(bills_collection)
 deleted = []
