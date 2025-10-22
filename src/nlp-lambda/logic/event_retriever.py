@@ -78,9 +78,7 @@ def process_batch_results(batch_id):
                 'errored': batch.request_counts.errored,
                 'succeeded': batch.request_counts.succeeded,
                 'processing': batch.request_counts.processing,
-                'cancelled': batch.request_counts.cancelled,
-                'expired': batch.request_counts.expired,
-                'message': f'Batch {batch_id} has {batch.request_counts.succeeded} succeeded requests, {batch.request_counts.errored} errored requests, {batch.request_counts.processing} processing requests, {batch.request_counts.cancelled} cancelled requests, {batch.request_counts.expired} expired requests.'
+                'message': f'Batch {batch_id} has {batch.request_counts.succeeded} succeeded requests, {batch.request_counts.errored} errored requests, {batch.request_counts.processing} processing requests.'
             }
 
         # Log batch processing time
@@ -249,6 +247,9 @@ def main(batch_id, bill_ids):
                 "type": "new_bill"
             }
         })
+    elif result.get('status') == 'cancelled':
+        print(f"Batch {batch_id} was cancelled. Cleaning up EventBridge rule.")
+        cleanup_eventbridge_rule(batch_id)
 
 def handler(payload):
     """Handle event retriever requests from EventBridge or direct calls"""
