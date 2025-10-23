@@ -103,6 +103,30 @@ class CongressGovAPI:
                         bill_objects.append(Bill(self, bill_details['bill']))
         return bill_objects
 
+    def get_bill(self, congress, bill_type, bill_number):
+        """
+        Get a single bill and return it as a Bill object.
+        Mimics the behavior of get_bills but for a specific bill.
+        
+        Args:
+            congress: Congress number (e.g., 119)
+            bill_type: Bill type (e.g., 's', 'hr', 'hjres', 'sjres')
+            bill_number: Bill number (e.g., 1744)
+            
+        Returns:
+            Bill object or None if the bill cannot be fetched
+        """
+        try:
+            bill_details = self.get_bill_details(congress, bill_type, bill_number)
+            if bill_details and 'bill' in bill_details:
+                return Bill(self, bill_details['bill'])
+            else:
+                print(f"No bill data returned for {bill_type}{bill_number}-{congress}")
+                return None
+        except Exception as e:
+            print(f"Error fetching bill {bill_type}{bill_number}-{congress}: {e}")
+            return None
+    
     def get_bill_details(self, congress, bill_type, bill_number):
         endpoint = f"bill/{congress}/{bill_type}/{bill_number}"
         return self._make_request(endpoint)
