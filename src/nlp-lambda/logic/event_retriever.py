@@ -39,7 +39,7 @@ def process_event(bill, event):
 
         return normed_embedding.tolist()
 
-    content = ' '.join(event['topics']) + ' ' + ' '.join(event['tags']) + ' ' + event['overview']
+    content = ' '.join(event['topics']) + ' ' + ' '.join(event['tags']) + ' ' + event['summary']
 
     event['embedding'] = _get_embedding(content)
 
@@ -117,49 +117,49 @@ def process_batch_results(batch_id):
                     # Get bill from database
                     bill = database.get_bill(bills_collection, bill_id)
                     
-                    if bill:
-                        event_ids = []
-                        for i, event in enumerate(events):
-                            try:
-                                event = process_event(bill, event)
-                                success = database.insert_event(events_collection, event)
-                            
-                                if success:
-                                    print(f"Inserted event id {event['id']} for bill {bill_id}")
-                                    event_ids.append(event['id'])
-                                else:
-                                    print(f"Failed to insert event id {event['id']} for bill {bill_id}")
-                            except Exception as e:
-                                print(f"Error processing event {i}: {e}")
-                                processed_bills.append({
-                                    'bill_id': bill_id,
-                                    'status': 'processing_error',
-                                    'error': str(e)
-                                })
-                                break
-
-                        # Update bill with events
-                        bill['events'] = event_ids
-                        success = database.update_bill(bills_collection, bill)
-                        
-                        if success:
-                            print(f"Updated bill {bill_id} with {len(event_ids)} events")
-                            processed_bills.append({
-                                'bill_id': bill_id,
-                                'status': 'success',
-                                'events_count': len(event_ids)
-                            })
-                        else:
-                            print(f"Failed to update bill {bill_id} with events")
-                            processed_bills.append({
-                                'bill_id': bill_id,
-                                'status': 'database_update_failed'
-                            })
-                    else:
+                    if not bill:
                         print(f"Bill {bill_id} not found in database")
                         processed_bills.append({
                             'bill_id': bill_id,
                             'status': 'bill_not_found'
+                        })
+                        continue
+                    
+                    event_ids = []
+                    event_errors = []
+                    
+                    for i, event in enumerate(events):
+                        try:
+                            event = process_event(bill, event)
+                            success = database.insert_event(events_collection, event)
+                        
+                            if success:
+                                print(f"Inserted event id {event['id']} for bill {bill_id}")
+                                event_ids.append(event['id'])
+                            else:
+                                print(f"Failed to insert event id {event['id']} for bill {bill_id}")
+                                event_errors.append(f"Event {i}: insert failed")
+                        except Exception as e:
+                            print(f"Error processing event {i} for bill {bill_id}: {e}")
+                            event_errors.append(f"Event {i}: {str(e)}")
+
+                    # Update bill with successfully processed events
+                    bill['events'] = event_ids
+                    success = database.update_bill(bills_collection, bill)
+                    
+                    if success:
+                        print(f"Updated bill {bill_id} with {len(event_ids)} events")
+                        processed_bills.append({
+                            'bill_id': bill_id,
+                            'status': 'success',
+                            'events_count': len(event_ids),
+                            'event_errors': event_errors if event_errors else None
+                        })
+                    else:
+                        print(f"Failed to update bill {bill_id} with events")
+                        processed_bills.append({
+                            'bill_id': bill_id,
+                            'status': 'database_update_failed'
                         })
                         
                 except Exception as e:
@@ -218,46 +218,44 @@ def cleanup_eventbridge_rule(batch_id):
 def main(batch_id, bill_ids):
     result = process_batch_results(batch_id)
 
-    # If batch is completed, clean up all EventBridge rules, retry any failures
     if result.get('status') == 'completed':
         print(f"Batch {batch_id} completed successfully, cleaning up EventBridge rule")
         cleanup_eventbridge_rule(batch_id)
 
-        retry = []
-        for bill in result.get('processed_bills'):
-            if bill.get('status') != 'success' and bill.get('status') != 'database_update_failed':
-                
+        # Collect bills that failed and need retry
+        retry_bills = []
+        for bill in result.get('processed_bills', []):
+            if bill.get('status') not in ['success', 'database_update_failed']:
                 print(f"Error processing bill {bill.get('bill_id')}: {bill.get('error', 'Unknown error')}. Retrying...")
-                
-                retry.append(bill.get('bill_id'))
+                retry_bills.append(bill.get('bill_id'))
 
-        if retry:
+        if retry_bills:
+            print(f"Retrying {len(retry_bills)} failed bills")
             sqs.send_to_nlp_queue({
                 "action": "e_event_extractor",
                 "payload": {
-                    "bill_ids": retry,
+                    "ids": retry_bills,
                     "type": "new_bill"
                 }
             })
-    # If batch is not completed, report status and wait
+    
     elif result.get('status') == 'not_ready':
         print(result.get('message'))
-    # If batch is errored or expired, clean up all rules and retry entire job
-    elif result.get('status') == 'errored' or result.get('status') == 'expired':
-        # Error occurred
-        print(f"Error processing batch {batch_id}: {result.get('error', 'Unknown error')}")
-        
-        # Clean up all rules on error
+    
+    elif result.get('status') in ['errored', 'expired']:
+        print(f"Batch {batch_id} {result.get('status')}: {result.get('error', 'Unknown error')}")
         cleanup_eventbridge_rule(batch_id)
         
-        # send batch again
+        # Retry entire batch
+        print(f"Retrying all {len(bill_ids)} bills from failed batch")
         sqs.send_to_nlp_queue({
             "action": "e_event_extractor",
             "payload": {
-                "bill_ids": bill_ids,
+                "ids": bill_ids,
                 "type": "new_bill"
             }
         })
+    
     elif result.get('status') == 'cancelled':
         print(f"Batch {batch_id} was cancelled. Cleaning up EventBridge rule.")
         cleanup_eventbridge_rule(batch_id)
